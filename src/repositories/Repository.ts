@@ -1,0 +1,29 @@
+import { Database } from "../database";
+import { QueryBuilder } from "../utlis/QueryBuilder";
+
+export class Repository<T> {
+    public db = new Database();
+    public queryBuilder: QueryBuilder<T> = new QueryBuilder<T>();
+    public table = "";
+
+    public async save(model: T) {
+        const insert = this.queryBuilder.save(model, this.table);
+        return await this.db.query(insert);
+    }
+
+    public async update(model: T) {
+        // tslint:disable-next-line:no-string-literal
+        const id = model["id"];
+        const update = this.queryBuilder.update(model, id, this.table);
+        return await this.db.query(update);
+    }
+
+    public async findAll(query = null) {
+        return await this.db.query(query || `select * from ${this.table} limit 1000`);
+    }
+
+    public async findById(id: number, query = null) {
+        // tslint:disable-next-line:max-line-length
+        return await this.db.query(query || `select * from ${this.table} where id = ${id} limit 1`);
+    }
+}
