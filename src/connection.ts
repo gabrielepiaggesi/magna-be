@@ -1,5 +1,5 @@
 import mysql from "mysql";
-import { dev } from "../environment/dev";
+import { dev } from "../environment/dev/dev";
 
 const dbConnection = mysql.createConnection(dev);
 

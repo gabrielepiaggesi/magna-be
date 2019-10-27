@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import { Response } from "express";
 import jwt from "jsonwebtoken";
-import { jwtConfig } from "../../environment/jwt";
+import { jwtConfig } from "../../environment/dev/jwt";
 import { LoginDTO } from "../dtos/LoginDTO";
 import { SignupDTO } from "../dtos/SignupDTO";
 import { UserDTO } from "../dtos/UserDTO";

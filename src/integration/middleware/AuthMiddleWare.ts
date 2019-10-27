@@ -1,6 +1,6 @@
 import passport from "passport";
 import passportJWT from "passport-jwt";
-import { jwtConfig } from "../../../environment/jwt";
+import { jwtConfig } from "../../../environment/dev/jwt";
 import { AuthService } from "../../services/AuthService";
 const authService = new AuthService();
 const ExtractJwt = passportJWT.ExtractJwt;
