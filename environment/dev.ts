@@ -1,8 +1,8 @@
 export const dev = {
-    host: "eu-cdbr-west-02.cleardb.net",
-    user: "b15e090daa5ed7",
+    host: "onnjomlc4vqc55fw.chr7pe7iynqr.eu-west-1.rds.amazonaws.com",
+    user: "ai0ud31i0pj8r9ip",
     // tslint:disable-next-line:object-literal-sort-keys
-    password: "6bcd0aa0",
-    database: "heroku_652cda889de7eb2",
+    password: "q4dss8g96xtmtame",
+    database: "i0p55fd8ewp7xv93",
     connectTimeout: 10000,
 };

@@ -1,5 +1,5 @@
 import { Database } from "../database";
-import { QueryBuilder } from "../utlis/QueryBuilder";
+import { QueryBuilder } from "../utils/QueryBuilder";
 
 export class Repository<T> {
     public db = new Database();

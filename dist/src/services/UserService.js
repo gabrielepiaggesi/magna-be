@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const User_1 = require("../models/User");
 const UserRepository_1 = require("../repositories/UserRepository");
-const Logger_1 = require("../utlis/Logger");
+const Logger_1 = require("../utils/Logger");
 const LOG = new Logger_1.Logger("UserService.class");
 const userRepository = new UserRepository_1.UserRepository();
 class UserService {
@@ -41,6 +41,20 @@ class UserService {
             const userInserted = yield userRepository.save(newUser);
             LOG.debug("newUserId ", userInserted.insertId);
             return res.status(200).send(userInserted);
+        });
+    }
+    updateUser(res, userDto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            LOG.debug("userDTO", userDto);
+            const user = yield userRepository.findById(userDto.id);
+            user.bio = userDto.bio;
+            user.name = userDto.name;
+            user.lastname = userDto.lastname;
+            user.email = userDto.email;
+            user.birthday = userDto.birthday;
+            const userUpdated = yield userRepository.update(user);
+            LOG.debug("userUpdated ", userUpdated);
+            return res.status(200).send(userUpdated);
         });
     }
 }

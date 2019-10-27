@@ -1,5 +1,5 @@
 import { db } from "./connection";
-import { Logger } from "./utlis/Logger";
+import { Logger } from "./utils/Logger";
 const LOG = new Logger("Database.class");
 
 export class Database {

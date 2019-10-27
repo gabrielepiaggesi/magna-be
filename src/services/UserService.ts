@@ -2,7 +2,7 @@ import { Response } from "express";
 import { UserDTO } from "../dtos/UserDTO";
 import { User } from "../models/User";
 import { UserRepository } from "../repositories/UserRepository";
-import { Logger } from "../utlis/Logger";
+import { Logger } from "../utils/Logger";
 
 const LOG = new Logger("UserService.class");
 const userRepository = new UserRepository();

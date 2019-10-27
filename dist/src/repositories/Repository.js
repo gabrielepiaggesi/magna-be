@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const database_1 = require("../database");
-const QueryBuilder_1 = require("../utlis/QueryBuilder");
+const QueryBuilder_1 = require("../utils/QueryBuilder");
 class Repository {
     constructor() {
         this.db = new database_1.Database();
@@ -21,6 +21,14 @@ class Repository {
         return __awaiter(this, void 0, void 0, function* () {
             const insert = this.queryBuilder.save(model, this.table);
             return yield this.db.query(insert);
+        });
+    }
+    update(model) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // tslint:disable-next-line:no-string-literal
+            const id = model["id"];
+            const update = this.queryBuilder.update(model, id, this.table);
+            return yield this.db.query(update);
         });
     }
     findAll(query = null) {

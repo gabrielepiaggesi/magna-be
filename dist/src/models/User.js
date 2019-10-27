@@ -1,13 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-class User {
+const Table_1 = require("./Table");
+class User extends Table_1.Table {
     // tslint:disable-next-line:no-empty
-    constructor() {
-        // tslint:disable-next-line:variable-name
-        this.created_at = new Date(Date.now()).toISOString().substring(0, 19).replace("T", " ");
-        // tslint:disable-next-line:variable-name
-        this.updated_at = this.created_at;
-    }
+    constructor() { super(); }
 }
 exports.User = User;
 //# sourceMappingURL=User.js.map

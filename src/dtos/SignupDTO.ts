@@ -1,13 +1,9 @@
-import { Table } from "./Table";
-
-export class User extends Table {
+export class SignupDTO {
     public name: string;
     public lastname: string;
     public email: string;
     public password: string;
-    public birthday: Date;
-    public bio: string;
 
     // tslint:disable-next-line:no-empty
-    constructor() { super(); }
+    constructor() {}
 }

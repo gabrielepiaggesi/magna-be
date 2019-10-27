@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const connection_1 = require("./connection");
-const Logger_1 = require("./utlis/Logger");
+const Logger_1 = require("./utils/Logger");
 const LOG = new Logger_1.Logger("Database.class");
 class Database {
     // tslint:disable-next-line:no-empty
