@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const jwt_1 = require("../../environment/jwt");
+const jwt_1 = require("../../environment/dev/jwt");
 const User_1 = require("../models/User");
 const UserRepository_1 = require("../repositories/UserRepository");
 const Logger_1 = require("../utils/Logger");

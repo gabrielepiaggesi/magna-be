@@ -13,7 +13,7 @@ export class Database {
             db.query(query, (error, result, fields) => {
                 if (error) { console.log("error 1", error); reject(error); }
                 const data = JSON.stringify(result);
-                LOG.debug("executed", JSON.parse(data));
+                LOG.debug("executed");
                 resolve(JSON.parse(data));
             });
         });

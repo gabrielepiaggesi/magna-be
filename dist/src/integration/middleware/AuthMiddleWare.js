@@ -3,12 +3,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
 const passport_1 = __importDefault(require("passport"));
 const passport_jwt_1 = __importDefault(require("passport-jwt"));
-const jwt_1 = require("../../../environment/jwt");
+const jwt_1 = require("../../../environment/dev/jwt");
 const AuthService_1 = require("../../services/AuthService");
-const authRoutes = express_1.default.Router();
 const authService = new AuthService_1.AuthService();
 const ExtractJwt = passport_jwt_1.default.ExtractJwt;
 const JwtStrategy = passport_jwt_1.default.Strategy;

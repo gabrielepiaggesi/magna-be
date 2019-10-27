@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mysql_1 = __importDefault(require("mysql"));
-const dev_1 = require("../environment/dev");
+const dev_1 = require("../environment/dev/dev");
 const dbConnection = mysql_1.default.createConnection(dev_1.dev);
 exports.connect = () => {
     this.dbConnection = mysql_1.default.createConnection(dev_1.dev);

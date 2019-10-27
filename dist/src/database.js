@@ -16,7 +16,7 @@ class Database {
                     reject(error);
                 }
                 const data = JSON.stringify(result);
-                LOG.debug("executed", JSON.parse(data));
+                LOG.debug("executed");
                 resolve(JSON.parse(data));
             });
         });
