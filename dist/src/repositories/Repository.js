@@ -39,7 +39,7 @@ class Repository {
     findById(id, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             // tslint:disable-next-line:max-line-length
-            return yield this.db.query(query || `select * from ${this.table} where id = ${id} limit 1`);
+            return yield this.db.query(query || `select * from ${this.table} where id = ${id} limit 1`).then((results) => results[0]);
         });
     }
 }

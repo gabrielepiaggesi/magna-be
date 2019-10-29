@@ -15,7 +15,7 @@ const port = 3000;
 connection_1.connect();
 index_1.initMiddlewares(app);
 app.use(body_parser_1.default.json());
-app.use("/", api_1.default);
+app.use(api_1.default);
 // start server
 app.listen(port, (err) => {
     if (err) {

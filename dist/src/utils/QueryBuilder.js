@@ -25,6 +25,16 @@ class QueryBuilder {
         });
         return `update ${table} set ${columns} where id = ${id}`;
     }
+    getWhereIn(arra) {
+        let whereIn = "";
+        let i = 0;
+        arra.forEach((elem) => {
+            const value = (typeof elem !== "number") ? `"${elem}"` : elem;
+            whereIn += (i === 0) ? value : ", " + value;
+            i++;
+        });
+        return whereIn;
+    }
 }
 exports.QueryBuilder = QueryBuilder;
 //# sourceMappingURL=QueryBuilder.js.map

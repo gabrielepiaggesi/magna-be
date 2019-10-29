@@ -19,14 +19,14 @@ class UserService {
         return __awaiter(this, void 0, void 0, function* () {
             const users = yield userRepository.findAll();
             LOG.debug("users", users);
-            return res.status(200).send(users);
+            return res.sendStatus(200).send(users);
         });
     }
     getUser(res, userId) {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield userRepository.findById(userId);
             LOG.debug("user", user);
-            return res.status(200).send(user);
+            return res.sendStatus(200).send(user);
         });
     }
     createUser(res, user) {
@@ -40,7 +40,7 @@ class UserService {
             newUser.birthday = user.birthday;
             const userInserted = yield userRepository.save(newUser);
             LOG.debug("newUserId ", userInserted.insertId);
-            return res.status(200).send(userInserted);
+            return res.sendStatus(200).send(userInserted);
         });
     }
     updateUser(res, userDto) {
@@ -54,7 +54,7 @@ class UserService {
             user.birthday = userDto.birthday;
             const userUpdated = yield userRepository.update(user);
             LOG.debug("userUpdated ", userUpdated);
-            return res.status(200).send(userUpdated);
+            return res.sendStatus(200).send(userUpdated);
         });
     }
 }

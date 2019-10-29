@@ -5,6 +5,7 @@ import { jwtConfig } from "../../environment/dev/jwt";
 import { LoginDTO } from "../dtos/LoginDTO";
 import { SignupDTO } from "../dtos/SignupDTO";
 import { UserDTO } from "../dtos/UserDTO";
+import { auth } from "../integration/middleware";
 import { User } from "../models/User";
 import { UserRepository } from "../repositories/UserRepository";
 import { Logger } from "../utils/Logger";
@@ -22,19 +23,22 @@ export class AuthService {
             // tslint:disable-next-line:no-shadowed-variable
             const user = await userRepository.findByEmail(email);
             if (!user) {
-                res.status(401).json({ message: "No such user found" });
+                return res.status(401).json({ message: "No such user found" });
+            } else {
+                await bcrypt.compare(password, user.password, (err, right) => {
+                    if (right) {
+                        LOG.debug("right password");
+                        // from now on we'll identify the user by the id and the id is the
+                        // only personalized value that goes into our token
+                        const payload = { id: user.id };
+                        const token = jwt.sign(payload, jwtConfig.secretOrKey);
+                        auth.setLoggedId(user.id);
+                        return res.status(200).json({ msg: "ok", token });
+                    } else {
+                        return res.status(401).json({ msg: "Password is incorrect" });
+                    }
+                });
             }
-            await bcrypt.compare(password, user.password, (err, right) => {
-                if (right) {
-                    // from now on we'll identify the user by the id and the id is the
-                    // only personalized value that goes into our token
-                    const payload = { id: user.id };
-                    const token = jwt.sign(payload, jwtConfig.secretOrKey);
-                    res.status(200).json({ msg: "ok", token });
-                } else {
-                    res.status(401).json({ msg: "Password is incorrect" });
-                }
-            });
         }
     }
 
@@ -43,7 +47,7 @@ export class AuthService {
 
         await bcrypt.hash(user.password, 10, async (err, hash) => {
             if (err) {
-                res.status(500).json({ msg: "Cannot create Hash" });
+                return res.status(500).json({ msg: "Cannot create Hash" });
             } else if (hash) {
                 const newUser = new User();
                 newUser.name = user.name;
@@ -53,9 +57,11 @@ export class AuthService {
 
                 const userInserted = await userRepository.save(newUser);
                 LOG.debug("newUserId ", userInserted.insertId);
+                auth.setLoggedId(userInserted.insertId);
                 return res.status(200).send(userInserted);
+            } else {
+                return res.status(500).json({ msg: "Cannot create Hash" });
             }
-            res.status(500).json({ msg: "Cannot create Hash" });
         });
     }
 

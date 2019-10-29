@@ -12,13 +12,13 @@ export class UserService {
     public async getUsers(res: Response) {
         const users = await userRepository.findAll();
         LOG.debug("users", users);
-        return res.status(200).send(users);
+        return res.sendStatus(200).send(users);
     }
 
     public async getUser(res: Response, userId: number) {
         const user = await userRepository.findById(userId);
         LOG.debug("user", user);
-        return res.status(200).send(user);
+        return res.sendStatus(200).send(user);
     }
 
     public async createUser(res: Response, user: UserDTO) {
@@ -33,7 +33,7 @@ export class UserService {
 
         const userInserted = await userRepository.save(newUser);
         LOG.debug("newUserId ", userInserted.insertId);
-        return res.status(200).send(userInserted);
+        return res.sendStatus(200).send(userInserted);
     }
 
     public async updateUser(res: Response, userDto: UserDTO) {
@@ -48,6 +48,6 @@ export class UserService {
 
         const userUpdated = await userRepository.update(user);
         LOG.debug("userUpdated ", userUpdated);
-        return res.status(200).send(userUpdated);
+        return res.sendStatus(200).send(userUpdated);
     }
 }

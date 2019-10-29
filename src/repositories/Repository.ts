@@ -24,6 +24,6 @@ export class Repository<T> {
 
     public async findById(id: number, query = null) {
         // tslint:disable-next-line:max-line-length
-        return await this.db.query(query || `select * from ${this.table} where id = ${id} limit 1`);
+        return await this.db.query(query || `select * from ${this.table} where id = ${id} limit 1`).then((results) => results[0]);
     }
 }

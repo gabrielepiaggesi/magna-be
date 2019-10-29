@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const jwt_1 = require("../../environment/dev/jwt");
+const middleware_1 = require("../integration/middleware");
 const User_1 = require("../models/User");
 const UserRepository_1 = require("../repositories/UserRepository");
 const Logger_1 = require("../utils/Logger");
@@ -29,20 +30,24 @@ class AuthService {
                 // tslint:disable-next-line:no-shadowed-variable
                 const user = yield userRepository.findByEmail(email);
                 if (!user) {
-                    res.status(401).json({ message: "No such user found" });
+                    return res.status(401).json({ message: "No such user found" });
                 }
-                yield bcrypt_1.default.compare(password, user.password, (err, right) => {
-                    if (right) {
-                        // from now on we'll identify the user by the id and the id is the
-                        // only personalized value that goes into our token
-                        const payload = { id: user.id };
-                        const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
-                        res.status(200).json({ msg: "ok", token });
-                    }
-                    else {
-                        res.status(401).json({ msg: "Password is incorrect" });
-                    }
-                });
+                else {
+                    yield bcrypt_1.default.compare(password, user.password, (err, right) => {
+                        if (right) {
+                            LOG.debug("right password");
+                            // from now on we'll identify the user by the id and the id is the
+                            // only personalized value that goes into our token
+                            const payload = { id: user.id };
+                            const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
+                            middleware_1.auth.setLoggedId(user.id);
+                            return res.status(200).json({ msg: "ok", token });
+                        }
+                        else {
+                            return res.status(401).json({ msg: "Password is incorrect" });
+                        }
+                    });
+                }
             }
         });
     }
@@ -51,7 +56,7 @@ class AuthService {
             LOG.debug("signup...", user);
             yield bcrypt_1.default.hash(user.password, 10, (err, hash) => __awaiter(this, void 0, void 0, function* () {
                 if (err) {
-                    res.status(500).json({ msg: "Cannot create Hash" });
+                    return res.status(500).json({ msg: "Cannot create Hash" });
                 }
                 else if (hash) {
                     const newUser = new User_1.User();
@@ -61,9 +66,12 @@ class AuthService {
                     newUser.password = hash;
                     const userInserted = yield userRepository.save(newUser);
                     LOG.debug("newUserId ", userInserted.insertId);
+                    middleware_1.auth.setLoggedId(userInserted.insertId);
                     return res.status(200).send(userInserted);
                 }
-                res.status(500).json({ msg: "Cannot create Hash" });
+                else {
+                    return res.status(500).json({ msg: "Cannot create Hash" });
+                }
             }));
         });
     }

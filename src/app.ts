@@ -13,7 +13,7 @@ connect();
 initMiddlewares(app);
 
 app.use(bodyParser.json());
-app.use("/", api);
+app.use(api);
 
 // start server
 app.listen(port, (err) => {
