@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/app.js",
   "scripts": {
-    "start": "clear && tsc && node dist/src/app.js",
+    "start": "clear && tsc && node ./dist/src/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
