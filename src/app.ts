@@ -7,7 +7,7 @@ import { initMiddlewares } from "./integration/middleware/index";
 
 // initialize
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 connect();
 initMiddlewares(app);
@@ -16,7 +16,6 @@ app.use(bodyParser.json());
 app.use(api);
 
 // start server
-app.listen(port, (err) => {
-  if (err) { return console.error(err); }
+app.listen(port, () => {
   return console.log(`server listen on ${port}`);
 });
