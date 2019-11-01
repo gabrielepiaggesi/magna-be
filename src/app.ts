@@ -1,7 +1,7 @@
 // imports
 import bodyParser from "body-parser";
 import express from "express";
-import { connect } from "./connection";
+import { db } from "./connection";
 import api from "./integration/api";
 import { initMiddlewares } from "./integration/middleware/index";
 
@@ -9,7 +9,7 @@ import { initMiddlewares } from "./integration/middleware/index";
 const app = express();
 const port = process.env.PORT || 3000;
 
-connect();
+// db.connect();
 initMiddlewares(app);
 
 app.use(bodyParser.json());

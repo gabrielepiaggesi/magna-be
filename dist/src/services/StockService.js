@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const database_1 = require("../database");
 const PaymentIntentStatus_1 = require("../enums/PaymentIntentStatus");
 const StockStatus_1 = require("../enums/StockStatus");
 const index_1 = require("../integration/middleware/index");
@@ -22,66 +23,76 @@ const LOG = new Logger_1.Logger("StockService.class");
 const stockRepository = new StockRepository_1.StockRepository();
 const creatorRepository = new CreatorRepository_1.CreatorRepository();
 const paymentsIntentsRepository = new PaymentIntentRepository_1.PaymentIntentRepository();
+const db = new database_1.Database();
 class StockService {
     preorderStocks(res, preorder) {
         return __awaiter(this, void 0, void 0, function* () {
+            yield db.newTransaction();
             try {
                 const creator = yield creatorRepository.findById(preorder.creator_id);
+                if (creator.available_stocks <= 0) {
+                    return res.status(500).send("No more stocks available!");
+                }
                 LOG.debug("creator: ", creator.id);
-                if (creator.available_stocks > 0) {
-                    // create payment intent
-                    const piId = yield this.createPaymentIntent(preorder);
-                    yield this.findOrCreateStocksToPreorder(creator.id, preorder.qt, piId, creator.stock_price);
-                    return res.status(200).send({ payment_id: piId });
-                }
-                else {
-                    return res.status(200).send("No stocks available");
-                }
+                // create payment intent
+                const piId = yield this.createPaymentIntent(preorder);
+                yield this.findOrCreateStocksToPreorder(creator.id, preorder.qt, piId, creator.stock_price);
+                yield creatorRepository.takeAvailableStocks(creator.id, preorder.qt);
+                yield db.commit();
+                return res.status(200).send({ payment_id: piId });
             }
             catch (e) {
+                yield db.rollback();
                 return res.status(500).send(e);
             }
         });
     }
     confirmStocks(res, confirm) {
         return __awaiter(this, void 0, void 0, function* () {
+            yield db.newTransaction();
             try {
-                // retrieve payment intent
-                // set status success to pi
-                // change stock status to confirmed
                 // tslint:disable-next-line:max-line-length
                 yield paymentsIntentsRepository.updateByIdWithStatusWithDeletedAt(confirm.payment_id, PaymentIntentStatus_1.PaymentIntentStatus.SUCCESS, null);
                 // tslint:disable-next-line:max-line-length
                 yield stockRepository.updateByPaymentIdWithStatusWithDeletedAt(confirm.payment_id, StockStatus_1.StockStatus.CONFIRMED, null);
                 // tslint:disable-next-line:max-line-length
                 const confirmed = yield stockRepository.updateByParentPaymentIdWithStatusWithParentPaymentId(confirm.payment_id, StockStatus_1.StockStatus.SOLD, confirm.payment_id);
+                yield db.commit();
                 return res.status(200).send(confirmed);
             }
             catch (e) {
+                yield db.rollback();
                 return res.status(500).send(e);
             }
         });
     }
     sellStocks(res, sell) {
         return __awaiter(this, void 0, void 0, function* () {
+            yield db.newTransaction();
             try {
                 // change stock status to selling
                 const logged = index_1.auth.loggedId;
+                yield creatorRepository.addAvailableStocks(sell.creator_id, sell.qt);
                 // tslint:disable-next-line:max-line-length
                 const selling = yield stockRepository.updateByCreatorIdAndByUserIdWithStatusWithLimit(sell.creator_id, logged, StockStatus_1.StockStatus.SELLING, sell.qt);
+                yield db.commit();
                 return res.status(200).send(selling);
             }
             catch (e) {
+                yield db.rollback();
                 return res.status(500).send(e);
             }
         });
     }
     resetStocks(res, reset) {
         return __awaiter(this, void 0, void 0, function* () {
+            yield db.newTransaction();
             try {
                 // find stock to reset in selling by buyer_id or newones to delete
                 // set status success to pi
                 // change stock status to confirmed
+                const paymentIntent = yield paymentsIntentsRepository.findById(reset.payment_id);
+                yield creatorRepository.addAvailableStocks(paymentIntent.creator_id, paymentIntent.quantity);
                 const deletedAt = new Date(Date.now()).toISOString().substring(0, 19).replace("T", " ");
                 // tslint:disable-next-line:max-line-length
                 yield paymentsIntentsRepository.updateByIdWithStatusWithDeletedAt(reset.payment_id, PaymentIntentStatus_1.PaymentIntentStatus.FAILED, deletedAt);
@@ -89,15 +100,18 @@ class StockService {
                 yield stockRepository.updateByPaymentIdWithStatusWithDeletedAt(reset.payment_id, StockStatus_1.StockStatus.FAILED, deletedAt);
                 // tslint:disable-next-line:max-line-length
                 const resetted = yield stockRepository.updateByParentPaymentIdWithStatusWithParentPaymentId(reset.payment_id, StockStatus_1.StockStatus.SELLING, null);
+                yield db.commit();
                 return res.status(200).send(resetted);
             }
             catch (e) {
+                yield db.rollback();
                 return res.sendStatus(500).send(e);
             }
         });
     }
     createPaymentIntent(preorder) {
         return __awaiter(this, void 0, void 0, function* () {
+            yield db.newTransaction();
             try {
                 const logged = index_1.auth.loggedId;
                 const payment = new PaymentIntent_1.PaymentIntent();
@@ -107,15 +121,18 @@ class StockService {
                 payment.quantity = preorder.qt,
                     payment.status = PaymentIntentStatus_1.PaymentIntentStatus.PENDING;
                 const newPayment = yield paymentsIntentsRepository.save(payment);
+                yield db.commit();
                 return newPayment.insertId;
             }
             catch (e) {
+                yield db.rollback();
                 throw e;
             }
         });
     }
     findOrCreateStocksToPreorder(creatorId, qt, piId, price) {
         return __awaiter(this, void 0, void 0, function* () {
+            yield db.newTransaction();
             try {
                 const logged = index_1.auth.loggedId;
                 // tslint:disable-next-line:max-line-length
@@ -139,9 +156,11 @@ class StockService {
                 stock.user_id = logged;
                 const userInserted = yield stockRepository.save(stock);
                 LOG.debug("newUserId ", userInserted.insertId);
+                yield db.commit();
                 return userInserted;
             }
             catch (e) {
+                yield db.rollback();
                 LOG.debug("error ", e);
                 return e;
             }

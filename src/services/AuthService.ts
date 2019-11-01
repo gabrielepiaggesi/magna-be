@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import { Response } from "express";
 import jwt from "jsonwebtoken";
 import { jwtConfig } from "../../environment/dev/jwt";
+import { Database } from "../database";
 import { LoginDTO } from "../dtos/LoginDTO";
 import { SignupDTO } from "../dtos/SignupDTO";
 import { UserDTO } from "../dtos/UserDTO";
@@ -12,6 +13,7 @@ import { Logger } from "../utils/Logger";
 
 const LOG = new Logger("AuthService.class");
 const userRepository = new UserRepository();
+const db = new Database();
 
 export class AuthService {
 
@@ -49,16 +51,24 @@ export class AuthService {
             if (err) {
                 return res.status(500).json({ msg: "Cannot create Hash" });
             } else if (hash) {
-                const newUser = new User();
-                newUser.name = user.name;
-                newUser.lastname = user.lastname;
-                newUser.email = user.email;
-                newUser.password = hash;
+                await db.newTransaction();
+                try {
+                    const newUser = new User();
+                    newUser.name = user.name;
+                    newUser.lastname = user.lastname;
+                    newUser.email = user.email;
+                    newUser.password = hash;
 
-                const userInserted = await userRepository.save(newUser);
-                LOG.debug("newUserId ", userInserted.insertId);
-                auth.setLoggedId(userInserted.insertId);
-                return res.status(200).send(userInserted);
+                    const userInserted = await userRepository.save(newUser);
+                    LOG.debug("newUserId ", userInserted.insertId);
+                    auth.setLoggedId(userInserted.insertId);
+
+                    await db.commit();
+                    return res.status(200).send(userInserted);
+                } catch (e) {
+                    await db.rollback();
+                    return res.status(500).send("Cannot Create User");
+                }
             } else {
                 return res.status(500).json({ msg: "Cannot create Hash" });
             }

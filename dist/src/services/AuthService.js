@@ -15,12 +15,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const jwt_1 = require("../../environment/dev/jwt");
+const database_1 = require("../database");
 const middleware_1 = require("../integration/middleware");
 const User_1 = require("../models/User");
 const UserRepository_1 = require("../repositories/UserRepository");
 const Logger_1 = require("../utils/Logger");
 const LOG = new Logger_1.Logger("AuthService.class");
 const userRepository = new UserRepository_1.UserRepository();
+const db = new database_1.Database();
 class AuthService {
     login(res, user) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -59,15 +61,23 @@ class AuthService {
                     return res.status(500).json({ msg: "Cannot create Hash" });
                 }
                 else if (hash) {
-                    const newUser = new User_1.User();
-                    newUser.name = user.name;
-                    newUser.lastname = user.lastname;
-                    newUser.email = user.email;
-                    newUser.password = hash;
-                    const userInserted = yield userRepository.save(newUser);
-                    LOG.debug("newUserId ", userInserted.insertId);
-                    middleware_1.auth.setLoggedId(userInserted.insertId);
-                    return res.status(200).send(userInserted);
+                    yield db.newTransaction();
+                    try {
+                        const newUser = new User_1.User();
+                        newUser.name = user.name;
+                        newUser.lastname = user.lastname;
+                        newUser.email = user.email;
+                        newUser.password = hash;
+                        const userInserted = yield userRepository.save(newUser);
+                        LOG.debug("newUserId ", userInserted.insertId);
+                        middleware_1.auth.setLoggedId(userInserted.insertId);
+                        yield db.commit();
+                        return res.status(200).send(userInserted);
+                    }
+                    catch (e) {
+                        yield db.rollback();
+                        return res.status(500).send("Cannot Create User");
+                    }
                 }
                 else {
                     return res.status(500).json({ msg: "Cannot create Hash" });
