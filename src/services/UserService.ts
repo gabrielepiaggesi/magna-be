@@ -18,6 +18,7 @@ export class UserService {
 
     public async getUser(res: Response, userId: number) {
         const user = await userRepository.findById(userId);
+        delete user.password;
         LOG.debug("user", user);
         return res.status(200).send(user);
     }
@@ -25,6 +26,7 @@ export class UserService {
     public async getLoggedUser(res: Response) {
         const loggedId = auth.loggedId;
         const user = await userRepository.findById(loggedId);
+        delete user.password;
         LOG.debug("user", user);
         return res.status(200).send(user);
     }
