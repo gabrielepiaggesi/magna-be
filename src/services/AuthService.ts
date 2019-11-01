@@ -61,10 +61,13 @@ export class AuthService {
 
                     const userInserted = await userRepository.save(newUser);
                     LOG.debug("newUserId ", userInserted.insertId);
-                    auth.setLoggedId(userInserted.insertId);
+                    const userId = userInserted.insertId;
+                    auth.setLoggedId(userId);
 
                     await db.commit();
-                    return res.status(200).send(userInserted);
+                    const payload = { id: userId };
+                    const token = jwt.sign(payload, jwtConfig.secretOrKey);
+                    return res.status(200).json({ msg: "ok", token });
                 } catch (e) {
                     await db.rollback();
                     return res.status(500).send("Cannot Create User");

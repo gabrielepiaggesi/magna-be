@@ -70,9 +70,12 @@ class AuthService {
                         newUser.password = hash;
                         const userInserted = yield userRepository.save(newUser);
                         LOG.debug("newUserId ", userInserted.insertId);
-                        middleware_1.auth.setLoggedId(userInserted.insertId);
+                        const userId = userInserted.insertId;
+                        middleware_1.auth.setLoggedId(userId);
                         yield db.commit();
-                        return res.status(200).send(userInserted);
+                        const payload = { id: userId };
+                        const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
+                        return res.status(200).json({ msg: "ok", token });
                     }
                     catch (e) {
                         yield db.rollback();
