@@ -1,0 +1,487 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="it">
+
+<head>
+    <title>DIZIONARIO ITALIANO OLIVETTI</title>
+    <meta name="description" content="Dizionario Italiano: il miglior dizionario italiano consultabile gratuitamente on line!.">
+    <meta name="keywords" content="dizionario italiano, dizionario online, lingua italiana, dizionario, italiano, anagrammi, rimario, grammatica italiana, enrico olivetti">
+    <meta name="robots" content="all">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="Content-Language" content="it">
+    <meta http-equiv="Keywords" content="dizionario italiano, dizionario online, lingua italiana, dizionario, italiano, anagrammi, rimario, grammatica italiana, enrico olivetti">
+    <meta name="OWNER" content="Arsenia Enriquez">
+    <meta name="author" content="Olivetti Media Communication - Enrico Olivetti">
+    <meta name="viewport" id="vp" content="initial-scale=1,maximum-scale=1,width=device-width">
+    <meta property="fb:admins" content="1058356943">
+    <script async type="text/javascript" src="/inc/dizionario-italiano.js"></script>
+    <script async type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script async type="text/javascript" src="https://apis.google.com/js/plusone.js">{ lang: 'it' }</script>
+    <link rel="stylesheet" href="/inc/dizionario-italiano.css">
+
+    <script>
+        (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+            (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date(); a = s.createElement(o),
+            m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-37639852-1', 'auto');
+        ga('require', 'displayfeatures')
+        ga('send', 'pageview');
+
+    </script>
+    <script>
+        $(document).keydown(function (event) {
+            if ($("#txt_parola").is(":focus") || $("#txt_browse").is(":focus")) return; //Will fail if already focused.
+
+            if (event.keyCode) { //g 
+                $("#txt_parola").fadeIn();
+                $("#txt_parola").focus();
+            }
+        });
+    </script>
+    <script data-cfasync="false">
+        var w = window;
+        w._onetag = w._onetag || {};
+        (function (o, n, e, t, a, g) {
+            o.cmd = o.cmd || [],
+                o.pub = o.pub || [],
+                o.pub.push("2aacb5aca05120"),
+                g = n.createElement("script"),
+                g.async = true,
+                g.src = "//onetag-sys.com/main.js",
+                !o.loaded && n.head.appendChild(g),
+                o.loaded = true
+        })(w._onetag, document);
+    </script>
+</head>
+
+<body lang="it" id="body">
+    <div id="fb-root">
+        <script>(function (d, s, id) {
+                var js, fjs = d.getElementsByTagName(s)[0];
+                if (d.getElementById(id)) return;
+                js = d.createElement(s); js.id = id;
+                js.src = "//connect.facebook.net/it_IT/all.js#xfbml=1&version=v2.3";
+                fjs.parentNode.insertBefore(js, fjs);
+            }(document, 'script', 'facebook-jssdk'));
+        </script>
+    </div>
+    <!-- / facebook like -->
+
+    <!-- Header -->
+    <div id="header">
+        <div id="logo_image"><a href="http://dizionario-italiano.it"><img id="immagine_logo" src="/inc/logo-dizionario.jpg"
+                    width="75" height="48" border="0"></a></div>
+        <div id="logo_div"><a href="http://dizionario-italiano.it"><span class="logo_title">Dizionario Italiano</span></a></div>
+        <div id="menu" onclick="menu . show();"><span id="scritta_menu"></span></div>
+        <div class="clear"></div>
+    </div> <!-- /Header -->
+
+    <!-- Container -->
+    <div id="container" class="container">
+
+        <!-- Menu -->
+        <div style="display:none;margin-top:0%;" id="menu_content">
+            <ul style="list-style-type:none; margin-top:0%;margin-bottom:10px;">
+                <li style="padding-bottom:10px"><a href="/index.php"><b>Home</b></a><br><br></li>
+                <li><b>Dizionario</b><br>
+                    <div style="clear:both;"></div>
+                    <ul style="list-style-type:none; padding-left:15px; margin-bottom:10px;">
+                        <li style="margin-left:15px;"><a href="/dizionario-italiano.php">Dizionario italiano</a><br></li>
+                        <li><a href="/dizionario-italiano-istruzioni.php">Istruzioni consultazione</a><br></li>
+                        <li><a href="/dizionario-italiano-abbreviazioni.php">Abbreviazioni</a><br></li>
+                        <li><a href="/dizionario-italiano-bibliografia.php">Note bibliografiche</a><br></li>
+                    </ul>
+                </li>
+
+            </ul>
+            <ul style="list-style-type:none; margin-top:0%; margin-bottom:10px;">
+                <li><b>Lingua e grammatica</b><br>
+                    <div style="clear:both;"></div>
+                    <ul style="list-style-type:none; padding-left:15px; padding-bottom:10px;">
+                        <li style="margin-left:15px;"><a href="/grammatica-italiana.php">Grammatica italiana</a><br></li>
+                    </ul>
+                </li>
+                <li><b>Risorse</b><br>
+                    <div style="clear:both;"></div>
+                    <ul style="list-style-type:none; padding-left:15px; padding-bottom:10px">
+                        <li style="margin-left:15px"><a href="/dizionario-abitanti-italia.php">Nomi degli abitanti</a><br></li>
+                        <li><a href="/autori/">Dizionario Autori</a><br></li>
+                        <li><a href="/linguamadre/">Pillole linguistiche</a><br></li>
+                        <li><a href="/dizionario-italiano-brocardi.php">Frasi latine usate in italiano</a><br></li>
+                    </ul>
+                </li>
+
+            </ul>
+            <ul style="list-style-type:none; margin-top:0%; margin-bottom:10px;">
+
+                <li><b>Utilità</b><br>
+                    <div style="clear:both;"></div>
+                    <ul style="list-style-type:none; padding-left:15px; padding-bottom:10px">
+                        <li style="margin-left:15px"><a href="/tell-a-friend">Segnala a un amico</a><br></li>
+                        <li><a href="/dizionario-italiano-link.php">I nostri link</a><br></li>
+                        <li><a href="/dizionario-italiano-site-map.php">Mappa del sito</a><br></li>
+                    </ul>
+                </li>
+                <li><b>Chi siamo</b><br>
+                    <div style="clear:both;"></div>
+                    <ul style="list-style-type:none; padding-left:15px; margin-bottom:10px">
+                        <li style="margin-left:15px"><a href="/dizionario-italiano-chi-siamo.php">Chi siamo</a><br></li>
+                        <div style="clear:both;"></div>
+                        <li><a href="/dizionario-italiano-condizioni.php">Termini e condizioni</a><br></li>
+                        <li><a href="/dizionario-italiano-privacy.php">Informativa sulla privacy</a><br></li>
+                        <li><a href="/form-mail">Modulo di contatto</a><br></li>
+                    </ul>
+                </li>
+            </ul>
+
+        </div> <!-- /Menu-->
+        <!-- Content -->
+        <table width="100%" id="content" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 1px darkred; border-collapse:collapse;">
+            <tr>
+
+                <!-- Middle -->
+                <td id="middle" valign="top">
+
+                    <!-- form dizionario italiano -->
+                    <center>
+                        <h2>Dizionario Italiano</h2>
+                        <form name='dizionario' method='GET' action='/dizionario-italiano.php' onsubmit='return checkform(this);'>
+                            <input name='parola' id='txt_parola' size='30' type='text' value='ciao' autofocus required>
+                            <input type='submit' value='Trova'><br>
+                        </form>
+                    </center><br>
+                    <!-- /form dizionario-italiano -->
+                    <center>
+                        <table width="32%" style="margin: 0 auto; border:none">
+                            <tr height="15" valign="top">
+                                <td id="soc_but" valign="top" align="left" width="10%">
+                                    <div class="g-plusone" data-size="medium" data-href="https://www.dizionario-italiano.it"></div>
+                                </td>
+                                <td id="soc_but" align="left" valign="top" width="10%">
+                                    <script>(function (d, s, id) { var js, fjs = d.getElementsByTagName(s)[0]; if (d.getElementById(id)) return; js = d.createElement(s); js.id = id; js.src = "//connect.facebook.net/it_IT/all.js#xfbml=1"; fjs.parentNode.insertBefore(js, fjs); }(document, 'script', 'facebook-jssdk'));</script>
+                                    <div class="fb-like" data-href="https://www.dizionario-italiano.it" data-send="true"
+                                        data-layout="button_count" data-width="450" data-show-faces="false"></div>
+                                </td>
+                                <td id="soc_but" width="2%"></td>
+                                <td id="soc_but" width="10%" align="right" valign="top">
+                                    <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+                                        <input type="hidden" name="cmd" value="_s-xclick">
+                                        <input type="hidden" name="hosted_button_id" value="SEWF23V7HVZ4G">
+                                        <input type="image" src="https://www.paypalobjects.com/it_IT/IT/i/btn/btn_donate_SM.gif"
+                                            border="0" name="submit" alt="PayPal è il metodo rapido e sicuro per pagare e farsi pagare online.">
+                                        <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif"
+                                            width="1" height="1">
+                                    </form>
+                                </td>
+                            </tr>
+                        </table>
+                    </center>
+                    <hr size='1'>
+                    <div id="wrapper">
+                        <div id="ads_right">
+                            <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                            <!-- italiano2018-center1 -->
+                            <ins class="adsbygoogle" style="display:inline-block;width:336px;height:280px"
+                                data-ad-client="ca-pub-4273381631273125" data-ad-slot="1634237778"></ins>
+                            <script>
+                                (adsbygoogle = window.adsbygoogle || []).push({});
+                            </script>
+                        </div>
+                        <div id="myth1"><br><span class="lemma">ciào</span>&nbsp;<object id="myFlash" type="application/x-shockwave-flash"
+                                data="player_mp3_maxi.swf" width="25" height="20">
+                                <param name="movie" value="player_mp3_maxi.swf" />
+                                <param name="bgcolor" value="#ffffff" />
+                                <param name="FlashVars" value="mp3=mp3_path.php?f=/C/I/A/CIAO100.mp3&amp;width=25" />
+                            </object><br><small><span>cià|o</span></small><br><span class="paradigma"><acronym title="IPA - Internationl Phonetic Alphabet - Alfabeto fonetico internazionale">pronuncia:
+                                    /ˈʧao/</acronym></span><br>
+                            <span class="grammatica">interiezione</span><br><br>
+                            <span class="italiano">saluto informale, usato tra persone che si conoscono da tempo</span><br><br>
+                        </div>
+                    </div><br><small><a href="dizionario-italiano.php?lemma=CIAO100"><u>permalink</u></a></small>
+                    <hr size="1" width="100%" color="#D0D0D0" style="bottom:0px">
+                    <table border="0" width="100%">
+                        <tr>
+                            <td align="left" valign="center" width="50%"><a href="?lemma=CIANZA100"><span style="font-size:80%">&lt;&lt;
+                                        &nbsp;cianza</span></a></td>
+                            <td align="right" valign="center" width="50%"><a href="?lemma=CIAP100"><span style="font-size:80%">CIAP&nbsp;
+                                        &gt;&gt;</span></a></td>
+                        <tr>
+                    </table>
+                    <hr size="1">
+
+                    <center>
+                        <h3>Sfoglia il dizionario</h3>
+                        <a href="?browse=A">A</a>
+                        <a href="?browse=B">B</a>
+                        <a href="?browse=C">C</a>
+                        <a href="?browse=D">D</a>
+                        <a href="?browse=E">E</a>
+                        <a href="?browse=F">F</a>
+                        <a href="?browse=G">G</a>
+                        <a href="?browse=H">H</a>
+                        <a href="?browse=I">I</a>
+                        <a href="?browse=J">J</a>
+                        <a href="?browse=K">K</a>
+                        <a href="?browse=L">L</a>
+                        <a href="?browse=M">M</a>
+                        <a href="?browse=N">N</a>
+                        <a href="?browse=O">O</a>
+                        <a href="?browse=P">P</a>
+                        <a href="?browse=Q">Q</a>
+                        <a href="?browse=R">R</a>
+                        <a href="?browse=S">S</a>
+                        <a href="?browse=T">T</a>
+                        <a href="?browse=U">U</a>
+                        <a href="?browse=V">V</a>
+                        <a href="?browse=W">W</a>
+                        <a href="?browse=X">X</a>
+                        <a href="?browse=Y">Y</a>
+                        <a href="?browse=Z">Z</a>
+                    </center>
+                    <hr size="1">
+                    <div class="section group">
+                        <div class="col span_1_of_2">
+                            <table width="100%" border="1" bordercolor="#D0D0D0" style="border-collapse:collapse">
+                                <tr bgcolor="">
+                                    <td align="left" width="50%"><span class="br_italiano"><a href="?lemma=CIANURIA100">cianuria</a></span>
+                                        <span class="grm_ita"><small><i>(s. femm.)</i></small></span></td>
+                                </tr>
+                                <tr bgcolor="#D0D0D0">
+                                    <td align="left" width="50%"><span class="br_italiano"><a href="?lemma=CIANURICO100">cianurico</a></span>
+                                        <span class="grm_ita"><small><i>(agg.)</i></small></span></td>
+                                </tr>
+                                <tr bgcolor="">
+                                    <td align="left" width="50%"><span class="br_italiano"><a href="?lemma=CIANURILE100">cianurile</a></span>
+                                        <span class="grm_ita"><small><i>(s. masch.)</i></small></span></td>
+                                </tr>
+                                <tr bgcolor="#D0D0D0">
+                                    <td align="left" width="50%"><span class="br_italiano"><a href="?lemma=CIANURO100">cianuro</a></span>
+                                        <span class="grm_ita"><small><i>(s. masch.)</i></small></span></td>
+                                </tr>
+                                <tr bgcolor="">
+                                    <td align="left" width="50%"><span class="br_italiano"><a href="?lemma=CIANZA100">cianza</a></span>
+                                        <span class="grm_ita"><small><i>(s. femm.)</i></small></span></td>
+                                </tr>
+                                <tr bgcolor="#D0D0D0">
+                                    <td align="left" width="50%"><span class="br_italiano" style="color:#FF0000; font-weight:bold;">ciao</span>
+                                        <span class="grm_ita"><small><i>(int.)</i></small></span></td>
+                                </tr>
+                                <tr bgcolor="">
+                                    <td align="left" width="50%"><span class="br_italiano"><a href="?lemma=CIAP100">CIAP</a></span>
+                                        <span class="grm_ita"><small><i>(sigla)</i></small></span></td>
+                                </tr>
+                                <tr bgcolor="#D0D0D0">
+                                    <td align="left" width="50%"><span class="br_italiano"><a href="?lemma=CIAPPA100">ciappa
+                                                <sup><small><b>1</b></small></sup></a></span> <span class="grm_ita"><small><i>(s.
+                                                    femm.)</i></small></span></td>
+                                </tr>
+                                <tr bgcolor="">
+                                    <td align="left" width="50%"><span class="br_italiano"><a href="?lemma=CIAPPA100">ciappa
+                                                <sup><small><b>2</b></small></sup></a></span> <span class="grm_ita"><small><i>(s.
+                                                    femm.)</i></small></span></td>
+                                </tr>
+                                <tr bgcolor="#D0D0D0">
+                                    <td align="left" width="50%"><span class="br_italiano"><a href="?lemma=CIAPPETTA100">ciappetta</a></span>
+                                        <span class="grm_ita"><small><i>(s. femm.)</i></small></span></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col span_1_of_2">
+                            <table width="100%" border="1" bordercolor="#D0D0D0" style="border-collapse:collapse">
+                                <tr bgcolor="">
+                                    <td align="left" width="50%"><span class="br_italiano"><a href="?lemma=CIAPPINO100">ciappino</a></span>
+                                        <span class="grm_ita"><small><i>(s. masch.)</i></small></span></td>
+                                </tr>
+                                <tr bgcolor="#D0D0D0">
+                                    <td align="left" width="50%"><span class="br_italiano"><a href="?lemma=CIAPPO100">ciappo</a></span>
+                                        <span class="grm_ita"><small><i>(s. masch.)</i></small></span></td>
+                                </tr>
+                                <tr bgcolor="">
+                                    <td align="left" width="50%"><span class="br_italiano"><a href="?lemma=CIAPPOLA100">ciappola</a></span>
+                                        <span class="grm_ita"><small><i>(s. femm.)</i></small></span></td>
+                                </tr>
+                                <tr bgcolor="#D0D0D0">
+                                    <td align="left" width="50%"><span class="br_italiano"><a href="?lemma=CIAPPOLADA100">ciappolada</a></span>
+                                        <span class="grm_ita"><small><i>(s. femm.)</i></small></span></td>
+                                </tr>
+                                <tr bgcolor="">
+                                    <td align="left" width="50%"><span class="br_italiano"><a href="?lemma=CIAPPOLARE100">ciappolare</a></span>
+                                        <span class="grm_ita"><small><i>(v. trans.)</i></small></span></td>
+                                </tr>
+                                <tr bgcolor="#D0D0D0">
+                                    <td align="left" width="50%"><span class="br_italiano"><a href="?lemma=CIAPPOLATO100">ciappolato</a></span>
+                                        <span class="grm_ita"><small><i>(part. pass.)</i></small></span></td>
+                                </tr>
+                                <tr bgcolor="">
+                                    <td align="left" width="50%"><span class="br_italiano"><a href="?lemma=CIAPPOLATURA100">ciappolatura</a></span>
+                                        <span class="grm_ita"><small><i>(s. femm.)</i></small></span></td>
+                                </tr>
+                                <tr bgcolor="#D0D0D0">
+                                    <td align="left" width="50%"><span class="br_italiano"><a href="?lemma=CIARAFUGLIONE100">ciarafuglione</a></span>
+                                        <span class="grm_ita"><small><i>(s. masch.)</i></small></span></td>
+                                </tr>
+                                <tr bgcolor="">
+                                    <td align="left" width="50%"><span class="br_italiano"><a href="?lemma=CIARAMELLA100">ciaramella</a></span>
+                                        <span class="grm_ita"><small><i>(s. femm.)</i></small></span></td>
+                                </tr>
+                                <tr bgcolor="#D0D0D0">
+                                    <td align="left" width="50%"><span class="br_italiano"><a href="?lemma=CIARAMELLARE100">ciaramellare</a></span>
+                                        <span class="grm_ita"><small><i>(v. intr.)</i></small></span></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <hr size='1'>
+                    <form name="browser" method="GET" action="https://www.dizionario-italiano.it/dizionario-italiano.php"
+                        onsubmit="return checkform(this);">
+                        <center><small>Sfoglia il dizionario italiano a partire da:</small>
+                            <input name="browse" size="15" id="txt_browse" type="text" class="keyboardInput" required>
+                            <input value="Trova" type="submit"></center>
+                    </form>
+                    <br>
+                    <hr size='1'>
+                    <center>
+                        <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                        <!-- italiano2018-center1 -->
+                        <ins class="adsbygoogle" style="display:inline-block;width:336px;height:280px" data-ad-client="ca-pub-4273381631273125"
+                            data-ad-slot="1634237778"></ins>
+                        <script>
+                            (adsbygoogle = window.adsbygoogle || []).push({});
+                        </script>
+
+                    </center><span style="color:#F0F0F0;font-size:8px">---CACHE--- 2</span><br>
+                </td>
+                <!-- /Middle -->
+
+                <!-- Right -->
+                <td id="right" valign="top" style="border-left:solid 1px #A0A0A0; border-collapse:collapse;">
+                    <center>
+                        <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                        <!-- italiano2018-responsive -->
+                        <ins class="adsbygoogle adslot_2" style="display:block" data-ad-client="ca-pub-4273381631273125"
+                            data-ad-slot="4587704172" data-ad-format="auto"></ins>
+                        <script>
+                            (adsbygoogle = window.adsbygoogle || []).push({});
+                        </script>
+                    </center>
+                    <hr size="1">
+                    <table border="0">
+                        <tr>
+                            <td align="left" style="padding:3">
+                                <h3>I nostri siti:</h3>
+                                <ul style="font-size:90%;">
+                                    <li><a href="http://www.dizionario-italiano.it" title="Dizionario italiano" target="_blank">Dizionario
+                                            italiano</a></li>
+                                    <li><a href="http://www.dizionario-italiano.it/grammatica-italiana.php" title="Grammatica italiana"
+                                            target="_blank">Grammatica italiana</a></li>
+                                    <li><a href="http://www.italian-verbs.com/verbi-italiani/coniugazione.php" title="Coniugatore verbi italiani"
+                                            target="_blank">Verbi Italiani</a></li>
+                                    <li><a href="http://www.dizionario-latino.com" title="Dizionario-latino" target="_blank">Dizionario-latino</a></li>
+                                    <li><a href="http://www.grecoantico.com" title="Dizionario greco antico" target="_blank">Dizionario
+                                            greco antico</a></li>
+                                    <li><a href="http://www.dizionario-francese.com" title="Dizionario francese" target="_blank">Dizionario
+                                            francese</a></li>
+                                    <li><a href="http://www.dizionario-inglese.com" title="Dizionario inglese" target="_blank">Dizionario
+                                            inglese</a></li>
+                                    <li><a href="http://www.dizionario-tedesco.com" title="Dizionario tedesco" target="_blank">Dizionario
+                                            tedesco</a></li>
+                                    <li><a href="http://www.dizionario-spagnolo.com" title="Dizionario spagnolo" target="_blank">Dizionario
+                                            spagnolo</a></li>
+                                    <li><a href="http://www.grecomoderno.com" title="Dizionario greco moderno" target="_blank">Dizionario
+                                            greco&nbsp;moderno</a></li>
+                                    <li><a href="http://www.piemonteis.com" title="Dizionario piemontese" target="_blank">Dizionario
+                                            piemontese</a></li>
+                                    <li><a href="http://www.gamoto.net/ricette-cucina" title="Ricette di cucina" target="_blank">Ricette
+                                            di cucina</a></li>
+                                    <li><a href="http://www.portalegrecia.com" title="" target="_blank">Vacanze in
+                                            Grecia</a></li>
+                                </ul><br>
+                                <b>En français</b><br>
+                                <ul style="font-size:90%;">
+                                    <li><a href="http://www.grand-dictionnaire-latin.com" title="Dictionnaire Latin, conjugueur, declinaison latin"
+                                            target="_blank">Dictionnaire Latin</a></li>
+                                    <li><a href="http://www.italian-verbs.com/verbes-italiens/conjugaison.php" title="Conjugueur, conjugaison Verbes Italiens"
+                                            target="_blank">Verbes italiens</a></li>
+                                </ul><br>
+                                <b>In english</b><br>
+                                <ul style="font-size:90%;">
+                                    <li><a href="http://www.online-latin-dictionary.com" title="Latin Dictionary conjugator declension"
+                                            target="_blank">Latin Dictionary</a></li>
+                                    <li><a href="http://www.italian-verbs.com/italian-verbs/conjugation.php" title="Italian Verbs Conjugation Conjugator"
+                                            target="_blank">Italian Verbs</a></li>
+                                </ul><br>
+                                <b>In Deutsch</b><br>
+                                <ul style="font-size:90%;">
+                                    <li><a href="http://www.italian-verbs.com/italienische-verben/konjugation.php"
+                                            title="Italienische Verben Konjugation Konjugator" target="_blank">Italienische
+                                            Verben</a></li>
+                                </ul><br>
+                                <b>En español</b><br>
+                                <ul style="font-size:90%;">
+                                    <li><a href="http://www.italian-verbs.com/los-verbos-italianos/conjugacion.php"
+                                            title="Conjugación Conjugador Verbos Italianos" target="_blank">Los verbos
+                                            italianos</a></li>
+                                </ul><br>
+                                <b>Em portugues</b><br>
+                                <ul style="font-size:90%;">
+                                    <li><a href="http://www.italian-verbs.com/os-verbos-italianos/conjugacao.php" title="Conjugaçao Conjugador Verbos Italianos"
+                                            target="_blank">Os verbos italianos</a></li>
+                                </ul><br>
+                                <b>По русски</b><br>
+                                <ul style="font-size:90%;">
+                                    <li><a href="http://www.italian-verbs.com/italyanskiye-glagoly/konyugatsiya.php"
+                                            title="Conjugaçao Conjugador Verbos Italianos" target="_blank">Итальянские
+                                            глаголы</a></li>
+                                </ul><br>
+                                <b>Στα ελληνικά</b><br>
+                                <ul style="font-size:90%;">
+                                    <li><a href="http://www.italikolexiko.com" title="Ιταλοελληνικό Ελληνοιταλικό Ιταλικό Λεχικό"
+                                            target="_blank">Ιταλικό Λεχικό</a></li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </table><br>
+                    <b>Ën piemontèis</b><br>
+                    <ul style="font-size:90%;">
+                        <li><a href="http://www.piemonteis.com" title="Dissionari piemontèis, Dizionario piemontese"
+                                target="_blank">Dissionari piemontèis</a></li>
+                    </ul><br>
+                    <hr size="1">
+                </td>
+                <!-- /Right -->
+
+            </tr>
+        </table> <!-- /Content -->
+
+        <!-- Footer -->
+        <center>
+            <div id="footer">
+                © 2003-2022 - Tutti i diritti riservati - Olivetti Media Communication<br>
+                <b>DIZIONARIO&nbsp;ITALIANO&nbsp; OLIVETTI</b> <span style="font-size:80%">a cura di E. Olivetti</span>
+            </div>
+        </center>
+    </div> <!-- /Container -->
+    <script type="text/javascript">
+        /* opening menu */
+        var menu = {};
+        menu.open = false;
+        menu.div = document.getElementById('menu_content');
+        menu.show = function () {
+            if (menu.open) { menu.div.style.display = 'none'; } else { menu.div.style.display = 'block'; scrollTo(0, 0); }
+            menu.open = !menu.open;
+        }
+
+        /* google plusone */
+        window.___gcfg = { lang: 'it' };
+        (function () {
+            var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+            po.src = 'https://apis.google.com/js/plusone.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+        })();
+    </script>
+</body>
+
+</html>
