@@ -1,5 +1,6 @@
 // imports
 import bodyParser from "body-parser";
+import cors from "cors";
 import express from "express";
 import { db } from "./connection";
 import api from "./integration/api";
@@ -12,6 +13,7 @@ const port = process.env.PORT || 3000;
 // db.connect();
 initMiddlewares(app);
 
+app.use(cors());
 app.use(bodyParser.json());
 app.use(api);
 
