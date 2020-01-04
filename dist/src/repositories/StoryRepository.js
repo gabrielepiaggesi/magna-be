@@ -53,6 +53,12 @@ class StoryRepository extends Repository_1.Repository {
             return yield this.db.query(query).then((results) => results);
         });
     }
+    findByFullStoryId(id, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // tslint:disable-next-line:max-line-length
+            return yield this.db.query(query || `select * from ${this.table} where full_story_id = ${id} and deleted_at is null limit 1`).then((results) => results[0]);
+        });
+    }
 }
 exports.StoryRepository = StoryRepository;
 //# sourceMappingURL=StoryRepository.js.map

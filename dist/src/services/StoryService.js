@@ -57,7 +57,7 @@ class StoryService {
     editStory(res, editStory) {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.info("editStory");
-            const story = yield storyRepository.findById(editStory.id);
+            const story = yield storyRepository.findByFullStoryId(editStory.id);
             const fullStory = yield fullStoryRepository.findById(story.full_story_id);
             fullStory.title = editStory.title;
             fullStory.text = editStory.text;
@@ -79,7 +79,7 @@ class StoryService {
     deleteStory(res, storyId) {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.info("deleteStory");
-            const story = yield storyRepository.findById(storyId);
+            const story = yield storyRepository.findByFullStoryId(storyId);
             const fullStory = yield fullStoryRepository.findById(story.full_story_id);
             const deletedAt = new Date(Date.now()).toISOString().substring(0, 19).replace("T", " ");
             ;

@@ -66,7 +66,7 @@ export class StoryService {
             await storyRepository.update(story);
             await fullStoryRepository.update(fullStory);
             await db.commit();
-            return res.status(200);
+            return res.status(200).send(story);
         } catch (e) {
             await db.rollback();
             return res.status(500).send(e);
@@ -87,7 +87,7 @@ export class StoryService {
             await storyRepository.update(story);
             await fullStoryRepository.update(fullStory);
             await db.commit();
-            return res.status(200);
+            return res.status(200).send("deleted");
         } catch (e) {
             await db.rollback();
             return res.status(500).send(e);
