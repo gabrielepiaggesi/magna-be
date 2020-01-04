@@ -61,10 +61,16 @@ export class StoryService {
         story.title = editStory.title;
         story.text = editStory.text.substring(0, 42);
 
-        await storyRepository.update(story);
-        await fullStoryRepository.update(fullStory);
-
-        return res.status(200);
+        await db.newTransaction();
+        try {
+            await storyRepository.update(story);
+            await fullStoryRepository.update(fullStory);
+            await db.commit();
+            return res.status(200);
+        } catch (e) {
+            await db.rollback();
+            return res.status(500).send(e);
+        }
     }
 
     public async deleteStory(res: Response, storyId: number) {
@@ -76,10 +82,16 @@ export class StoryService {
         story.deleted_at = deletedAt;
         fullStory.deleted_at = deletedAt;
 
-        await storyRepository.update(story);
-        await fullStoryRepository.update(fullStory);
-
-        return res.status(200);
+        await db.newTransaction();
+        try {
+            await storyRepository.update(story);
+            await fullStoryRepository.update(fullStory);
+            await db.commit();
+            return res.status(200);
+        } catch (e) {
+            await db.rollback();
+            return res.status(500).send(e);
+        }
     }
 
     public async getStory(res: Response, fullStoryId: number) {
@@ -90,7 +102,7 @@ export class StoryService {
 
     public async getStoriesList(res: Response, lastStoryId: number) {
         LOG.debug("getStoriesList");
-        const story = await storyRepository.showStories(lastStoryId);
-        return res.status(200).send(story);
+        const stories = await storyRepository.showStories(lastStoryId);
+        return res.status(200).send(stories);
     }
 }
