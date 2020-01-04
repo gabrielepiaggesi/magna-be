@@ -20,4 +20,24 @@ export class StoryRepository extends Repository<Story> {
             limit ${limit}`;
         return await this.db.query(query).then((results: any[]) => results);
     }
+
+    public async showStories(lastStoryId: number = 0, limit = 20, query = null) {
+        if (lastStoryId == 0) {
+            query = query ||
+            `select * \
+            from ${this.table} \
+            where deleted_at is null \
+            order by id desc \
+            limit ${limit}`;
+        } else {
+            query = query ||
+            `select * \
+            from ${this.table} \
+            where id < ${lastStoryId} and \
+            deleted_at is null \
+            order by id desc \
+            limit ${limit}`;
+        }
+        return await this.db.query(query).then((results: any[]) => results);
+    }
 }

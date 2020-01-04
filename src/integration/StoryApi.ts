@@ -1,5 +1,4 @@
 import express from "express";
-import { StockService } from "../services/StockService";
 import { auth } from "./middleware/index";
 import { StoryService } from "../services/StoryService";
 const stockRoutes = express.Router();

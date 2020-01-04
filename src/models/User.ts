@@ -7,6 +7,7 @@ export class User extends Table {
     public birthday: Date;
     public bio: string;
     public password: string;
+    public lang: string;
 
     // tslint:disable-next-line:no-empty
     constructor() { super(); }
