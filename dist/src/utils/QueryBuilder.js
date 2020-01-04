@@ -19,7 +19,7 @@ class QueryBuilder {
         let columns = "";
         let i = 0;
         Object.keys(model).forEach((key) => {
-            const value = (typeof model[key] !== "number") ? `"${model[key]}"` : model[key];
+            const value = (typeof model[key] !== "number") ? ((model[key]) ? `"${model[key]}"` : `null`) : model[key];
             columns += (i === 0) ? key + " = " + value : ", " + key + " = " + value;
             i++;
         });

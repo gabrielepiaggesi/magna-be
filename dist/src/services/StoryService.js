@@ -68,7 +68,7 @@ class StoryService {
                 yield storyRepository.update(story);
                 yield fullStoryRepository.update(fullStory);
                 yield db.commit();
-                return res.status(200);
+                return res.status(200).send(story);
             }
             catch (e) {
                 yield db.rollback();
@@ -90,7 +90,7 @@ class StoryService {
                 yield storyRepository.update(story);
                 yield fullStoryRepository.update(fullStory);
                 yield db.commit();
-                return res.status(200);
+                return res.status(200).send("deleted");
             }
             catch (e) {
                 yield db.rollback();
