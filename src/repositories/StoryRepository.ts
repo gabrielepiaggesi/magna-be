@@ -40,4 +40,9 @@ export class StoryRepository extends Repository<Story> {
         }
         return await this.db.query(query).then((results: any[]) => results);
     }
+
+    public async findByFullStoryId(id: number, query = null) {
+        // tslint:disable-next-line:max-line-length
+        return await this.db.query(query || `select * from ${this.table} where full_story_id = ${id} and deleted_at is null limit 1`).then((results) => results[0]);
+    }
 }

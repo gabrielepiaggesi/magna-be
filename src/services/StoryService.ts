@@ -53,7 +53,7 @@ export class StoryService {
 
     public async editStory(res: Response, editStory: NewStoryDTO) {
         LOG.info("editStory");
-        const story = await storyRepository.findById(editStory.id);
+        const story = await storyRepository.findByFullStoryId(editStory.id);
         const fullStory = await fullStoryRepository.findById(story.full_story_id);
 
         fullStory.title = editStory.title;
@@ -75,7 +75,7 @@ export class StoryService {
 
     public async deleteStory(res: Response, storyId: number) {
         LOG.info("deleteStory");
-        const story = await storyRepository.findById(storyId);
+        const story = await storyRepository.findByFullStoryId(storyId);
         const fullStory = await fullStoryRepository.findById(story.full_story_id);
 
         const deletedAt = new Date(Date.now()).toISOString().substring(0, 19).replace("T", " ");;
