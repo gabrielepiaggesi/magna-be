@@ -153,7 +153,7 @@ class StoryService {
                 newLike.full_story_id = fullStoryId;
                 newLike.user_id = userLogged;
                 const likeInserted = yield storyLikeRepository.save(newLike);
-                return res.status(200).send(likeInserted.id);
+                return res.status(200).send({ id: likeInserted.insertId });
             }
             catch (e) {
                 yield db.rollback();
@@ -190,7 +190,7 @@ class StoryService {
                 newSave.full_story_id = fullStoryId;
                 newSave.user_id = userLogged;
                 const saveInserted = yield storySaveRepository.save(newSave);
-                return res.status(200).send(saveInserted.id);
+                return res.status(200).send({ id: saveInserted.insertId });
             }
             catch (e) {
                 yield db.rollback();

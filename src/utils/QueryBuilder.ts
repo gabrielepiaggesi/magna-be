@@ -20,11 +20,9 @@ export class QueryBuilder<T> {
         let columns = "";
         let i = 0;
         Object.keys(model).forEach((key) => {
-            if ((model[key])) {
-                const value = (typeof model[key] !== "number") ? `"${model[key]}"` : model[key];
-                columns += (i === 0) ? key + " = " + value : ", " + key + " = " + value;
-                i++;
-            }
+            const value = (typeof model[key] !== "number") ? ((model[key]) ? `"${model[key]}"` : `NULL`) : model[key];
+            columns += (i === 0) ? key + " = " + value : ", " + key + " = " + value;
+            i++;
         });
         return `update ${table} set ${columns} where id = ${id}`;
     }

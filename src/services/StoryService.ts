@@ -84,7 +84,7 @@ export class StoryService {
         const story = await storyRepository.findByFullStoryId(storyId);
         const fullStory = await fullStoryRepository.findById(story.full_story_id);
 
-        const deletedAt = new Date(Date.now()).toISOString().substring(0, 19).replace("T", " ");;
+        const deletedAt = new Date(Date.now()).toISOString().substring(0, 19).replace("T", " ");
         story.deleted_at = deletedAt;
         fullStory.deleted_at = deletedAt;
 
@@ -140,11 +140,14 @@ export class StoryService {
 
         await db.newTransaction();
         try {
-            const newLike = new StoryLike();
+            let newLike = await storyLikeRepository.findByUserIdAndFullStoryId(userLogged, fullStoryId);
+            if (newLike) return res.status(200).send({ id: newLike.id });
+
+            newLike = new StoryLike();
             newLike.full_story_id = fullStoryId;
             newLike.user_id = userLogged;
             const likeInserted = await storyLikeRepository.save(newLike);
-            return res.status(200).send(likeInserted.id);
+            return res.status(200).send({ id: likeInserted.insertId });
         } catch (e) {
             await db.rollback();
             return res.status(500).send(e);
@@ -175,11 +178,14 @@ export class StoryService {
 
         await db.newTransaction();
         try {
-            const newSave = new StorySaved();
+            let newSave = await storySaveRepository.findByUserIdAndFullStoryId(userLogged, fullStoryId);
+            if (newSave) return res.status(200).send({ id: newSave.id });
+
+            newSave = new StorySaved();
             newSave.full_story_id = fullStoryId;
             newSave.user_id = userLogged;
             const saveInserted = await storySaveRepository.save(newSave);
-            return res.status(200).send(saveInserted.id);
+            return res.status(200).send({ id: saveInserted.insertId });
         } catch (e) {
             await db.rollback();
             return res.status(500).send(e);

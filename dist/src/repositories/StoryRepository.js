@@ -113,7 +113,7 @@ class StoryRepository extends Repository_1.Repository {
         return __awaiter(this, void 0, void 0, function* () {
             if (lastStoryId == 0) {
                 query = query ||
-                    `select story.* 
+                    `select story.*, liked.id as liked_id  
             from stories_liked liked 
             inner join stories story on story.full_story_id = liked.full_story_id 
             where story.deleted_at is null and 
@@ -124,7 +124,7 @@ class StoryRepository extends Repository_1.Repository {
             }
             else {
                 query = query ||
-                    `select story.*  
+                    `select story.*, liked.id as liked_id  
             from stories_saved liked 
             inner join stories story on story.full_story_id = liked.full_story_id 
             where story.deleted_at is null and 
