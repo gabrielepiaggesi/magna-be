@@ -13,4 +13,10 @@ storyRoutes.delete("/:id", auth.isUser, async (req, res) => await storyService.d
 storyRoutes.get("/:id", auth.isUser, async (req, res) => await storyService.getStory(res, parseInt(req.params.id, 10)));
 storyRoutes.get("/feed/:id", auth.isUser, async (req, res) => await storyService.getStoriesList(res, parseInt(req.params.id, 10)));
 
+storyRoutes.post("/like/:id", auth.isUser, async (req, res) => await storyService.likeStory(res, parseInt(req.params.id, 10)));
+storyRoutes.delete("/dislike/:likeId", auth.isUser, async (req, res) => await storyService.dislikeStory(res, parseInt(req.params.likeId, 10)));
+
+storyRoutes.post("/save/:id", auth.isUser, async (req, res) => await storyService.saveStory(res, parseInt(req.params.id, 10)));
+storyRoutes.delete("/unsave/:saveId", auth.isUser, async (req, res) => await storyService.unsaveStory(res, parseInt(req.params.saveId, 10)));
+
 export default storyRoutes;

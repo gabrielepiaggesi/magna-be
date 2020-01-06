@@ -17,9 +17,15 @@ const StoryRepository_1 = require("../repositories/StoryRepository");
 const FullStory_1 = require("../models/FullStory");
 const FullStoryRepository_1 = require("../repositories/FullStoryRepository");
 const UserRepository_1 = require("../repositories/UserRepository");
+const StoryLike_1 = require("../models/StoryLike");
+const StoryLikeRepository_1 = require("../repositories/StoryLikeRepository");
+const StorySaved_1 = require("../models/StorySaved");
+const StorySaveRepository_1 = require("../repositories/StorySaveRepository");
 const LOG = new Logger_1.Logger("StoryService.class");
 const storyRepository = new StoryRepository_1.StoryRepository();
 const userRepository = new UserRepository_1.UserRepository();
+const storyLikeRepository = new StoryLikeRepository_1.StoryLikeRepository();
+const storySaveRepository = new StorySaveRepository_1.StorySaveRepository();
 const fullStoryRepository = new FullStoryRepository_1.FullStoryRepository();
 const db = new database_1.Database();
 class StoryService {
@@ -108,8 +114,107 @@ class StoryService {
     getStoriesList(res, lastStoryId) {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.debug("getStoriesList");
-            const stories = yield storyRepository.showStories(lastStoryId);
+            const userLogged = index_1.auth.loggedId;
+            const stories = yield storyRepository.showStories(userLogged, lastStoryId);
             return res.status(200).send(stories);
+        });
+    }
+    getMyStories(res, lastStoryId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            LOG.debug("getMyStories");
+            const userLogged = index_1.auth.loggedId;
+            const stories = yield storyRepository.findStoriesByUserId(userLogged, lastStoryId);
+            return res.status(200).send(stories);
+        });
+    }
+    getStoriesSaved(res, lastStoryId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            LOG.debug("getStoriesSaved");
+            const userLogged = index_1.auth.loggedId;
+            const stories = yield storyRepository.findStoriesSavedByUserId(userLogged, lastStoryId);
+            return res.status(200).send(stories);
+        });
+    }
+    getStoriesLiked(res, lastStoryId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            LOG.debug("getStoriesLiked");
+            const userLogged = index_1.auth.loggedId;
+            const stories = yield storyRepository.findStoriesLikedByUserId(userLogged, lastStoryId);
+            return res.status(200).send(stories);
+        });
+    }
+    likeStory(res, fullStoryId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            LOG.debug("likeStory " + fullStoryId);
+            const userLogged = index_1.auth.loggedId;
+            yield db.newTransaction();
+            try {
+                const newLike = new StoryLike_1.StoryLike();
+                newLike.full_story_id = fullStoryId;
+                newLike.user_id = userLogged;
+                const likeInserted = yield storyLikeRepository.save(newLike);
+                return res.status(200).send(likeInserted.id);
+            }
+            catch (e) {
+                yield db.rollback();
+                return res.status(500).send(e);
+            }
+        });
+    }
+    dislikeStory(res, likeId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            LOG.info("dislikeStory");
+            const like = yield storyLikeRepository.findById(likeId);
+            const deletedAt = new Date(Date.now()).toISOString().substring(0, 19).replace("T", " ");
+            ;
+            like.deleted_at = deletedAt;
+            yield db.newTransaction();
+            try {
+                yield storyLikeRepository.update(like);
+                yield db.commit();
+                return res.status(200).send({ status: "disliked" });
+            }
+            catch (e) {
+                yield db.rollback();
+                return res.status(500).send(e);
+            }
+        });
+    }
+    saveStory(res, fullStoryId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            LOG.debug("saveStory " + fullStoryId);
+            const userLogged = index_1.auth.loggedId;
+            yield db.newTransaction();
+            try {
+                const newSave = new StorySaved_1.StorySaved();
+                newSave.full_story_id = fullStoryId;
+                newSave.user_id = userLogged;
+                const saveInserted = yield storySaveRepository.save(newSave);
+                return res.status(200).send(saveInserted.id);
+            }
+            catch (e) {
+                yield db.rollback();
+                return res.status(500).send(e);
+            }
+        });
+    }
+    unsaveStory(res, saveId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            LOG.info("unsaveStory");
+            const save = yield storySaveRepository.findById(saveId);
+            const deletedAt = new Date(Date.now()).toISOString().substring(0, 19).replace("T", " ");
+            ;
+            save.deleted_at = deletedAt;
+            yield db.newTransaction();
+            try {
+                yield storySaveRepository.update(save);
+                yield db.commit();
+                return res.status(200).send({ status: "unsaved" });
+            }
+            catch (e) {
+                yield db.rollback();
+                return res.status(500).send(e);
+            }
         });
     }
 }

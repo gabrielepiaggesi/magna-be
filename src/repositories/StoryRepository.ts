@@ -24,18 +24,18 @@ export class StoryRepository extends Repository<Story> {
     public async showStories(userId, lastStoryId: number = 0, limit = 20, query = null) {
         if (lastStoryId == 0) {
             query = query ||
-            `select story.*, like.id, save.id 
+            `select story.*, liked.id as liked_id, save.id as saved_id 
             from stories story 
-            left join stories_liked like on like.full_story_id = story.full_story_id and like.user_id = ${userId} and like.deleted_at is null 
+            left join stories_liked liked on liked.full_story_id = story.full_story_id and liked.user_id = ${userId} and liked.deleted_at is null 
             left join stories_saved save on save.full_story_id = story.full_story_id and save.user_id = ${userId} and save.deleted_at is null 
             where story.deleted_at is null 
             order by story.id desc 
             limit ${limit}`;
         } else {
             query = query ||
-            `select story.*, like.id, save.id 
+            `select story.*, liked.id as liked_id, save.id as saved_id 
             from stories story 
-            left join stories_liked like on like.full_story_id = story.full_story_id and like.user_id = ${userId} and like.deleted_at is null 
+            left join stories_liked liked on liked.full_story_id = story.full_story_id and liked.user_id = ${userId} and liked.deleted_at is null 
             left join stories_saved save on save.full_story_id = story.full_story_id and save.user_id = ${userId} and save.deleted_at is null 
             where story.deleted_at is null and 
             story.id < ${lastStoryId} 
@@ -96,24 +96,24 @@ export class StoryRepository extends Repository<Story> {
     public async findStoriesLikedByUserId(userId, lastStoryId: number = 0, limit = 20, query = null) {
         if (lastStoryId == 0) {
             query = query ||
-            `select story.* 
-            from stories_liked like 
-            inner join stories story on story.full_story_id = like.full_story_id 
+            `select story.*, liked.id as liked_id  
+            from stories_liked liked 
+            inner join stories story on story.full_story_id = liked.full_story_id 
             where story.deleted_at is null and 
-            like.deleted_at is null and 
-            like.user_id = ${userId} 
-            order by like.id desc 
+            liked.deleted_at is null and 
+            liked.user_id = ${userId} 
+            order by liked.id desc 
             limit ${limit}`;
         } else {
             query = query ||
-            `select story.*  
-            from stories_saved like 
-            inner join stories story on story.full_story_id = like.full_story_id 
+            `select story.*, liked.id as liked_id  
+            from stories_saved liked 
+            inner join stories story on story.full_story_id = liked.full_story_id 
             where story.deleted_at is null and 
-            like.deleted_at is null and 
-            like.user_id = ${userId} and 
-            like.id < ${lastStoryId} 
-            order by like.id desc 
+            liked.deleted_at is null and 
+            liked.user_id = ${userId} and 
+            liked.id < ${lastStoryId} 
+            order by liked.id desc 
             limit ${limit}`;
         }
         return await this.db.query(query).then((results: any[]) => results);
