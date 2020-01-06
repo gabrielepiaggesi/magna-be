@@ -13,29 +13,107 @@ export class StoryRepository extends Repository<Story> {
     public async findStoriesToShow(storiesId: number[], limit = 20, query = null) {
         const whereIn = queryBuilder.getWhereIn(storiesId);
         query = query ||
-            `select * \
-            from ${this.table} \
-            where id not in (${whereIn}) and \
-            deleted_at is null \
+            `select * 
+            from stories 
+            where id not in (${whereIn}) and 
+            deleted_at is null 
             limit ${limit}`;
         return await this.db.query(query).then((results: any[]) => results);
     }
 
-    public async showStories(lastStoryId: number = 0, limit = 20, query = null) {
+    public async showStories(userId, lastStoryId: number = 0, limit = 20, query = null) {
         if (lastStoryId == 0) {
             query = query ||
-            `select * \
-            from ${this.table} \
-            where deleted_at is null \
-            order by id desc \
+            `select story.*, like.id, save.id 
+            from stories story 
+            left join stories_liked like on like.full_story_id = story.full_story_id and like.user_id = ${userId} and like.deleted_at is null 
+            left join stories_saved save on save.full_story_id = story.full_story_id and save.user_id = ${userId} and save.deleted_at is null 
+            where story.deleted_at is null 
+            order by story.id desc 
             limit ${limit}`;
         } else {
             query = query ||
-            `select * \
-            from ${this.table} \
-            where id < ${lastStoryId} and \
-            deleted_at is null \
-            order by id desc \
+            `select story.*, like.id, save.id 
+            from stories story 
+            left join stories_liked like on like.full_story_id = story.full_story_id and like.user_id = ${userId} and like.deleted_at is null 
+            left join stories_saved save on save.full_story_id = story.full_story_id and save.user_id = ${userId} and save.deleted_at is null 
+            where story.deleted_at is null and 
+            story.id < ${lastStoryId} 
+            order by story.id desc 
+            limit ${limit}`;
+        }
+        return await this.db.query(query).then((results: any[]) => results);
+    }
+
+    public async findStoriesByUserId(userId, lastStoryId: number = 0, limit = 20, query = null) {
+        if (lastStoryId == 0) {
+            query = query ||
+            `select * 
+            from stories 
+            where deleted_at is null and 
+            user_id = ${userId} 
+            order by id desc 
+            limit ${limit}`;
+        } else {
+            query = query ||
+            `select * 
+            from stories 
+            where id < ${lastStoryId} and 
+            deleted_at is null and 
+            user_id = ${userId} 
+            order by id desc 
+            limit ${limit}`;
+        }
+        return await this.db.query(query).then((results: any[]) => results);
+    }
+
+    public async findStoriesSavedByUserId(userId, lastStoryId: number = 0, limit = 20, query = null) {
+        if (lastStoryId == 0) {
+            query = query ||
+            `select story.* 
+            from stories_saved saved 
+            inner join stories story on story.full_story_id = saved.full_story_id 
+            where story.deleted_at is null and 
+            saved.deleted_at is null and 
+            saved.user_id = ${userId} 
+            order by saved.id desc 
+            limit ${limit}`;
+        } else {
+            query = query ||
+            `select story.*  
+            from stories_saved saved 
+            inner join stories story on story.full_story_id = saved.full_story_id 
+            where story.deleted_at is null and 
+            saved.deleted_at is null and 
+            saved.user_id = ${userId} and 
+            saved.id < ${lastStoryId} 
+            order by saved.id desc 
+            limit ${limit}`;
+        }
+        return await this.db.query(query).then((results: any[]) => results);
+    }
+
+    public async findStoriesLikedByUserId(userId, lastStoryId: number = 0, limit = 20, query = null) {
+        if (lastStoryId == 0) {
+            query = query ||
+            `select story.* 
+            from stories_liked like 
+            inner join stories story on story.full_story_id = like.full_story_id 
+            where story.deleted_at is null and 
+            like.deleted_at is null and 
+            like.user_id = ${userId} 
+            order by like.id desc 
+            limit ${limit}`;
+        } else {
+            query = query ||
+            `select story.*  
+            from stories_saved like 
+            inner join stories story on story.full_story_id = like.full_story_id 
+            where story.deleted_at is null and 
+            like.deleted_at is null and 
+            like.user_id = ${userId} and 
+            like.id < ${lastStoryId} 
+            order by like.id desc 
             limit ${limit}`;
         }
         return await this.db.query(query).then((results: any[]) => results);

@@ -9,10 +9,16 @@ import { FullStory } from "../models/FullStory";
 import { FullStoryRepository } from "../repositories/FullStoryRepository";
 import { UserRepository } from "../repositories/UserRepository";
 import { User } from "../models/User";
+import { StoryLike } from "../models/StoryLike";
+import { StoryLikeRepository } from "../repositories/StoryLikeRepository";
+import { StorySaved } from "../models/StorySaved";
+import { StorySaveRepository } from "../repositories/StorySaveRepository";
 const LOG = new Logger("StoryService.class");
 
 const storyRepository = new StoryRepository();
 const userRepository = new UserRepository();
+const storyLikeRepository = new StoryLikeRepository();
+const storySaveRepository = new StorySaveRepository();
 const fullStoryRepository = new FullStoryRepository();
 const db = new Database();
 
@@ -102,7 +108,99 @@ export class StoryService {
 
     public async getStoriesList(res: Response, lastStoryId: number) {
         LOG.debug("getStoriesList");
-        const stories = await storyRepository.showStories(lastStoryId);
+        const userLogged = auth.loggedId;
+        const stories = await storyRepository.showStories(userLogged, lastStoryId);
         return res.status(200).send(stories);
+    }
+
+    public async getMyStories(res: Response, lastStoryId: number) {
+        LOG.debug("getMyStories");
+        const userLogged = auth.loggedId;
+        const stories = await storyRepository.findStoriesByUserId(userLogged, lastStoryId);
+        return res.status(200).send(stories);
+    }
+
+    public async getStoriesSaved(res: Response, lastStoryId: number) {
+        LOG.debug("getStoriesSaved");
+        const userLogged = auth.loggedId;
+        const stories = await storyRepository.findStoriesSavedByUserId(userLogged, lastStoryId);
+        return res.status(200).send(stories);
+    }
+
+    public async getStoriesLiked(res: Response, lastStoryId: number) {
+        LOG.debug("getStoriesLiked");
+        const userLogged = auth.loggedId;
+        const stories = await storyRepository.findStoriesLikedByUserId(userLogged, lastStoryId);
+        return res.status(200).send(stories);
+    }
+
+    public async likeStory(res: Response, fullStoryId: number) {
+        LOG.debug("likeStory " + fullStoryId);
+        const userLogged = auth.loggedId;
+
+        await db.newTransaction();
+        try {
+            const newLike = new StoryLike();
+            newLike.full_story_id = fullStoryId;
+            newLike.user_id = userLogged;
+            const likeInserted = await storyLikeRepository.save(newLike);
+            return res.status(200).send(likeInserted.id);
+        } catch (e) {
+            await db.rollback();
+            return res.status(500).send(e);
+        }
+    }
+
+    public async dislikeStory(res: Response, likeId: number) {
+        LOG.info("dislikeStory");
+        const like = await storyLikeRepository.findById(likeId);
+
+        const deletedAt = new Date(Date.now()).toISOString().substring(0, 19).replace("T", " ");;
+        like.deleted_at = deletedAt;
+
+        await db.newTransaction();
+        try {
+            await storyLikeRepository.update(like);
+            await db.commit();
+            return res.status(200).send({status: "disliked"});
+        } catch (e) {
+            await db.rollback();
+            return res.status(500).send(e);
+        }
+    }
+
+    public async saveStory(res: Response, fullStoryId: number) {
+        LOG.debug("saveStory " + fullStoryId);
+        const userLogged = auth.loggedId;
+
+        await db.newTransaction();
+        try {
+            const newSave = new StorySaved();
+            newSave.full_story_id = fullStoryId;
+            newSave.user_id = userLogged;
+            const saveInserted = await storySaveRepository.save(newSave);
+            return res.status(200).send(saveInserted.id);
+        } catch (e) {
+            await db.rollback();
+            return res.status(500).send(e);
+        }
+    }
+
+    public async unsaveStory(res: Response, saveId: number) {
+        LOG.info("unsaveStory");
+        const save = await storySaveRepository.findById(saveId);
+
+        const deletedAt = new Date(Date.now()).toISOString().substring(0, 19).replace("T", " ");;
+        save.deleted_at = deletedAt;
+
+        await db.newTransaction();
+        try {
+            await storySaveRepository.update(save);
+            await db.commit();
+            return res.status(200).send({status: "unsaved"});
+        } catch (e) {
+            await db.rollback();
+            return res.status(500).send(e);
+        }
     }
 }
