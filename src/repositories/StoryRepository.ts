@@ -29,6 +29,7 @@ export class StoryRepository extends Repository<Story> {
             left join stories_liked liked on liked.full_story_id = story.full_story_id and liked.user_id = ${userId} and liked.deleted_at is null 
             left join stories_saved save on save.full_story_id = story.full_story_id and save.user_id = ${userId} and save.deleted_at is null 
             where story.deleted_at is null 
+            group by story.id 
             order by story.id desc 
             limit ${limit}`;
         } else {
@@ -39,6 +40,7 @@ export class StoryRepository extends Repository<Story> {
             left join stories_saved save on save.full_story_id = story.full_story_id and save.user_id = ${userId} and save.deleted_at is null 
             where story.deleted_at is null and 
             story.id < ${lastStoryId} 
+            group by story.id 
             order by story.id desc 
             limit ${limit}`;
         }
@@ -76,6 +78,7 @@ export class StoryRepository extends Repository<Story> {
             where story.deleted_at is null and 
             saved.deleted_at is null and 
             saved.user_id = ${userId} 
+            group by story.id 
             order by saved.id desc 
             limit ${limit}`;
         } else {
@@ -87,6 +90,7 @@ export class StoryRepository extends Repository<Story> {
             saved.deleted_at is null and 
             saved.user_id = ${userId} and 
             saved.id < ${lastStoryId} 
+            group by story.id 
             order by saved.id desc 
             limit ${limit}`;
         }
@@ -102,6 +106,7 @@ export class StoryRepository extends Repository<Story> {
             where story.deleted_at is null and 
             liked.deleted_at is null and 
             liked.user_id = ${userId} 
+            group by story.id 
             order by liked.id desc 
             limit ${limit}`;
         } else {
@@ -113,6 +118,7 @@ export class StoryRepository extends Repository<Story> {
             liked.deleted_at is null and 
             liked.user_id = ${userId} and 
             liked.id < ${lastStoryId} 
+            group by story.id 
             order by liked.id desc 
             limit ${limit}`;
         }
