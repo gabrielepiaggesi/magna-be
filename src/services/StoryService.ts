@@ -42,7 +42,7 @@ export class StoryService {
 
             const newStory = new Story();
             newStory.title = newStoryDTO.title;
-            newStory.text = newStoryDTO.text.substring(0, 42);
+            newStory.text = newStoryDTO.text.substring(0, 126);
             newStory.user_id = userLogged;
             newStory.lang = newStoryDTO.lang || user.lang;
             newStory.full_story_id = fullStoryInserted.insertId;
@@ -65,7 +65,7 @@ export class StoryService {
         fullStory.title = editStory.title;
         fullStory.text = editStory.text;
         story.title = editStory.title;
-        story.text = editStory.text.substring(0, 42);
+        story.text = editStory.text.substring(0, 126);
 
         await db.newTransaction();
         try {

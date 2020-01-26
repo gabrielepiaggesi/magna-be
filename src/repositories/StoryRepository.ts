@@ -72,7 +72,7 @@ export class StoryRepository extends Repository<Story> {
     public async findStoriesSavedByUserId(userId, lastStoryId: number = 0, limit = 20, query = null) {
         if (lastStoryId == 0) {
             query = query ||
-            `select story.* 
+            `select story.*, story.id as saved_id 
             from stories_saved saved 
             inner join stories story on story.full_story_id = saved.full_story_id 
             where story.deleted_at is null and 
@@ -83,7 +83,7 @@ export class StoryRepository extends Repository<Story> {
             limit ${limit}`;
         } else {
             query = query ||
-            `select story.*  
+            `select story.*, story.id as saved_id 
             from stories_saved saved 
             inner join stories story on story.full_story_id = saved.full_story_id 
             where story.deleted_at is null and 

@@ -19,16 +19,16 @@ const storyRoutes = express_1.default.Router();
 // services
 const storyService = new StoryService_1.StoryService();
 // routes
-storyRoutes.post("/create", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield storyService.createStory(res, req.body); }));
-storyRoutes.post("/edit", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield storyService.editStory(res, req.body); }));
-storyRoutes.delete("/:id", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield storyService.deleteStory(res, parseInt(req.params.id, 10)); }));
 storyRoutes.get("/:id", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield storyService.getStory(res, parseInt(req.params.id, 10)); }));
 storyRoutes.get("/feed/:id", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield storyService.getStoriesList(res, parseInt(req.params.id, 10)); }));
 storyRoutes.get("/mines/:id", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield storyService.getMyStories(res, parseInt(req.params.id, 10)); }));
 storyRoutes.get("/saved/:id", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield storyService.getStoriesSaved(res, parseInt(req.params.id, 10)); }));
-storyRoutes.post("/like/:id", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield storyService.likeStory(res, parseInt(req.params.id, 10)); }));
-storyRoutes.delete("/dislike/:likeId", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield storyService.dislikeStory(res, parseInt(req.params.likeId, 10)); }));
+storyRoutes.post("/create", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield storyService.createStory(res, req.body); }));
+storyRoutes.post("/edit", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield storyService.editStory(res, req.body); }));
 storyRoutes.post("/save/:id", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield storyService.saveStory(res, parseInt(req.params.id, 10)); }));
+storyRoutes.post("/like/:id", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield storyService.likeStory(res, parseInt(req.params.id, 10)); }));
+storyRoutes.delete("/:id", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield storyService.deleteStory(res, parseInt(req.params.id, 10)); }));
+storyRoutes.delete("/dislike/:likeId", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield storyService.dislikeStory(res, parseInt(req.params.likeId, 10)); }));
 storyRoutes.delete("/unsave/:saveId", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield storyService.unsaveStory(res, parseInt(req.params.saveId, 10)); }));
 exports.default = storyRoutes;
 //# sourceMappingURL=StoryApi.js.map
