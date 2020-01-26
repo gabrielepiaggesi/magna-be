@@ -12,6 +12,8 @@ storyRoutes.post("/edit", auth.isUser, async (req, res) => await storyService.ed
 storyRoutes.delete("/:id", auth.isUser, async (req, res) => await storyService.deleteStory(res, parseInt(req.params.id, 10)));
 storyRoutes.get("/:id", auth.isUser, async (req, res) => await storyService.getStory(res, parseInt(req.params.id, 10)));
 storyRoutes.get("/feed/:id", auth.isUser, async (req, res) => await storyService.getStoriesList(res, parseInt(req.params.id, 10)));
+storyRoutes.get("/mines/:id", auth.isUser, async (req, res) => await storyService.getMyStories(res, parseInt(req.params.id, 10)));
+storyRoutes.get("/saved/:id", auth.isUser, async (req, res) => await storyService.getStoriesSaved(res, parseInt(req.params.id, 10)));
 
 storyRoutes.post("/like/:id", auth.isUser, async (req, res) => await storyService.likeStory(res, parseInt(req.params.id, 10)));
 storyRoutes.delete("/dislike/:likeId", auth.isUser, async (req, res) => await storyService.dislikeStory(res, parseInt(req.params.likeId, 10)));
