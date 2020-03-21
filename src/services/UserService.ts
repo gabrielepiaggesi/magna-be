@@ -40,6 +40,7 @@ export class UserService {
         newUser.lastname = user.lastname;
         newUser.email = user.email;
         newUser.birthday = user.birthday;
+        newUser.lang = 'it';
 
         const userInserted = await userRepository.save(newUser);
         LOG.debug("newUserId ", userInserted.insertId);

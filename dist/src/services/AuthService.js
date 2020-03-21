@@ -65,6 +65,7 @@ class AuthService {
                     try {
                         const newUser = new User_1.User();
                         newUser.name = user.name;
+                        newUser.bio = user.bio;
                         newUser.lastname = user.lastname;
                         newUser.email = user.email;
                         newUser.password = hash;
