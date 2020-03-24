@@ -149,6 +149,21 @@ class StoryRepository extends Repository_1.Repository {
             return yield this.db.query(query || `select * from ${this.table} where full_story_id = ${id} and deleted_at is null limit 1`).then((results) => results[0]);
         });
     }
+    findTodayStories(query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const datetime = new Date();
+            const from = datetime.toISOString().slice(0, 10) + ' 00:00:00';
+            const to = datetime.toISOString().slice(0, 10) + ' 23:59:59';
+            const q = `select count(*) as count from stories where created_at between '${from}' and '${to}'`;
+            return yield this.db.query(query || q).then((results) => results[0]);
+        });
+    }
+    findTotalStories(query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const q = `select count(*) as count from stories`;
+            return yield this.db.query(query || q).then((results) => results[0]);
+        });
+    }
 }
 exports.StoryRepository = StoryRepository;
 //# sourceMappingURL=StoryRepository.js.map

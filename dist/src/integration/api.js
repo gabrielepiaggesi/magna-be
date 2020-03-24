@@ -7,9 +7,11 @@ const express_1 = __importDefault(require("express"));
 const AuthApi_1 = __importDefault(require("./AuthApi"));
 const UserApi_1 = __importDefault(require("./UserApi"));
 const StoryApi_1 = __importDefault(require("./StoryApi"));
+const InsightApi_1 = __importDefault(require("./InsightApi"));
 const routes = express_1.default.Router();
 routes.use("/auth", AuthApi_1.default);
 routes.use("/users", UserApi_1.default);
 routes.use("/stories", StoryApi_1.default);
+routes.use("/insights", InsightApi_1.default);
 exports.default = routes;
 //# sourceMappingURL=api.js.map
