@@ -21,4 +21,17 @@ export class UserRepository extends Repository<User> {
         // tslint:disable-next-line:max-line-length
         return this.db.query(query || `select * from ${this.table} where email = "${email}" limit 1`).then((results) => results[0]);
     }
+
+    public async findTodayUsers(query = null) {
+        const datetime = new Date();
+        const from = datetime.toISOString().slice(0,10) + ' 00:00:00';
+        const to = datetime.toISOString().slice(0,10) + ' 23:59:59';
+        const q = `select count(*) from users where created_at between ${from} and ${to}`;
+        return await this.db.query(query || q).then((results) => results);
+    }
+
+    public async findTotalUsers(query = null) {
+        const q = `select count(*) from users`;
+        return await this.db.query(query || q).then((results) => results);
+    }
 }

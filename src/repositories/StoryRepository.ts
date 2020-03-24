@@ -129,4 +129,17 @@ export class StoryRepository extends Repository<Story> {
         // tslint:disable-next-line:max-line-length
         return await this.db.query(query || `select * from ${this.table} where full_story_id = ${id} and deleted_at is null limit 1`).then((results) => results[0]);
     }
+
+    public async findTodayStories(query = null) {
+        const datetime = new Date();
+        const from = datetime.toISOString().slice(0,10) + ' 00:00:00';
+        const to = datetime.toISOString().slice(0,10) + ' 23:59:59';
+        const q = `select count(*) from stories where created_at between ${from} and ${to}`;
+        return await this.db.query(query || q).then((results) => results);
+    }
+
+    public async findTotalStories(query = null) {
+        const q = `select count(*) from stories`;
+        return await this.db.query(query || q).then((results) => results);
+    }
 }
