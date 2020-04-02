@@ -7,7 +7,7 @@ const storyRoutes = express.Router();
 const storyService = new StoryService();
 
 // routes
-storyRoutes.get("/:id", auth.isUser, async (req, res) => await storyService.getStory(res, parseInt(req.params.id, 10)));
+storyRoutes.get("/:id", async (req, res) => await storyService.getStory(res, parseInt(req.params.id, 10)));
 storyRoutes.get("/feed/:id", auth.isUser, async (req, res) => await storyService.getStoriesList(res, parseInt(req.params.id, 10)));
 storyRoutes.get("/mines/:id", auth.isUser, async (req, res) => await storyService.getMyStories(res, parseInt(req.params.id, 10)));
 storyRoutes.get("/saved/:id", auth.isUser, async (req, res) => await storyService.getStoriesSaved(res, parseInt(req.params.id, 10)));

@@ -19,7 +19,7 @@ const storyRoutes = express_1.default.Router();
 // services
 const storyService = new StoryService_1.StoryService();
 // routes
-storyRoutes.get("/:id", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield storyService.getStory(res, parseInt(req.params.id, 10)); }));
+storyRoutes.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield storyService.getStory(res, parseInt(req.params.id, 10)); }));
 storyRoutes.get("/feed/:id", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield storyService.getStoriesList(res, parseInt(req.params.id, 10)); }));
 storyRoutes.get("/mines/:id", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield storyService.getMyStories(res, parseInt(req.params.id, 10)); }));
 storyRoutes.get("/saved/:id", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield storyService.getStoriesSaved(res, parseInt(req.params.id, 10)); }));
