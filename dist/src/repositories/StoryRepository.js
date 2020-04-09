@@ -19,7 +19,7 @@ class StoryRepository extends Repository_1.Repository {
         super(...arguments);
         this.table = "stories";
     }
-    findStoriesToShow(storiesId, limit = 20, query = null) {
+    findStoriesToShow(storiesId, limit = 40, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const whereIn = queryBuilder.getWhereIn(storiesId);
             query = query ||
@@ -31,7 +31,7 @@ class StoryRepository extends Repository_1.Repository {
             return yield this.db.query(query).then((results) => results);
         });
     }
-    showStories(userId, lastStoryId = 0, limit = 20, query = null) {
+    showStories(userId, lastStoryId = 0, limit = 40, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             if (lastStoryId == 0) {
                 query = query ||

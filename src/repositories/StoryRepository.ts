@@ -10,7 +10,7 @@ const queryBuilder = new QueryBuilder();
 export class StoryRepository extends Repository<Story> {
     public table = "stories";
 
-    public async findStoriesToShow(storiesId: number[], limit = 20, query = null) {
+    public async findStoriesToShow(storiesId: number[], limit = 40, query = null) {
         const whereIn = queryBuilder.getWhereIn(storiesId);
         query = query ||
             `select * 
@@ -21,7 +21,7 @@ export class StoryRepository extends Repository<Story> {
         return await this.db.query(query).then((results: any[]) => results);
     }
 
-    public async showStories(userId, lastStoryId: number = 0, limit = 20, query = null) {
+    public async showStories(userId, lastStoryId: number = 0, limit = 40, query = null) {
         if (lastStoryId == 0) {
             query = query ||
             `select story.*, liked.id as liked_id, save.id as saved_id 
