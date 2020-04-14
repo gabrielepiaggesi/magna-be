@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const passport_1 = __importDefault(require("passport"));
 const passport_jwt_1 = __importDefault(require("passport-jwt"));
 const jwt_1 = require("../../../environment/dev/jwt");
-const UserRepository_1 = require("../../repositories/UserRepository");
+const UserRepository_1 = require("../../repositories/user/UserRepository");
 const ExtractJwt = passport_jwt_1.default.ExtractJwt;
 // tslint:disable-next-line:variable-name
 const JwtStrategy = passport_jwt_1.default.Strategy;

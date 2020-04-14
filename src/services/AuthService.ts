@@ -7,8 +7,8 @@ import { LoginDTO } from "../dtos/LoginDTO";
 import { SignupDTO } from "../dtos/SignupDTO";
 import { UserDTO } from "../dtos/UserDTO";
 import { auth } from "../integration/middleware";
-import { User } from "../models/User";
-import { UserRepository } from "../repositories/UserRepository";
+import { User } from "../models/user/User";
+import { UserRepository } from "../repositories/user/UserRepository";
 import { Logger } from "../utils/Logger";
 
 const LOG = new Logger("AuthService.class");
@@ -54,9 +54,6 @@ export class AuthService {
                 await db.newTransaction();
                 try {
                     const newUser = new User();
-                    newUser.name = user.name;
-                    newUser.bio = user.bio;
-                    newUser.lastname = user.lastname;
                     newUser.email = user.email;
                     newUser.password = hash;
 

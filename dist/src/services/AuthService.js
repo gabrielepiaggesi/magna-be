@@ -17,8 +17,8 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const jwt_1 = require("../../environment/dev/jwt");
 const database_1 = require("../database");
 const middleware_1 = require("../integration/middleware");
-const User_1 = require("../models/User");
-const UserRepository_1 = require("../repositories/UserRepository");
+const User_1 = require("../models/user/User");
+const UserRepository_1 = require("../repositories/user/UserRepository");
 const Logger_1 = require("../utils/Logger");
 const LOG = new Logger_1.Logger("AuthService.class");
 const userRepository = new UserRepository_1.UserRepository();
@@ -64,9 +64,6 @@ class AuthService {
                     yield db.newTransaction();
                     try {
                         const newUser = new User_1.User();
-                        newUser.name = user.name;
-                        newUser.bio = user.bio;
-                        newUser.lastname = user.lastname;
                         newUser.email = user.email;
                         newUser.password = hash;
                         const userInserted = yield userRepository.save(newUser);

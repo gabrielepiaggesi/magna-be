@@ -1,7 +1,7 @@
 import passport from "passport";
 import passportJWT from "passport-jwt";
 import { jwtConfig } from "../../../environment/dev/jwt";
-import { UserRepository } from "../../repositories/UserRepository";
+import { UserRepository } from "../../repositories/user/UserRepository";
 const ExtractJwt = passportJWT.ExtractJwt;
 // tslint:disable-next-line:variable-name
 const JwtStrategy = passportJWT.Strategy;
