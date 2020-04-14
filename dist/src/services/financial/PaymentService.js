@@ -35,7 +35,7 @@ class PaymentService {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.debug("subscribeTo", obj);
             const user = yield userRepository.findById(obj.userId);
-            const plan = yield planRepository.findByTag(obj.planId);
+            const plan = yield planRepository.findById(obj.planId);
             const userStripe = yield this.updateUserStripeCustomer(user.getId(), user.email);
             const userCard = yield this.updateUserStripePaymentMethod(user.getId(), obj.fingerprint, obj.paymentMethodId, userStripe.customer_id);
             const userSub = yield this.updateUserStripeSubScription(user.getId(), userCard.getId(), userStripe.customer_id, plan.stripe_plan_id, plan.getId());

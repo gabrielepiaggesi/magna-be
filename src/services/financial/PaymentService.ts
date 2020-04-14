@@ -26,7 +26,7 @@ export class PaymentService {
     public async subscribeTo(obj: SubScriptionReq) {
         LOG.debug("subscribeTo", obj);
         const user = await userRepository.findById(obj.userId);
-        const plan = await planRepository.findByTag(obj.planId);
+        const plan = await planRepository.findById(obj.planId);
 
         const userStripe = await this.updateUserStripeCustomer(user.getId(), user.email);
         const userCard = await this.updateUserStripePaymentMethod(user.getId(), obj.fingerprint, obj.paymentMethodId, userStripe.customer_id);
