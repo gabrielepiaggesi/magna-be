@@ -188,7 +188,12 @@ class DetailService {
                         detail.text1 = item.text1;
                         detail.text2 = item.text2;
                         detail.text3 = item.text3;
-                        yield detailRepository.update(detail);
+                        if (item.toDelete) {
+                            yield detailRepository.delete(detail);
+                        }
+                        else {
+                            yield detailRepository.update(detail);
+                        }
                     }
                     else {
                         detail = new Detail_1.Detail();
@@ -226,7 +231,12 @@ class DetailService {
                         detail.text2 = item.text2;
                         detail.start_date = item.start_date;
                         detail.end_date = item.end_date;
-                        yield detailRepository.update(detail);
+                        if (item.toDelete) {
+                            yield detailRepository.delete(detail);
+                        }
+                        else {
+                            yield detailRepository.update(detail);
+                        }
                     }
                     else {
                         detail = new Detail_1.Detail();
@@ -265,7 +275,12 @@ class DetailService {
                         detail.text2 = item.text2;
                         detail.start_date = item.start_date;
                         detail.end_date = item.end_date;
-                        yield detailRepository.update(detail);
+                        if (item.toDelete) {
+                            yield detailRepository.delete(detail);
+                        }
+                        else {
+                            yield detailRepository.update(detail);
+                        }
                     }
                     else {
                         detail = new Detail_1.Detail();

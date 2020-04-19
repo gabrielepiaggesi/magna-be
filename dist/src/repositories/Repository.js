@@ -31,6 +31,15 @@ class Repository {
             return yield this.db.query(update);
         });
     }
+    delete(model) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // tslint:disable-next-line:no-string-literal
+            const id = model["id"];
+            model['deleted_at'] = new Date(Date.now()).toISOString().substring(0, 19).replace("T", " ");
+            const d = this.queryBuilder.update(model, id, this.table);
+            return yield this.db.query(d);
+        });
+    }
     findAll(query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.db.query(query || `select * from ${this.table} limit 1000`);

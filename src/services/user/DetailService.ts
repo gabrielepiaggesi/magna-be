@@ -178,7 +178,11 @@ export class DetailService {
                     detail.text1 = item.text1;
                     detail.text2 = item.text2;
                     detail.text3 = item.text3;
-                    await detailRepository.update(detail);
+                    if (item.toDelete) {
+                        await detailRepository.delete(detail);
+                    } else {
+                        await detailRepository.update(detail);
+                    }
                 } else {
                     detail = new Detail();
                     detail.user_id = loggedId;
@@ -218,7 +222,11 @@ export class DetailService {
                     detail.text2 = item.text2;
                     detail.start_date = item.start_date;
                     detail.end_date = item.end_date;
-                    await detailRepository.update(detail);
+                    if (item.toDelete) {
+                        await detailRepository.delete(detail);
+                    } else {
+                        await detailRepository.update(detail);
+                    }
                 } else {
                     detail = new Detail();
                     detail.user_id = loggedId;
@@ -259,7 +267,11 @@ export class DetailService {
                     detail.text2 = item.text2;
                     detail.start_date = item.start_date;
                     detail.end_date = item.end_date;
-                    await detailRepository.update(detail);
+                    if (item.toDelete) {
+                        await detailRepository.delete(detail);
+                    } else {
+                        await detailRepository.update(detail);
+                    }
                 } else {
                     detail = new Detail();
                     detail.user_id = loggedId;
