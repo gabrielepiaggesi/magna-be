@@ -5,6 +5,7 @@ import { Logger } from "../../utils/Logger";
 import { UserRepository } from "../../repositories/user/UserRepository";
 import { SubScriptionReq } from "./classes/SubScriptionReq";
 import { PaymentService } from "./PaymentService";
+import { User } from "../../models/user/User";
 
 const LOG = new Logger("FinancialService.class");
 const userRepository = new UserRepository();
@@ -19,11 +20,12 @@ export class FinancialService {
 
         await db.newTransaction();
         try {
-            const user = await userRepository.findById(userLogged);
-            obj.userId = user.getId();
+            const user: User = await userRepository.findById(userLogged);
+            LOG.debug("user", user.id);
+            obj.userId = user.id;
             const subscription = await paymentService.subscribeTo(obj);
             
-            LOG.info("new subscription success", subscription.getId());
+            LOG.info("new subscription success", subscription.id);
             await db.commit();
             return res.status(200).send(subscription);
         } catch (e) {

@@ -28,9 +28,9 @@ export class PaymentService {
         const user = await userRepository.findById(obj.userId);
         const plan = await planRepository.findById(obj.planId);
 
-        const userStripe = await this.updateUserStripeCustomer(user.getId(), user.email);
-        const userCard = await this.updateUserStripePaymentMethod(user.getId(), obj.fingerprint, obj.paymentMethodId, userStripe.customer_id);
-        const userSub = await this.updateUserStripeSubScription(user.getId(), userCard.getId(), userStripe.customer_id, plan.stripe_plan_id, plan.getId());
+        const userStripe = await this.updateUserStripeCustomer(user.id, user.email);
+        const userCard = await this.updateUserStripePaymentMethod(user.id, obj.fingerprint, obj.paymentMethodId, userStripe.customer_id);
+        const userSub = await this.updateUserStripeSubScription(user.id, userCard.id, userStripe.customer_id, plan.stripe_plan_id, plan.id);
 
         return userSub;
     }
@@ -44,10 +44,11 @@ export class PaymentService {
             userStripe = new UserStripe();
             userStripe.user_id = userId;
             userStripe.customer_id = cus.id;
-            userStripe = await stripeRepository.save(userStripe);
+            const userStripeInserted = await stripeRepository.save(userStripe);
+            userStripe.id = userStripeInserted.insertId;
         }
 
-        LOG.debug("updateUserStripeCustomer", userStripe.getId());
+        LOG.debug("updateUserStripeCustomer", userStripe.id);
         return userStripe;
     }
 
@@ -63,15 +64,16 @@ export class PaymentService {
             userCard.last_4 = card.card.last4;
             userCard.fingerprint = card.card.fingerprint;
             userCard.three_d_secure_supported = card.card.three_d_secure_usage.supported;
-            userCard = await cardRepository.save(userCard);
+            const userCardInserted = await cardRepository.save(userCard);
+            userCard.id = userCardInserted.insertId;
         }
 
-        LOG.debug("updateUserStripePaymentMethod", userCard.getId());
+        LOG.debug("updateUserStripePaymentMethod", userCard.id);
         return userCard;
     }
 
     private async updateUserStripeSubScription(userId: number, cardId: number, customerId: string, stipePlanId: string, planId: number) {
-        let userSub: SubScription = await subScriptionRepository.findByUserId(userId, planId);
+        let userSub: SubScription = await subScriptionRepository.findByUserIdAndPlanId(userId, planId);
         
         if (!userSub) {
             const now = new Date(Date.now());
@@ -86,10 +88,11 @@ export class PaymentService {
             userSub.subscription_status = sub.status;
             userSub.last_renew = now.toISOString();
             userSub.next_renew = new Date((now.setMonth(now.getMonth() + 1))).toISOString();
-            userSub = await subScriptionRepository.save(userSub);
+            const userSubInserted = await subScriptionRepository.save(userSub);
+            userSub.id = userSubInserted.insertId;
         }
 
-        LOG.debug("updateUserStripeSubScription", userSub.getId());
+        LOG.debug("updateUserStripeSubScription", userSub.id);
         return userSub;
     }
 }

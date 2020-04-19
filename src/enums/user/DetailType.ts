@@ -4,5 +4,6 @@ export enum DetailType {
     NOW = "NOW",
     JOB = "JOB",
     EDUCATION = "EDUCATION",
-    NAME_LASTNAME = "NAME_LASTNAME"
+    NAME_LASTNAME = "NAME_LASTNAME",
+    IMAGE = "IMAGE",
 }

@@ -36,7 +36,7 @@ export class StripeService {
         const pm = await stripe.paymentMethods.attach(obj.payment_method_id, { customer: obj.customer }).then(pm => pm);
         // set this new pm as default for this customer
         LOG.debug("set default card", obj.payment_method_id);
-        const cus = await stripe.customers.update(obj.customer, { invoice_settings: { default_payment_method: obj.payment_method_id } }).then(cus => cus);
+        const cus = await stripe.customers.update(obj.customer, { invoice_settings: { default_payment_method: pm.id } }).then(cus => cus);
         return pm;
     }
 

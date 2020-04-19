@@ -5,7 +5,7 @@ export class Table {
     public updated_at: string = this.created_at;
     // tslint:disable-next-line:variable-name
     public deleted_at: string;
-    private id;
+    public id;
 
     // tslint:disable-next-line:no-empty
     constructor() {}
