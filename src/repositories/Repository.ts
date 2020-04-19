@@ -22,7 +22,7 @@ export class Repository<T> {
         return await this.db.query(query || `select * from ${this.table} limit 1000`);
     }
 
-    public async findById(id: number, query = null) {
+    public async findById(id: number, query = null): Promise<T> {
         // tslint:disable-next-line:max-line-length
         return await this.db.query(query || `select * from ${this.table} where id = ${id} limit 1`).then((results) => results[0]);
     }

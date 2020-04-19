@@ -55,11 +55,7 @@ class UserService {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.debug("userDTO", userDto);
             const user = yield userRepository.findById(userDto.id);
-            user.bio = userDto.bio;
-            user.name = userDto.name;
-            user.lastname = userDto.lastname;
             user.email = userDto.email;
-            user.birthday = userDto.birthday;
             const userUpdated = yield userRepository.update(user);
             LOG.debug("userUpdated ", userUpdated);
             return res.status(200).send(userUpdated);

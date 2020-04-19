@@ -47,11 +47,7 @@ export class UserService {
         LOG.debug("userDTO", userDto);
 
         const user = await userRepository.findById(userDto.id);
-        user.bio = userDto.bio;
-        user.name = userDto.name;
-        user.lastname = userDto.lastname;
         user.email = userDto.email;
-        user.birthday = userDto.birthday;
 
         const userUpdated = await userRepository.update(user);
         LOG.debug("userUpdated ", userUpdated);
