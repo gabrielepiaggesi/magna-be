@@ -7,7 +7,7 @@ const routes = express.Router();
 
 routes.use("/auth", authRoutes);
 routes.use("/user", userRoutes);
-// routes.use("/detail", detailRoutes);
+routes.use("/detail", detailRoutes);
 routes.use("/financial", financialRoutes);
 
 export default routes;
