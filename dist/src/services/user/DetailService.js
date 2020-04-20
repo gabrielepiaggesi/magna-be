@@ -177,7 +177,7 @@ class DetailService {
             yield db.newTransaction();
             try {
                 const loggedId = index_1.auth.loggedId;
-                for (let i = 0; i <= items.length; i++) {
+                for (let i = 0; i < items.length; i++) {
                     let item = items[i];
                     let detail;
                     if (item.id) {
@@ -218,7 +218,7 @@ class DetailService {
             yield db.newTransaction();
             try {
                 const loggedId = index_1.auth.loggedId;
-                for (let i = 0; i <= items.length; i++) {
+                for (let i = 0; i < items.length; i++) {
                     let item = items[i];
                     let detail;
                     if (item.id) {
@@ -261,7 +261,7 @@ class DetailService {
             yield db.newTransaction();
             try {
                 const loggedId = index_1.auth.loggedId;
-                for (let i = 0; i <= items.length; i++) {
+                for (let i = 0; i < items.length; i++) {
                     let item = items[i];
                     let detail;
                     if (item.id) {

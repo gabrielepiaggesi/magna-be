@@ -166,7 +166,7 @@ export class DetailService {
         try {
             const loggedId = auth.loggedId;
 
-            for (let i = 0; i<=items.length; i++) {
+            for (let i = 0; i<items.length; i++) {
                 let item = items[i];
                 let detail: Detail;
 
@@ -208,7 +208,7 @@ export class DetailService {
         try {
             const loggedId = auth.loggedId;
 
-            for (let i = 0; i<=items.length; i++) {
+            for (let i = 0; i<items.length; i++) {
                 let item = items[i];
                 let detail: Detail;
 
@@ -252,7 +252,7 @@ export class DetailService {
         try {
             const loggedId = auth.loggedId;
 
-            for (let i = 0; i<=items.length; i++) {
+            for (let i = 0; i<items.length; i++) {
                 let item = items[i];
                 let detail: Detail;
 
