@@ -172,12 +172,11 @@ class DetailService {
             }
         });
     }
-    updateLinks(res, obj) {
+    updateLinks(res, items = []) {
         return __awaiter(this, void 0, void 0, function* () {
             yield db.newTransaction();
             try {
                 const loggedId = index_1.auth.loggedId;
-                const items = obj.items;
                 for (let i = 0; i <= items.length; i++) {
                     let item = items[i];
                     let detail;
@@ -214,12 +213,11 @@ class DetailService {
             }
         });
     }
-    updateJobs(res, obj) {
+    updateJobs(res, items = []) {
         return __awaiter(this, void 0, void 0, function* () {
             yield db.newTransaction();
             try {
                 const loggedId = index_1.auth.loggedId;
-                const items = obj.items;
                 for (let i = 0; i <= items.length; i++) {
                     let item = items[i];
                     let detail;
@@ -258,12 +256,11 @@ class DetailService {
             }
         });
     }
-    updateEducations(res, obj) {
+    updateEducations(res, items = []) {
         return __awaiter(this, void 0, void 0, function* () {
             yield db.newTransaction();
             try {
                 const loggedId = index_1.auth.loggedId;
-                const items = obj.items;
                 for (let i = 0; i <= items.length; i++) {
                     let item = items[i];
                     let detail;

@@ -160,12 +160,11 @@ export class DetailService {
         }
     }
 
-    public async updateLinks(res: Response, obj) {
+    public async updateLinks(res: Response, items = []) {
 
         await db.newTransaction();
         try {
             const loggedId = auth.loggedId;
-            const items = obj.items;
 
             for (let i = 0; i<=items.length; i++) {
                 let item = items[i];
@@ -203,12 +202,11 @@ export class DetailService {
         }
     }
 
-    public async updateJobs(res: Response, obj) {
+    public async updateJobs(res: Response, items = []) {
 
         await db.newTransaction();
         try {
             const loggedId = auth.loggedId;
-            const items = obj.items;
 
             for (let i = 0; i<=items.length; i++) {
                 let item = items[i];
@@ -248,12 +246,11 @@ export class DetailService {
         }
     }
 
-    public async updateEducations(res: Response, obj) {
+    public async updateEducations(res: Response, items = []) {
 
         await db.newTransaction();
         try {
             const loggedId = auth.loggedId;
-            const items = obj.items;
 
             for (let i = 0; i<=items.length; i++) {
                 let item = items[i];
