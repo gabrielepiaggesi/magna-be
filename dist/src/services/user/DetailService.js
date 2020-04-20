@@ -204,7 +204,7 @@ class DetailService {
                         yield detailRepository.save(detail);
                     }
                 }
-                return res.status(200).send("success");
+                return res.status(200).send({ status: "success" });
             }
             catch (e) {
                 yield db.rollback();
@@ -247,7 +247,7 @@ class DetailService {
                         yield detailRepository.save(detail);
                     }
                 }
-                return res.status(200).send("success");
+                return res.status(200).send({ status: "success" });
             }
             catch (e) {
                 yield db.rollback();
@@ -290,7 +290,7 @@ class DetailService {
                         yield detailRepository.save(detail);
                     }
                 }
-                return res.status(200).send("success");
+                return res.status(200).send({ status: "success" });
             }
             catch (e) {
                 yield db.rollback();

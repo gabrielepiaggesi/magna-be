@@ -194,7 +194,7 @@ export class DetailService {
 
             }
 
-            return res.status(200).send("success");
+            return res.status(200).send({status: "success"});
         } catch (e) {
             await db.rollback();
             LOG.error("updateBio error", e);
@@ -238,7 +238,7 @@ export class DetailService {
 
             }
 
-            return res.status(200).send("success");
+            return res.status(200).send({status: "success"});
         } catch (e) {
             await db.rollback();
             LOG.error("updateBio error", e);
@@ -282,7 +282,7 @@ export class DetailService {
 
             }
 
-            return res.status(200).send("success");
+            return res.status(200).send({status: "success"});
         } catch (e) {
             await db.rollback();
             LOG.error("updateBio error", e);
