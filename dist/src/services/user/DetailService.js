@@ -84,8 +84,8 @@ class DetailService {
                 const loggedId = index_1.auth.loggedId;
                 let detail;
                 let detailInserted;
-                if (obj.detail_id) {
-                    detail = yield detailRepository.findById(obj.detail_id);
+                if (obj.id) {
+                    detail = yield detailRepository.findById(obj.id);
                     detail.user_id = loggedId;
                     detail.type = DetailType_1.DetailType.BIO;
                     detail.text1 = obj.text1;
@@ -115,8 +115,8 @@ class DetailService {
                 const loggedId = index_1.auth.loggedId;
                 let detail;
                 let detailInserted;
-                if (obj.detail_id) {
-                    detail = yield detailRepository.findById(obj.detail_id);
+                if (obj.id) {
+                    detail = yield detailRepository.findById(obj.id);
                     detail.user_id = loggedId;
                     detail.type = DetailType_1.DetailType.NOW;
                     detail.text1 = obj.text1;
@@ -148,8 +148,8 @@ class DetailService {
                 const loggedId = index_1.auth.loggedId;
                 let detail;
                 let detailInserted;
-                if (obj.detail_id) {
-                    detail = yield detailRepository.findById(obj.detail_id);
+                if (obj.id) {
+                    detail = yield detailRepository.findById(obj.id);
                     detail.user_id = loggedId;
                     detail.type = DetailType_1.DetailType.NAME_LASTNAME;
                     detail.text1 = obj.text1;
@@ -181,8 +181,8 @@ class DetailService {
                 for (let i = 0; i <= items.length; i++) {
                     let item = items[i];
                     let detail;
-                    if (item.detail_id) {
-                        detail = yield detailRepository.findById(item.detail_id);
+                    if (item.id) {
+                        detail = yield detailRepository.findById(item.id);
                         detail.user_id = loggedId;
                         detail.type = DetailType_1.DetailType.LINK;
                         detail.text1 = item.text1;
@@ -223,8 +223,8 @@ class DetailService {
                 for (let i = 0; i <= items.length; i++) {
                     let item = items[i];
                     let detail;
-                    if (item.detail_id) {
-                        detail = yield detailRepository.findById(item.detail_id);
+                    if (item.id) {
+                        detail = yield detailRepository.findById(item.id);
                         detail.user_id = loggedId;
                         detail.type = DetailType_1.DetailType.JOB;
                         detail.text1 = item.text1;
@@ -267,8 +267,8 @@ class DetailService {
                 for (let i = 0; i <= items.length; i++) {
                     let item = items[i];
                     let detail;
-                    if (item.detail_id) {
-                        detail = yield detailRepository.findById(item.detail_id);
+                    if (item.id) {
+                        detail = yield detailRepository.findById(item.id);
                         detail.user_id = loggedId;
                         detail.type = DetailType_1.DetailType.EDUCATION;
                         detail.text1 = item.text1;

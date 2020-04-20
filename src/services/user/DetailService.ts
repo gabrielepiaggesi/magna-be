@@ -73,8 +73,8 @@ export class DetailService {
             let detail;
             let detailInserted;
 
-            if (obj.detail_id) {
-                detail = await detailRepository.findById(obj.detail_id);
+            if (obj.id) {
+                detail = await detailRepository.findById(obj.id);
                 detail.user_id = loggedId;
                 detail.type = DetailType.BIO;
                 detail.text1 = obj.text1;
@@ -104,8 +104,8 @@ export class DetailService {
             let detail;
             let detailInserted;
 
-            if (obj.detail_id) {
-                detail = await detailRepository.findById(obj.detail_id);
+            if (obj.id) {
+                detail = await detailRepository.findById(obj.id);
                 detail.user_id = loggedId;
                 detail.type = DetailType.NOW;
                 detail.text1 = obj.text1;
@@ -137,8 +137,8 @@ export class DetailService {
             let detail;
             let detailInserted;
 
-            if (obj.detail_id) {
-                detail = await detailRepository.findById(obj.detail_id);
+            if (obj.id) {
+                detail = await detailRepository.findById(obj.id);
                 detail.user_id = loggedId;
                 detail.type = DetailType.NAME_LASTNAME;
                 detail.text1 = obj.text1;
@@ -171,8 +171,8 @@ export class DetailService {
                 let item = items[i];
                 let detail: Detail;
 
-                if (item.detail_id) {
-                    detail = await detailRepository.findById(item.detail_id);
+                if (item.id) {
+                    detail = await detailRepository.findById(item.id);
                     detail.user_id = loggedId;
                     detail.type = DetailType.LINK;
                     detail.text1 = item.text1;
@@ -214,8 +214,8 @@ export class DetailService {
                 let item = items[i];
                 let detail: Detail;
 
-                if (item.detail_id) {
-                    detail = await detailRepository.findById(item.detail_id);
+                if (item.id) {
+                    detail = await detailRepository.findById(item.id);
                     detail.user_id = loggedId;
                     detail.type = DetailType.JOB;
                     detail.text1 = item.text1;
@@ -259,8 +259,8 @@ export class DetailService {
                 let item = items[i];
                 let detail: Detail;
 
-                if (item.detail_id) {
-                    detail = await detailRepository.findById(item.detail_id);
+                if (item.id) {
+                    detail = await detailRepository.findById(item.id);
                     detail.user_id = loggedId;
                     detail.type = DetailType.EDUCATION;
                     detail.text1 = item.text1;
