@@ -218,8 +218,8 @@ export class DetailService {
                     detail.type = DetailType.JOB;
                     detail.text1 = item.text1;
                     detail.text2 = item.text2;
-                    detail.start_date = item.start_date;
-                    detail.end_date = item.end_date;
+                    detail.start_date = (item.start_date) ? item.start_date.substring(0, 10) : item.start_date;
+                    detail.end_date = (item.end_date) ? item.end_date.substring(0, 10) : item.end_date;
                     if (item.toDelete) {
                         await detailRepository.delete(detail);
                     } else {
@@ -262,8 +262,8 @@ export class DetailService {
                     detail.type = DetailType.EDUCATION;
                     detail.text1 = item.text1;
                     detail.text2 = item.text2;
-                    detail.start_date = item.start_date;
-                    detail.end_date = item.end_date;
+                    detail.start_date = (item.start_date) ? item.start_date.substring(0, 10) : item.start_date;
+                    detail.end_date = (item.end_date) ? item.end_date.substring(0, 10) : item.end_date;
                     if (item.toDelete) {
                         await detailRepository.delete(detail);
                     } else {
