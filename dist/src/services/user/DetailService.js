@@ -98,6 +98,7 @@ class DetailService {
                     detail.text1 = obj.text1;
                     detailInserted = yield detailRepository.save(detail);
                 }
+                yield db.commit();
                 LOG.debug("updateBio success", detailInserted);
                 return res.status(200).send(detailInserted);
             }
@@ -131,6 +132,7 @@ class DetailService {
                     detail.text2 = obj.text2;
                     detailInserted = yield detailRepository.save(detail);
                 }
+                yield db.commit();
                 LOG.debug("updateBio success", detailInserted);
                 return res.status(200).send(detailInserted);
             }
@@ -162,6 +164,7 @@ class DetailService {
                     detail.text1 = obj.text1;
                     detailInserted = yield detailRepository.save(detail);
                 }
+                yield db.commit();
                 LOG.debug("updateBio success", detailInserted);
                 return res.status(200).send(detailInserted);
             }
@@ -204,6 +207,7 @@ class DetailService {
                         yield detailRepository.save(detail);
                     }
                 }
+                yield db.commit();
                 return res.status(200).send({ status: "success" });
             }
             catch (e) {
@@ -247,6 +251,7 @@ class DetailService {
                         yield detailRepository.save(detail);
                     }
                 }
+                yield db.commit();
                 return res.status(200).send({ status: "success" });
             }
             catch (e) {
@@ -290,6 +295,7 @@ class DetailService {
                         yield detailRepository.save(detail);
                     }
                 }
+                yield db.commit();
                 return res.status(200).send({ status: "success" });
             }
             catch (e) {

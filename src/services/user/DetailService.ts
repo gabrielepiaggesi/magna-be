@@ -87,6 +87,7 @@ export class DetailService {
                 detailInserted = await detailRepository.save(detail);
             }
         
+            await db.commit();
             LOG.debug("updateBio success", detailInserted);
             return res.status(200).send(detailInserted);
         } catch (e) {
@@ -120,6 +121,7 @@ export class DetailService {
                 detailInserted = await detailRepository.save(detail);
             }
         
+            await db.commit();
             LOG.debug("updateBio success", detailInserted);
             return res.status(200).send(detailInserted);
         } catch (e) {
@@ -151,6 +153,7 @@ export class DetailService {
                 detailInserted = await detailRepository.save(detail);
             }
         
+            await db.commit();
             LOG.debug("updateBio success", detailInserted);
             return res.status(200).send(detailInserted);
         } catch (e) {
@@ -194,6 +197,7 @@ export class DetailService {
 
             }
 
+            await db.commit();
             return res.status(200).send({status: "success"});
         } catch (e) {
             await db.rollback();
@@ -238,6 +242,7 @@ export class DetailService {
 
             }
 
+            await db.commit();
             return res.status(200).send({status: "success"});
         } catch (e) {
             await db.rollback();
@@ -282,6 +287,7 @@ export class DetailService {
 
             }
 
+            await db.commit();
             return res.status(200).send({status: "success"});
         } catch (e) {
             await db.rollback();
