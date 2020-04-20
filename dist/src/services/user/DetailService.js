@@ -239,7 +239,7 @@ class DetailService {
                     else {
                         detail = new Detail_1.Detail();
                         detail.user_id = loggedId;
-                        detail.type = DetailType_1.DetailType.LINK;
+                        detail.type = DetailType_1.DetailType.JOB;
                         detail.text1 = item.text1;
                         detail.text2 = item.text2;
                         detail.start_date = item.start_date;
@@ -282,7 +282,7 @@ class DetailService {
                     else {
                         detail = new Detail_1.Detail();
                         detail.user_id = loggedId;
-                        detail.type = DetailType_1.DetailType.LINK;
+                        detail.type = DetailType_1.DetailType.EDUCATION;
                         detail.text1 = item.text1;
                         detail.text2 = item.text2;
                         detail.start_date = item.start_date;

@@ -228,7 +228,7 @@ export class DetailService {
                 } else {
                     detail = new Detail();
                     detail.user_id = loggedId;
-                    detail.type = DetailType.LINK;
+                    detail.type = DetailType.JOB;
                     detail.text1 = item.text1;
                     detail.text2 = item.text2;
                     detail.start_date = item.start_date;
@@ -272,7 +272,7 @@ export class DetailService {
                 } else {
                     detail = new Detail();
                     detail.user_id = loggedId;
-                    detail.type = DetailType.LINK;
+                    detail.type = DetailType.EDUCATION;
                     detail.text1 = item.text1;
                     detail.text2 = item.text2;
                     detail.start_date = item.start_date;
