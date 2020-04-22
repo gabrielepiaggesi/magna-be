@@ -65,6 +65,7 @@ class AuthService {
                     try {
                         const newUser = new User_1.User();
                         newUser.email = user.email;
+                        newUser.status = 'new_user';
                         newUser.password = hash;
                         const userInserted = yield userRepository.save(newUser);
                         LOG.debug("newUserId ", userInserted.insertId);
