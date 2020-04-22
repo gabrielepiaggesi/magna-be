@@ -90,6 +90,12 @@ export class PaymentService {
             userSub.next_renew = new Date((now.setMonth(now.getMonth() + 1))).toISOString();
             const userSubInserted = await subScriptionRepository.save(userSub);
             userSub.id = userSubInserted.insertId;
+
+            if (sub.status == 'active') {
+                const user = await userRepository.findById(userId);
+                user.status = 'active';
+                const userUpdated = await userRepository.update(user);
+            }
         }
 
         LOG.debug("updateUserStripeSubScription", userSub.id);

@@ -92,6 +92,11 @@ class PaymentService {
                 userSub.next_renew = new Date((now.setMonth(now.getMonth() + 1))).toISOString();
                 const userSubInserted = yield subScriptionRepository.save(userSub);
                 userSub.id = userSubInserted.insertId;
+                if (sub.status == 'active') {
+                    const user = yield userRepository.findById(userId);
+                    user.status = 'active';
+                    const userUpdated = yield userRepository.update(user);
+                }
             }
             LOG.debug("updateUserStripeSubScription", userSub.id);
             return userSub;
