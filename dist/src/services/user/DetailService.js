@@ -21,6 +21,46 @@ const userRepository = new UserRepository_1.UserRepository();
 const detailRepository = new DetailRepository_1.DetailRepository();
 const db = new database_1.Database();
 class DetailService {
+    getProfileInfo(res, username) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const loggedId = index_1.auth.loggedId;
+            const profile = yield detailRepository.findByUsername(username);
+            const result = {
+                image: null,
+                nameLastname: null,
+                bio: null,
+                links: [],
+                now: null,
+                jobs: [],
+                edus: []
+            };
+            yield profile.forEach(element => {
+                if (element.type == 'IMAGE') {
+                    result.image = element;
+                }
+                if (element.type == 'NAME_LASTNAME') {
+                    result.nameLastname = element;
+                }
+                if (element.type == 'BIO') {
+                    result.bio = element;
+                }
+                if (element.type == 'LINK') {
+                    result.links.push(element);
+                }
+                if (element.type == 'NOW') {
+                    result.now = element;
+                }
+                if (element.type == 'JOB') {
+                    result.jobs.push(element);
+                }
+                if (element.type == 'EDUCATION') {
+                    result.edus.push(element);
+                }
+            });
+            LOG.debug("profile of", username);
+            return res.status(200).send(result);
+        });
+    }
     getBio(res) {
         return __awaiter(this, void 0, void 0, function* () {
             const loggedId = index_1.auth.loggedId;

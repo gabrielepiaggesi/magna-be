@@ -16,6 +16,45 @@ const db = new Database();
 
 export class DetailService {
 
+    public async getProfileInfo(res: Response, username: string) {
+        const loggedId = auth.loggedId;
+        const profile = await detailRepository.findByUsername(username);
+        const result = {
+            image: null,
+            nameLastname: null,
+            bio: null,
+            links: [],
+            now: null,
+            jobs: [],
+            edus: []
+        }
+        await profile.forEach(element => {
+            if (element.type == 'IMAGE') {
+                result.image = element;
+            }
+            if (element.type == 'NAME_LASTNAME') {
+                result.nameLastname = element;
+            }
+            if (element.type == 'BIO') {
+                result.bio = element;
+            }
+            if (element.type == 'LINK') {
+                result.links.push(element);
+            }
+            if (element.type == 'NOW') {
+                result.now = element;
+            }
+            if (element.type == 'JOB') {
+                result.jobs.push(element);
+            }
+            if (element.type == 'EDUCATION') {
+                result.edus.push(element);
+            }
+        });
+        LOG.debug("profile of", username);
+        return res.status(200).send(result);
+    }
+
     public async getBio(res: Response) {
         const loggedId = auth.loggedId;
         const detail = await detailRepository.findByType(DetailType.BIO, loggedId);

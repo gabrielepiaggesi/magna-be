@@ -19,6 +19,7 @@ const detailRoutes = express_1.default.Router();
 // services
 const detailService = new DetailService_1.DetailService();
 // routes
+detailRoutes.get("/profile/:username", (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield detailService.getProfileInfo(res, req.params.username); }));
 detailRoutes.get("/bio", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield detailService.getBio(res); }));
 detailRoutes.get("/now", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield detailService.getNow(res); }));
 detailRoutes.get("/jobs", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield detailService.getJobs(res); }));

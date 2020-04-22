@@ -7,6 +7,8 @@ const detailRoutes = express.Router();
 const detailService = new DetailService();
 
 // routes
+detailRoutes.get("/profile/:username", async (req, res) => await detailService.getProfileInfo(res, req.params.username));
+
 detailRoutes.get("/bio", auth.isUser, async (req, res) => await detailService.getBio(res));
 detailRoutes.get("/now", auth.isUser, async (req, res) => await detailService.getNow(res));
 detailRoutes.get("/jobs", auth.isUser, async (req, res) => await detailService.getJobs(res));
