@@ -85,7 +85,7 @@ class PaymentService {
             if (!userSub) {
                 const now = new Date(Date.now());
                 const sub = yield stripeService.getOrCreateStripeSubScription(new StripeSubScriptionReq_1.StripeSubScriptionReq(customerId, stipePlanId));
-                yield this.prepareUserTransaction(userId, planId, sub);
+                userSub = yield this.prepareUserTransaction(userId, planId, sub);
             }
             LOG.debug("updateUserStripeSubScription", userSub.id);
             return userSub;

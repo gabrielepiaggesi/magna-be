@@ -84,7 +84,7 @@ export class PaymentService {
         if (!userSub) {
             const now = new Date(Date.now());
             const sub = await stripeService.getOrCreateStripeSubScription(new StripeSubScriptionReq(customerId, stipePlanId));
-            await this.prepareUserTransaction(userId, planId, sub);
+            userSub = await this.prepareUserTransaction(userId, planId, sub);
         }
 
         LOG.debug("updateUserStripeSubScription", userSub.id);
