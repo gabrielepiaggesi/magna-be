@@ -73,5 +73,13 @@ export class StripeService {
         const sub = { customer: obj.customerId, plan: obj.planId };
         return await stripe.subscriptions.list(sub).then(list => list.data);
     }
+
+    public async getStripeInvoice(invId: string) {
+        return await stripe.invoices.retrieve(invId).then(inv => inv);
+    }
+
+    public async getStripePaymentIntent(piId: string) {
+        return await stripe.paymentIntents.retrieve(piId).then(pi => pi);
+    }
 }
 

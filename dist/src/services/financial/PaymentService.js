@@ -23,6 +23,9 @@ const PlanRepository_1 = require("../../repositories/financial/PlanRepository");
 const StripeRepository_1 = require("../../repositories/financial/StripeRepository");
 const CardRepository_1 = require("../../repositories/financial/CardRepository");
 const SubScriptionRepository_1 = require("../../repositories/financial/SubScriptionRepository");
+const TransactionRepository_1 = require("../../repositories/financial/TransactionRepository");
+const Transaction_1 = require("../../models/financial/Transaction");
+const OperationSign_1 = require("../../enums/financial/OperationSign");
 const LOG = new Logger_1.Logger("PaymentService.class");
 const stripeService = new StripeService_1.StripeService();
 const userRepository = new UserRepository_1.UserRepository();
@@ -30,6 +33,7 @@ const planRepository = new PlanRepository_1.PlanRepository();
 const stripeRepository = new StripeRepository_1.StripeRepository();
 const cardRepository = new CardRepository_1.CardRepository();
 const subScriptionRepository = new SubScriptionRepository_1.SubScriptionRepository();
+const transactionRepository = new TransactionRepository_1.TransactionRepository();
 class PaymentService {
     subscribeTo(obj) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -81,24 +85,60 @@ class PaymentService {
             if (!userSub) {
                 const now = new Date(Date.now());
                 const sub = yield stripeService.getOrCreateStripeSubScription(new StripeSubScriptionReq_1.StripeSubScriptionReq(customerId, stipePlanId));
-                userSub = new SubScription_1.SubScription();
-                userSub.subscription_id = sub.id;
-                userSub.user_id = userId;
-                userSub.plan_id = planId;
-                userSub.card_id = cardId;
-                userSub.status = PaymentStatus_1.PaymentStatus.SUCCESS;
-                userSub.subscription_status = sub.status;
-                userSub.last_renew = now.toISOString();
-                userSub.next_renew = new Date((now.setMonth(now.getMonth() + 1))).toISOString();
-                const userSubInserted = yield subScriptionRepository.save(userSub);
-                userSub.id = userSubInserted.insertId;
-                if (sub.status == 'active') {
-                    const user = yield userRepository.findById(userId);
-                    user.status = 'active';
-                    const userUpdated = yield userRepository.update(user);
-                }
+                yield this.prepareUserTransaction(userId, planId, sub);
             }
             LOG.debug("updateUserStripeSubScription", userSub.id);
+            return userSub;
+        });
+    }
+    prepareUserTransaction(userId, planId, sub) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let inv = yield stripeService.getStripeInvoice(sub.latest_invoice['id']);
+            let pi = yield stripeService.getStripePaymentIntent(sub.latest_invoice['payment_intent']['id']);
+            inv = inv || null;
+            pi = pi || null;
+            return yield this.updateUserTransaction(userId, planId, sub, inv, pi);
+        });
+    }
+    updateUserTransaction(userId, planId, sub, inv, pi) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const tra = new Transaction_1.Transaction();
+            tra.user_id = userId;
+            tra.stripe_sub_id = sub.id || null;
+            tra.stripe_payment_id = pi.id || null;
+            tra.stripe_invoice_id = inv.id || null;
+            tra.stripe_sub_status = sub.status;
+            tra.stripe_payment_status = pi.status;
+            tra.stripe_invoice_status = inv.status;
+            tra.currency = 'EUR';
+            tra.amount = pi.amount;
+            tra.stripe_payment_method = pi.payment_method.toString();
+            tra.operation_sign = OperationSign_1.OperationSign.NEGATIVE;
+            tra.operation_resume = -pi.amount;
+            const traInserted = yield transactionRepository.save(tra);
+            LOG.debug('new transaction', traInserted.insertId);
+            return yield this.updateUserSubscription(tra, planId);
+        });
+    }
+    updateUserSubscription(obj, planId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const now = new Date(Date.now());
+            let userSub = new SubScription_1.SubScription();
+            userSub.subscription_id = obj.stripe_sub_id;
+            userSub.user_id = obj.user_id;
+            userSub.plan_id = planId;
+            userSub.status = (obj.stripe_payment_status == 'succeeded') ? PaymentStatus_1.PaymentStatus.SUCCESS : PaymentStatus_1.PaymentStatus.FAILED;
+            userSub.resume_status = obj.stripe_sub_status + '.' + obj.stripe_invoice_status + '.' + obj.stripe_payment_status;
+            userSub.subscription_status = obj.stripe_sub_status;
+            userSub.last_renew = now.toISOString();
+            userSub.next_renew = new Date((now.setMonth(now.getMonth() + 1))).toISOString();
+            const userSubInserted = yield subScriptionRepository.save(userSub);
+            userSub.id = userSubInserted.insertId;
+            if (userSub.status == PaymentStatus_1.PaymentStatus.SUCCESS) {
+                const user = yield userRepository.findById(obj.user_id);
+                user.status = 'active';
+                const userUpdated = yield userRepository.update(user);
+            }
             return userSub;
         });
     }

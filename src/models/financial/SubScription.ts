@@ -9,6 +9,7 @@ export class SubScription extends Table {
     public invoice_id: string;
     
     public status: string;
+    public resume_status: string;
     public subscription_status: string;
     public invoice_status: string;
     public payment_intent_status: string;

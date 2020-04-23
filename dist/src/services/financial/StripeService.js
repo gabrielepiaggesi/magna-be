@@ -94,6 +94,16 @@ class StripeService {
             return yield stripe.subscriptions.list(sub).then(list => list.data);
         });
     }
+    getStripeInvoice(invId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield stripe.invoices.retrieve(invId).then(inv => inv);
+        });
+    }
+    getStripePaymentIntent(piId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield stripe.paymentIntents.retrieve(piId).then(pi => pi);
+        });
+    }
 }
 exports.StripeService = StripeService;
 //# sourceMappingURL=StripeService.js.map

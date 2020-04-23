@@ -13,6 +13,11 @@ import { PlanRepository } from "../../repositories/financial/PlanRepository";
 import { StripeRepository } from "../../repositories/financial/StripeRepository";
 import { CardRepository } from "../../repositories/financial/CardRepository";
 import { SubScriptionRepository } from "../../repositories/financial/SubScriptionRepository";
+import { TransactionReq } from "./classes/TransactionReq";
+import { TransactionRepository } from "../../repositories/financial/TransactionRepository";
+import { Transaction } from "../../models/financial/Transaction";
+import { OperationSign } from "../../enums/financial/OperationSign";
+import Stripe from "stripe";
 const LOG = new Logger("PaymentService.class");
 const stripeService = new StripeService();
 const userRepository = new UserRepository();
@@ -20,6 +25,7 @@ const planRepository = new PlanRepository();
 const stripeRepository = new StripeRepository();
 const cardRepository = new CardRepository();
 const subScriptionRepository = new SubScriptionRepository();
+const transactionRepository = new TransactionRepository();
 
 export class PaymentService {
 
@@ -78,27 +84,60 @@ export class PaymentService {
         if (!userSub) {
             const now = new Date(Date.now());
             const sub = await stripeService.getOrCreateStripeSubScription(new StripeSubScriptionReq(customerId, stipePlanId));
-            
-            userSub = new SubScription();
-            userSub.subscription_id = sub.id;
-            userSub.user_id = userId;
-            userSub.plan_id = planId;
-            userSub.card_id = cardId;
-            userSub.status = PaymentStatus.SUCCESS;
-            userSub.subscription_status = sub.status;
-            userSub.last_renew = now.toISOString();
-            userSub.next_renew = new Date((now.setMonth(now.getMonth() + 1))).toISOString();
-            const userSubInserted = await subScriptionRepository.save(userSub);
-            userSub.id = userSubInserted.insertId;
-
-            if (sub.status == 'active') {
-                const user = await userRepository.findById(userId);
-                user.status = 'active';
-                const userUpdated = await userRepository.update(user);
-            }
+            await this.prepareUserTransaction(userId, planId, sub);
         }
 
         LOG.debug("updateUserStripeSubScription", userSub.id);
+        return userSub;
+    }
+
+    private async prepareUserTransaction(userId, planId, sub: Stripe.Subscription) {
+        let inv = await stripeService.getStripeInvoice(sub.latest_invoice['id']);
+        let pi = await stripeService.getStripePaymentIntent(sub.latest_invoice['payment_intent']['id']);
+        inv = inv || null;
+        pi = pi || null;
+        return await this.updateUserTransaction(userId, planId, sub, inv, pi);
+    }
+
+    private async updateUserTransaction(userId, planId, sub: Stripe.Subscription, inv: Stripe.Invoice, pi: Stripe.PaymentIntent) {
+        const tra = new Transaction();
+        tra.user_id = userId;
+        tra.stripe_sub_id = sub.id || null;
+        tra.stripe_payment_id = pi.id || null;
+        tra.stripe_invoice_id = inv.id || null;
+        tra.stripe_sub_status = sub.status;
+        tra.stripe_payment_status = pi.status;
+        tra.stripe_invoice_status = inv.status;
+        tra.currency = 'EUR';
+        tra.amount = pi.amount;
+        tra.stripe_payment_method = pi.payment_method.toString();
+        tra.operation_sign = OperationSign.NEGATIVE;
+        tra.operation_resume = -pi.amount;
+        const traInserted = await transactionRepository.save(tra);
+        LOG.debug('new transaction', traInserted.insertId);
+        return await this.updateUserSubscription(tra, planId);
+    }
+
+    private async updateUserSubscription(obj: Transaction, planId) {
+        const now = new Date(Date.now());
+        let userSub = new SubScription();
+        userSub.subscription_id = obj.stripe_sub_id;
+        userSub.user_id = obj.user_id;
+        userSub.plan_id = planId;
+        userSub.status = (obj.stripe_payment_status == 'succeeded') ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
+        userSub.resume_status = obj.stripe_sub_status + '.' + obj.stripe_invoice_status + '.' + obj.stripe_payment_status;
+        userSub.subscription_status = obj.stripe_sub_status;
+        userSub.last_renew = now.toISOString();
+        userSub.next_renew = new Date((now.setMonth(now.getMonth() + 1))).toISOString();
+        const userSubInserted = await subScriptionRepository.save(userSub);
+        userSub.id = userSubInserted.insertId;
+
+        if (userSub.status == PaymentStatus.SUCCESS) {
+            const user = await userRepository.findById(obj.user_id);
+            user.status = 'active';
+            const userUpdated = await userRepository.update(user);
+        }
+
         return userSub;
     }
 }
