@@ -11,6 +11,7 @@ export class Transaction extends Table {
     public stripe_sub_status: string;
     public stripe_payment_status: string;
     public stripe_invoice_status: string;
+    public invoice_pdf_url: string;
     public operation_sign: string;
     public operation_resume: number;
     public provider: string = 'STRIPE';
