@@ -110,6 +110,7 @@ class PaymentService {
             tra.stripe_sub_status = sub.status;
             tra.stripe_payment_status = pi.status;
             tra.stripe_invoice_status = inv.status;
+            tra.status = (tra.stripe_payment_status == 'succeeded') ? PaymentStatus_1.PaymentStatus.SUCCESS : PaymentStatus_1.PaymentStatus.FAILED;
             tra.currency = 'EUR';
             tra.amount = pi.amount / 100;
             tra.stripe_payment_method = pi.payment_method.toString();
