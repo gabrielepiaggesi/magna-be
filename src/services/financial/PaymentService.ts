@@ -109,10 +109,10 @@ export class PaymentService {
         tra.stripe_payment_status = pi.status;
         tra.stripe_invoice_status = inv.status;
         tra.currency = 'EUR';
-        tra.amount = pi.amount;
+        tra.amount = pi.amount / 100;
         tra.stripe_payment_method = pi.payment_method.toString();
         tra.operation_sign = OperationSign.NEGATIVE;
-        tra.operation_resume = -pi.amount;
+        tra.operation_resume = -tra.amount;
         const traInserted = await transactionRepository.save(tra);
         LOG.debug('new transaction', traInserted.insertId);
         return await this.updateUserSubscription(tra, planId);

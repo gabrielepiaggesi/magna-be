@@ -111,10 +111,10 @@ class PaymentService {
             tra.stripe_payment_status = pi.status;
             tra.stripe_invoice_status = inv.status;
             tra.currency = 'EUR';
-            tra.amount = pi.amount;
+            tra.amount = pi.amount / 100;
             tra.stripe_payment_method = pi.payment_method.toString();
             tra.operation_sign = OperationSign_1.OperationSign.NEGATIVE;
-            tra.operation_resume = -pi.amount;
+            tra.operation_resume = -tra.amount;
             const traInserted = yield transactionRepository.save(tra);
             LOG.debug('new transaction', traInserted.insertId);
             return yield this.updateUserSubscription(tra, planId);
