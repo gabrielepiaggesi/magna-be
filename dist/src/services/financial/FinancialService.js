@@ -39,8 +39,9 @@ class FinancialService {
                 yield db.rollback();
                 LOG.error("new subscription error", e);
                 let msg = (e.message) ? e.message : null;
-                let code = (e.code) ? e.message : null;
-                return res.status(500).send({ msg, code });
+                let error_code = (e.code) ? e.code : null;
+                let decline_code = (e.decline_code) ? e.decline_code : null;
+                return res.status(500).send({ msg, error_code, decline_code });
             }
         });
     }
