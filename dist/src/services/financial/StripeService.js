@@ -113,6 +113,11 @@ class StripeService {
             return yield stripe.invoices.pay(invId, { expand: ['payment_intent'] }).then(inv => inv);
         });
     }
+    getStripePaymentMethod(pmId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield stripe.paymentMethods.retrieve(pmId, { expand: ['card'] }).then(pm => pm);
+        });
+    }
 }
 exports.StripeService = StripeService;
 //# sourceMappingURL=StripeService.js.map

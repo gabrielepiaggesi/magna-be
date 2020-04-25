@@ -58,7 +58,8 @@ export class PaymentService {
     }
 
     private async updateUserStripePaymentMethod(userId: number, fingerprint: string, paymentMethodId: string, customerId: string) {
-        let userCard: Card = await cardRepository.findByUserIdAndFingerprint(userId, fingerprint);
+        const paymentMethod = await stripeService.getStripePaymentMethod(paymentMethodId);
+        let userCard: Card = await cardRepository.findByUserIdAndFingerprint(userId, paymentMethod.card.fingerprint);
         
         if (!userCard) {
             const card = await stripeService.attachAndSetPaymentMethod(new StripePaymentMethodReq(paymentMethodId, customerId));

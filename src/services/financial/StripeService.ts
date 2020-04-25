@@ -89,5 +89,9 @@ export class StripeService {
     public async payStripeInvoice(invId: string) {
         return await stripe.invoices.pay(invId, { expand: ['payment_intent'] }).then(inv => inv);
     }
+
+    public async getStripePaymentMethod(pmId: string) {
+        return await stripe.paymentMethods.retrieve(pmId, { expand: ['card'] }).then(pm => pm);
+    }
 }
 

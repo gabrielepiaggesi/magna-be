@@ -62,7 +62,8 @@ class PaymentService {
     }
     updateUserStripePaymentMethod(userId, fingerprint, paymentMethodId, customerId) {
         return __awaiter(this, void 0, void 0, function* () {
-            let userCard = yield cardRepository.findByUserIdAndFingerprint(userId, fingerprint);
+            const paymentMethod = yield stripeService.getStripePaymentMethod(paymentMethodId);
+            let userCard = yield cardRepository.findByUserIdAndFingerprint(userId, paymentMethod.card.fingerprint);
             if (!userCard) {
                 const card = yield stripeService.attachAndSetPaymentMethod(new StripePaymentMethodReq_1.StripePaymentMethodReq(paymentMethodId, customerId));
                 userCard = new Card_1.Card();
