@@ -8,6 +8,7 @@ import { PaymentService } from "./PaymentService";
 import { User } from "../../models/user/User";
 import { SubScription } from "../../models/financial/SubScription";
 import { SubScriptionRepository } from "../../repositories/financial/SubScriptionRepository";
+import Stripe from "stripe";
 
 const LOG = new Logger("FinancialService.class");
 const userRepository = new UserRepository();
@@ -33,7 +34,9 @@ export class FinancialService {
         } catch (e) {
             await db.rollback();
             LOG.error("new subscription error", e);
-            return res.status(500).send(e);
+            let msg = (e.message) ? e.message : null;
+            let code = (e.code) ? e.message : null;
+            return res.status(500).send({msg, code});
         }
     }
 
