@@ -7,9 +7,9 @@ const LOG = new Logger("UserRepository.class");
 export class UserRepository extends Repository<User> {
     public table = "users";
 
-    public findByName(name: string, query = null) {
+    public findByUserName(username: string, query = null) {
         // tslint:disable-next-line:max-line-length
-        return this.db.query(query || `select * from ${this.table} where name = ${name} limit 1`).then((results) => results[0]);
+        return this.db.query(query || `select * from ${this.table} where username = ${username} limit 1`).then((results) => results[0]);
     }
 
     public findByEmailAndPassword(email: string, password: string, query = null) {

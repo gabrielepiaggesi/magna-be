@@ -47,15 +47,22 @@ export class AuthService {
     public async signup(res: Response, user: SignupDTO) {
         LOG.debug("signup...", user);
 
+        const userWithThisUserName = await userRepository.findByUserName(user.username);
+
+        if (userWithThisUserName || !user.username) {
+            return res.status(500).json({ msg: "Username already exists", code: 'Auth.Username' });
+        }
+
         await bcrypt.hash(user.password, 10, async (err, hash) => {
             if (err) {
-                return res.status(500).json({ msg: "Cannot create Hash" });
+                return res.status(500).json({ msg: "Cannot Create Password", code: 'Auth.Password' });
             } else if (hash) {
                 await db.newTransaction();
                 try {
                     const newUser = new User();
                     newUser.email = user.email;
                     newUser.status = 'new_user';
+                    newUser.username = user.username;
                     newUser.password = hash;
 
                     const userInserted = await userRepository.save(newUser);
@@ -69,10 +76,10 @@ export class AuthService {
                     return res.status(200).json({ msg: "ok", token });
                 } catch (e) {
                     await db.rollback();
-                    return res.status(500).send("Cannot Create User");
+                    return res.status(500).json({ msg: "Cannot Create User", code: 'Auth.User'});
                 }
             } else {
-                return res.status(500).json({ msg: "Cannot create Hash" });
+                return res.status(500).json({ msg: "Cannot Create Password", code: 'Auth.Password' });
             }
         });
     }

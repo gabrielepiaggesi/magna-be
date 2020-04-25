@@ -56,9 +56,13 @@ class AuthService {
     signup(res, user) {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.debug("signup...", user);
+            const userWithThisUserName = yield userRepository.findByUserName(user.username);
+            if (userWithThisUserName || !user.username) {
+                return res.status(500).json({ msg: "Username already exists", code: 'Auth.Username' });
+            }
             yield bcrypt_1.default.hash(user.password, 10, (err, hash) => __awaiter(this, void 0, void 0, function* () {
                 if (err) {
-                    return res.status(500).json({ msg: "Cannot create Hash" });
+                    return res.status(500).json({ msg: "Cannot Create Password", code: 'Auth.Password' });
                 }
                 else if (hash) {
                     yield db.newTransaction();
@@ -66,6 +70,7 @@ class AuthService {
                         const newUser = new User_1.User();
                         newUser.email = user.email;
                         newUser.status = 'new_user';
+                        newUser.username = user.username;
                         newUser.password = hash;
                         const userInserted = yield userRepository.save(newUser);
                         LOG.debug("newUserId ", userInserted.insertId);
@@ -78,11 +83,11 @@ class AuthService {
                     }
                     catch (e) {
                         yield db.rollback();
-                        return res.status(500).send("Cannot Create User");
+                        return res.status(500).json({ msg: "Cannot Create User", code: 'Auth.User' });
                     }
                 }
                 else {
-                    return res.status(500).json({ msg: "Cannot create Hash" });
+                    return res.status(500).json({ msg: "Cannot Create Password", code: 'Auth.Password' });
                 }
             }));
         });

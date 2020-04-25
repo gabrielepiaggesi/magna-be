@@ -17,9 +17,9 @@ class UserRepository extends Repository_1.Repository {
         super(...arguments);
         this.table = "users";
     }
-    findByName(name, query = null) {
+    findByUserName(username, query = null) {
         // tslint:disable-next-line:max-line-length
-        return this.db.query(query || `select * from ${this.table} where name = ${name} limit 1`).then((results) => results[0]);
+        return this.db.query(query || `select * from ${this.table} where username = ${username} limit 1`).then((results) => results[0]);
     }
     findByEmailAndPassword(email, password, query = null) {
         // tslint:disable-next-line:max-line-length
