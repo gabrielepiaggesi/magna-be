@@ -16,9 +16,9 @@ const db = new Database();
 
 export class DetailService {
 
-    public async getProfileInfo(res: Response, username: string) {
+    public async getProfileInfo(res: Response, username: string, onlyActive = true) {
         const loggedId = auth.loggedId;
-        const profile = await detailRepository.findByUsername(username);
+        const profile = (onlyActive) ? await detailRepository.findActiveByUsername(username) : await detailRepository.findByUsername(username);
         const result = {
             image: null,
             nameLastname: null,

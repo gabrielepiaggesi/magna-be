@@ -20,6 +20,17 @@ class DetailRepository extends Repository_1.Repository {
         inner join details d on d.user_id = u.id and d.deleted_at is null 
         where u.username = "${username}" 
         and u.deleted_at is null 
+        order by d.start_date desc `;
+        return this.db.query(query).then((results) => results);
+    }
+    findActiveByUsername(username, query = null) {
+        // tslint:disable-next-line:max-line-length
+        query =
+            `select d.* 
+        from users u 
+        inner join details d on d.user_id = u.id and d.deleted_at is null 
+        where u.username = "${username}" 
+        and u.deleted_at is null 
         and u.status = 'active' 
         order by d.start_date desc `;
         return this.db.query(query).then((results) => results);

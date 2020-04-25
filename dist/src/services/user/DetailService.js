@@ -21,10 +21,10 @@ const userRepository = new UserRepository_1.UserRepository();
 const detailRepository = new DetailRepository_1.DetailRepository();
 const db = new database_1.Database();
 class DetailService {
-    getProfileInfo(res, username) {
+    getProfileInfo(res, username, onlyActive = true) {
         return __awaiter(this, void 0, void 0, function* () {
             const loggedId = index_1.auth.loggedId;
-            const profile = yield detailRepository.findByUsername(username);
+            const profile = (onlyActive) ? yield detailRepository.findActiveByUsername(username) : yield detailRepository.findByUsername(username);
             const result = {
                 image: null,
                 nameLastname: null,
