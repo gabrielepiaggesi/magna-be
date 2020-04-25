@@ -12,7 +12,7 @@ export class StripeRepository extends Repository<UserStripe> {
     }
 
     public async findByCustomerId(cId, query = null) {
-        const q = `select * from stripes where customer_id = ${cId} and deleted_at is null`;
+        const q = `select * from stripes where customer_id = "${cId}" and deleted_at is null`;
         return await this.db.query(query || q).then((results) => results[0]);
     }
 }
