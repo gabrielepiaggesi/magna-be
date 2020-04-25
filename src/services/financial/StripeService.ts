@@ -75,7 +75,7 @@ export class StripeService {
     }
 
     public async getStripeSubscription(subId: string) {
-        return await stripe.subscriptions.retrieve(subId, {expand: ["data.latest_invoice.payment_intent"]}).then(sub => sub);
+        return await stripe.subscriptions.retrieve(subId, {expand: ["latest_invoice.payment_intent"]}).then(sub => sub);
     }
 
     public async getStripeInvoice(invId: string) {

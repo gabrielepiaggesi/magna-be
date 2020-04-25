@@ -95,7 +95,7 @@ class StripeService {
     }
     getStripeSubscription(subId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield stripe.subscriptions.retrieve(subId, { expand: ["data.latest_invoice.payment_intent"] }).then(sub => sub);
+            return yield stripe.subscriptions.retrieve(subId, { expand: ["latest_invoice.payment_intent"] }).then(sub => sub);
         });
     }
     getStripeInvoice(invId) {
