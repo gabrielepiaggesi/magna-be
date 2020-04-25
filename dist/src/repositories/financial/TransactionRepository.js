@@ -17,13 +17,13 @@ class TransactionRepository extends Repository_1.Repository {
     }
     findByPaymentIntentId(piId, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            const q = `select * from transactions where stripe_payment_id = ${piId} and deleted_at is null`;
+            const q = `select * from transactions where stripe_payment_id = "${piId}" and deleted_at is null order by id desc limit 1`;
             return yield this.db.query(query || q).then((results) => results[0]);
         });
     }
     findLastOfUserIdAndSubId(userId, subId, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            const q = `select * from transactions where user_id = ${userId} and stripe_sub_id = "${subId} and deleted_at is null order by id desc limit 1"`;
+            const q = `select * from transactions where user_id = ${userId} and stripe_sub_id = "${subId}" and deleted_at is null order by id desc limit 1`;
             return yield this.db.query(query || q).then((results) => results[0]);
         });
     }
