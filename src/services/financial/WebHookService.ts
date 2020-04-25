@@ -11,9 +11,9 @@ const db = new Database();
 
 export class WebHookService {
 
-    public async updateSubScriptionWH(res, sub: Stripe.Subscription) {
-        LOG.debug("subscription webhook", sub.id);
-        sub = await stripeService.getStripeSubscription(sub.id);
+    public async updateSubScriptionWH(res, sub: any) {
+        LOG.debug("subscription webhook", sub.data.object.id);
+        sub = await stripeService.getStripeSubscription(sub.data.object.id);
 
         await db.newTransaction();
         try {
@@ -31,7 +31,7 @@ export class WebHookService {
         } catch (e) {
             await db.rollback();
             LOG.error("subscription webhook error", e);
-            return res.status(500).send(e);
+            return res.status(500).send({ status: "error" });
         }
     }
 }

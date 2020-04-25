@@ -20,8 +20,8 @@ const db = new database_1.Database();
 class WebHookService {
     updateSubScriptionWH(res, sub) {
         return __awaiter(this, void 0, void 0, function* () {
-            LOG.debug("subscription webhook", sub.id);
-            sub = yield stripeService.getStripeSubscription(sub.id);
+            LOG.debug("subscription webhook", sub.data.object.id);
+            sub = yield stripeService.getStripeSubscription(sub.data.object.id);
             yield db.newTransaction();
             try {
                 const walletIsUpdated = yield walletService.updateUserWallet(sub);
@@ -36,7 +36,7 @@ class WebHookService {
             catch (e) {
                 yield db.rollback();
                 LOG.error("subscription webhook error", e);
-                return res.status(500).send(e);
+                return res.status(500).send({ status: "error" });
             }
         });
     }
