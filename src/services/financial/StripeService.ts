@@ -71,11 +71,11 @@ export class StripeService {
     }
 
     public async getStripeSubscriptions(obj: StripeSubScriptionReq) {
-        return await stripe.subscriptions.list({ customer: obj.customerId, plan: obj.planId, status: 'active', expand: ["latest_invoice.payment_intent"] }).then(list => list.data);
+        return await stripe.subscriptions.list({ customer: obj.customerId, plan: obj.planId, status: 'active', expand: ["data.latest_invoice.payment_intent"] }).then(list => list.data);
     }
 
     public async getStripeSubscription(subId: string) {
-        return await stripe.subscriptions.retrieve(subId, {expand: ["latest_invoice.payment_intent"]}).then(sub => sub);
+        return await stripe.subscriptions.retrieve(subId, {expand: ["data.latest_invoice.payment_intent"]}).then(sub => sub);
     }
 
     public async getStripeInvoice(invId: string) {

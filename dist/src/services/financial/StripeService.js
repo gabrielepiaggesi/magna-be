@@ -90,12 +90,12 @@ class StripeService {
     }
     getStripeSubscriptions(obj) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield stripe.subscriptions.list({ customer: obj.customerId, plan: obj.planId, status: 'active', expand: ["latest_invoice.payment_intent"] }).then(list => list.data);
+            return yield stripe.subscriptions.list({ customer: obj.customerId, plan: obj.planId, status: 'active', expand: ["data.latest_invoice.payment_intent"] }).then(list => list.data);
         });
     }
     getStripeSubscription(subId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield stripe.subscriptions.retrieve(subId, { expand: ["latest_invoice.payment_intent"] }).then(sub => sub);
+            return yield stripe.subscriptions.retrieve(subId, { expand: ["data.latest_invoice.payment_intent"] }).then(sub => sub);
         });
     }
     getStripeInvoice(invId) {
