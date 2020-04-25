@@ -2,15 +2,18 @@ import { Database } from "../../database";
 import { Logger } from "../../utils/Logger";
 import Stripe from "stripe";
 import { WalletService } from "./WalletService";
+import { StripeService } from "./StripeService";
 
 const LOG = new Logger("WebHookService.class");
 const walletService = new WalletService();
+const stripeService = new StripeService();
 const db = new Database();
 
 export class WebHookService {
 
     public async updateSubScriptionWH(res, sub: Stripe.Subscription) {
         LOG.debug("subscription webhook", sub.id);
+        sub = await stripeService.getStripeSubscription(sub.id);
 
         await db.newTransaction();
         try {

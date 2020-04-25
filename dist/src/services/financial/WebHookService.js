@@ -12,13 +12,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const database_1 = require("../../database");
 const Logger_1 = require("../../utils/Logger");
 const WalletService_1 = require("./WalletService");
+const StripeService_1 = require("./StripeService");
 const LOG = new Logger_1.Logger("WebHookService.class");
 const walletService = new WalletService_1.WalletService();
+const stripeService = new StripeService_1.StripeService();
 const db = new database_1.Database();
 class WebHookService {
     updateSubScriptionWH(res, sub) {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.debug("subscription webhook", sub.id);
+            sub = yield stripeService.getStripeSubscription(sub.id);
             yield db.newTransaction();
             try {
                 const walletIsUpdated = yield walletService.updateUserWallet(sub);
