@@ -3,6 +3,7 @@ import { StripeCustomerReq } from "./classes/StripeCustomerReq";
 import Stripe from 'stripe';
 import { StripePaymentMethodReq } from "./classes/StripePaymentMethodReq";
 import { StripeSubScriptionReq } from "./classes/StripeSubScriptionReq";
+import { SubScription } from "../../models/financial/SubScription";
 const stripe = new Stripe('sk_test_g7a5tHbE9UvEBUNuTFSsFYvu00x2rejFec', null);
 const LOG = new Logger("StripeService.class");
 
@@ -70,8 +71,11 @@ export class StripeService {
     }
 
     public async getStripeSubscriptions(obj: StripeSubScriptionReq) {
-        const sub = { customer: obj.customerId, plan: obj.planId };
-        return await stripe.subscriptions.list(sub).then(list => list.data);
+        return await stripe.subscriptions.list({ customer: obj.customerId, plan: obj.planId, status: 'active' }).then(list => list.data);
+    }
+
+    public async getStripeSubscription(subId: string) {
+        return await stripe.subscriptions.retrieve(subId).then(sub => sub);
     }
 
     public async getStripeInvoice(invId: string) {
@@ -80,6 +84,10 @@ export class StripeService {
 
     public async getStripePaymentIntent(piId: string) {
         return await stripe.paymentIntents.retrieve(piId).then(pi => pi);
+    }
+
+    public async payStripeInvoice(invId: string) {
+        return await stripe.invoices.pay(invId, { expand: ['payment_intent'] }).then(inv => inv);
     }
 }
 

@@ -17,7 +17,7 @@ class SubScriptionRepository extends Repository_1.Repository {
     }
     findByUserIdAndPlanId(userId, planId, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            const q = `select * from subscriptions where user_id = ${userId} and plan_id = ${planId}`;
+            const q = `select * from subscriptions where user_id = ${userId} and plan_id = ${planId} and subscription_status not in ("canceled", "unpaid") and deleted_at is null`;
             return yield this.db.query(query || q).then((results) => results[0]);
         });
     }

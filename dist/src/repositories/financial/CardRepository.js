@@ -17,13 +17,13 @@ class CardRepository extends Repository_1.Repository {
     }
     findByUserId(userId, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            const q = `select * from cards where user_id = ${userId}`;
+            const q = `select * from cards where user_id = ${userId} and deleted_at is null`;
             return yield this.db.query(query || q).then((results) => results[0]);
         });
     }
     findByUserIdAndFingerprint(userId, fingerprint, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            const q = `select * from cards where user_id = ${userId} and fingerprint = "${fingerprint}"`;
+            const q = `select * from cards where user_id = ${userId} and fingerprint = "${fingerprint}" and deleted_at is null`;
             return yield this.db.query(query || q).then((results) => results[0]);
         });
     }

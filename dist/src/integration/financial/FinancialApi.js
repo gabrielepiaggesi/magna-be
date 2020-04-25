@@ -15,11 +15,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const index_1 = require("../middleware/index");
 const FinancialService_1 = require("../../services/financial/FinancialService");
+const WebHookService_1 = require("../../services/financial/WebHookService");
 const storyRoutes = express_1.default.Router();
 // services
 const financialService = new FinancialService_1.FinancialService();
+const webHookService = new WebHookService_1.WebHookService();
 // routes
-storyRoutes.post("/pay", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield financialService.trySubScription(res, req.body); }));
-storyRoutes.post("/updateSubScription", (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield financialService.updateSubScription(req.body); }));
+storyRoutes.get("/subscription/:planId", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield financialService.getUserSubScription(res, req.params.planId); }));
+storyRoutes.post("/pay", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield financialService.payUserSubScription(res, req.body); }));
+// webhook
+storyRoutes.post("/webhook/subscription", (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield webHookService.updateSubScriptionWH(res, req.body); }));
 exports.default = storyRoutes;
 //# sourceMappingURL=FinancialApi.js.map

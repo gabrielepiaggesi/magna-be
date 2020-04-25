@@ -3,7 +3,6 @@ import { StripeCustomerReq } from "./classes/StripeCustomerReq";
 import { SubScriptionReq } from "./classes/SubScriptionReq";
 import { StripeService } from "./StripeService";
 import { StripeSubScriptionReq } from "./classes/StripeSubScriptionReq";
-import { PaymentStatus } from "../../enums/financial/PaymentStatus";
 import { UserStripe } from "../../models/financial/UserStripe";
 import { Card } from "../../models/financial/Card";
 import { StripePaymentMethodReq } from "./classes/StripePaymentMethodReq";
@@ -13,11 +12,10 @@ import { PlanRepository } from "../../repositories/financial/PlanRepository";
 import { StripeRepository } from "../../repositories/financial/StripeRepository";
 import { CardRepository } from "../../repositories/financial/CardRepository";
 import { SubScriptionRepository } from "../../repositories/financial/SubScriptionRepository";
-import { TransactionReq } from "./classes/TransactionReq";
+import { WalletService } from "./WalletService";
 import { TransactionRepository } from "../../repositories/financial/TransactionRepository";
 import { Transaction } from "../../models/financial/Transaction";
-import { OperationSign } from "../../enums/financial/OperationSign";
-import Stripe from "stripe";
+import { PaymentStatus } from "../../enums/financial/PaymentStatus";
 const LOG = new Logger("PaymentService.class");
 const stripeService = new StripeService();
 const userRepository = new UserRepository();
@@ -26,6 +24,7 @@ const stripeRepository = new StripeRepository();
 const cardRepository = new CardRepository();
 const subScriptionRepository = new SubScriptionRepository();
 const transactionRepository = new TransactionRepository();
+const walletService = new WalletService();
 
 export class PaymentService {
 
@@ -82,64 +81,20 @@ export class PaymentService {
         let userSub: SubScription = await subScriptionRepository.findByUserIdAndPlanId(userId, planId);
         
         if (!userSub) {
-            const now = new Date(Date.now());
             const sub = await stripeService.getOrCreateStripeSubScription(new StripeSubScriptionReq(customerId, stipePlanId));
-            userSub = await this.prepareUserTransaction(userId, planId, sub);
+            userSub = await walletService.updateUserWallet(sub);
+        } else if (userSub.subscription_status == 'past_due') {
+            const lastTra: Transaction = await transactionRepository.findLastOfUserIdAndSubId(userSub.user_id, userSub.subscription_id);
+            if (lastTra.stripe_invoice_status == 'open') {
+                const inv = await stripeService.payStripeInvoice(lastTra.stripe_invoice_id);
+                userSub.status = PaymentStatus.PENDING;
+                // webhook should do the work
+                // const sub = await stripeService.getStripeSubscription(userSub.subscription_id);
+                // walletIsUpdated = await walletService.updateUserWallet(sub);
+            }
         }
 
-        LOG.debug("updateUserStripeSubScription", userSub.id);
-        return userSub;
-    }
-
-    private async prepareUserTransaction(userId, planId, sub: Stripe.Subscription) {
-        let inv = await stripeService.getStripeInvoice(sub.latest_invoice['id']);
-        let pi = await stripeService.getStripePaymentIntent(sub.latest_invoice['payment_intent']['id']);
-        inv = inv || null;
-        pi = pi || null;
-        return await this.updateUserTransaction(userId, planId, sub, inv, pi);
-    }
-
-    private async updateUserTransaction(userId, planId, sub: Stripe.Subscription, inv: Stripe.Invoice, pi: Stripe.PaymentIntent) {
-        const tra = new Transaction();
-        tra.user_id = userId;
-        tra.stripe_sub_id = sub.id || null;
-        tra.stripe_payment_id = pi.id || null;
-        tra.stripe_invoice_id = inv.id || null;
-        tra.stripe_sub_status = sub.status;
-        tra.stripe_payment_status = pi.status;
-        tra.stripe_invoice_status = inv.status;
-        tra.status = (tra.stripe_payment_status == 'succeeded') ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
-        tra.currency = 'EUR';
-        tra.amount = pi.amount / 100;
-        tra.invoice_pdf_url = inv.invoice_pdf;
-        tra.stripe_payment_method = pi.payment_method.toString();
-        tra.operation_sign = OperationSign.NEGATIVE;
-        tra.operation_resume = -tra.amount;
-        const traInserted = await transactionRepository.save(tra);
-        LOG.debug('new transaction', traInserted.insertId);
-        return await this.updateUserSubscription(tra, planId);
-    }
-
-    private async updateUserSubscription(obj: Transaction, planId) {
-        const now = new Date(Date.now());
-        let userSub = new SubScription();
-        userSub.subscription_id = obj.stripe_sub_id;
-        userSub.user_id = obj.user_id;
-        userSub.plan_id = planId;
-        userSub.status = (obj.stripe_payment_status == 'succeeded') ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
-        userSub.resume_status = obj.stripe_sub_status + '.' + obj.stripe_invoice_status + '.' + obj.stripe_payment_status;
-        userSub.subscription_status = obj.stripe_sub_status;
-        userSub.last_renew = now.toISOString();
-        userSub.next_renew = new Date((now.setMonth(now.getMonth() + 1))).toISOString();
-        const userSubInserted = await subScriptionRepository.save(userSub);
-        userSub.id = userSubInserted.insertId;
-
-        if (userSub.status == PaymentStatus.SUCCESS) {
-            const user = await userRepository.findById(obj.user_id);
-            user.status = 'active';
-            const userUpdated = await userRepository.update(user);
-        }
-
+        LOG.debug("updateUserStripeSubScription", userSub);
         return userSub;
     }
 }

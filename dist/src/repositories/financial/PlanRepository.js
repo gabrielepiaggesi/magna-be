@@ -15,9 +15,9 @@ class PlanRepository extends Repository_1.Repository {
         super(...arguments);
         this.table = "plans";
     }
-    findByTag(tag, query = null) {
+    findByStripePlanId(stripeId, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            const q = `select * from plans where tag = "${tag}"`;
+            const q = `select * from plans where stripe_plan_id = "${stripeId}" and deleted_at is null`;
             return yield this.db.query(query || q).then((results) => results[0]);
         });
     }
