@@ -84,11 +84,12 @@ export class PaymentService {
         if (!userSub) {
             const sub = await stripeService.getOrCreateStripeSubScription(new StripeSubScriptionReq(customerId, stipePlanId));
             userSub = await walletService.updateUserWallet(sub);
-        } else if (userSub.subscription_status == 'past_due' || userSub.subscription_status == 'incomplete') {
+        } else if ((userSub.subscription_status == 'past_due' || userSub.subscription_status == 'incomplete') && userSub.status != PaymentStatus.PENDING) {
             const lastTra: Transaction = await transactionRepository.findLastOfUserIdAndSubId(userSub.user_id, userSub.subscription_id);
             if (lastTra.stripe_invoice_status == 'open') {
-                const inv = await stripeService.payStripeInvoice(lastTra.stripe_invoice_id);
                 userSub.status = PaymentStatus.PENDING;
+                await subScriptionRepository.update(userSub);
+                const inv = await stripeService.payStripeInvoice(lastTra.stripe_invoice_id);
                 // webhook should do the work
                 // const sub = await stripeService.getStripeSubscription(userSub.subscription_id);
                 // walletIsUpdated = await walletService.updateUserWallet(sub);
