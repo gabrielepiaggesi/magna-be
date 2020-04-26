@@ -12,13 +12,17 @@ const multerConfig = {
 };
 
 // services
-const insightService = new MediaService();
+const mediaService = new MediaService();
+
+// <form action="/upload" method="post" enctype="multipart/form-data">
+//   <input type="file" name="avatar" />
+// </form>
 
 // routes
 mediaRoutes.post("/upload", 
     auth.isUser, 
     multer(multerConfig).single('file'), 
-    async (req, res) => await insightService.uploadMedia(res, req)
+    async (req, res) => await mediaService.uploadMedia(res, req)
 );
 
 

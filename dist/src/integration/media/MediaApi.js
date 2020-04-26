@@ -31,8 +31,11 @@ const multerConfig = {
     }
 };
 // services
-const insightService = new MediaService_1.MediaService();
+const mediaService = new MediaService_1.MediaService();
+// <form action="/upload" method="post" enctype="multipart/form-data">
+//   <input type="file" name="avatar" />
+// </form>
 // routes
-mediaRoutes.post("/upload", index_1.auth.isUser, multer_1.default(multerConfig).single('file'), (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield insightService.uploadMedia(res, req); }));
+mediaRoutes.post("/upload", index_1.auth.isUser, multer_1.default(multerConfig).single('file'), (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield mediaService.uploadMedia(res, req); }));
 exports.default = mediaRoutes;
 //# sourceMappingURL=MediaApi.js.map

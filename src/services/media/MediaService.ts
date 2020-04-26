@@ -21,6 +21,10 @@ const bucket = storage.bucket("gs://thismybio.appspot.com");
 
 
 export class MediaService {
+    // https://console.firebase.google.com/u/0/project/thismybio/storage/thismybio.appspot.com/files?hl=it
+    // https://github.com/expressjs/multer
+    // https://medium.com/@stardusteric/nodejs-with-firebase-storage-c6ddcf131ceb
+    // https://gist.github.com/stardustxx/58748550699228174b805aaadfc98a35#file-app-js
 
     public async uploadMedia(res, req) {
         const userId = auth.loggedId;
@@ -82,55 +86,3 @@ export class MediaService {
         return url;
     }
 }
-
-
-// /**
-//  * Adding new file to the storage
-//  */
-// app.post('/upload', multer.single('file'), (req, res) => {
-//   console.log('Upload Image');
-
-//   let file = req.file;
-//   if (file) {
-//     uploadImageToStorage(file).then((success) => {
-//       res.status(200).send({
-//         status: 'success'
-//       });
-//     }).catch((error) => {
-//       console.error(error);
-//     });
-//   }
-// });
-
-// /**
-//  * Upload the image file to Google Storage
-//  * @param {File} file object that will be uploaded to Google Storage
-//  */
-// const uploadImageToStorage = (file) => {
-//   return new Promise((resolve, reject) => {
-//     if (!file) {
-//       reject('No image file');
-//     }
-//     let newFileName = `${file.originalname}_${Date.now()}`;
-
-//     let fileUpload = bucket.file(newFileName);
-
-//     const blobStream = fileUpload.createWriteStream({
-//       metadata: {
-//         contentType: file.mimetype
-//       }
-//     });
-
-//     blobStream.on('error', (error) => {
-//       reject('Something is wrong! Unable to upload at the moment.');
-//     });
-
-//     blobStream.on('finish', () => {
-//       // The public URL can be used to directly access the file via HTTP.
-//       const url = format(`https://storage.googleapis.com/${bucket.name}/${fileUpload.name}`);
-//       resolve(url);
-//     });
-
-//     blobStream.end(file.buffer);
-//   });
-// }
