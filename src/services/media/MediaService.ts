@@ -72,7 +72,7 @@ export class MediaService {
         if (!file) { throw { message: 'No image file', code: 'no_image' }; }
         const newFileName = `${file.originalname}_${Date.now()}`;
         const fileUpload = bucket.file(newFileName);
-        const blobStream = await fileUpload.createWriteStream({ metadata: { contentType: file.mimetype } });
+        const blobStream = await fileUpload.createWriteStream({ metadata: { contentType: file.mimetype }, predefinedAcl: "publicRead" });
 
         await blobStream.on('error', (error) => {
             console.log(error);
