@@ -25,7 +25,7 @@ const detailRepository = new DetailRepository_1.DetailRepository();
 const db = new database_1.Database();
 const storage = new storage_1.Storage({
     projectId: "thismybio",
-    keyFilename: "./firebaseKey.json"
+    keyFilename: "./src/services/media/firebaseKey.json"
 });
 let bucket = storage.bucket("thismybio.appspot.com/profiles-images");
 class MediaService {
