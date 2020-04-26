@@ -92,11 +92,11 @@ class MediaService {
             //     // https://storage.cloud.google.com/thismybio.appspot.com/gp.jpeg
             //     url = format(`https://storage.cloud.google.com/${bucket.name}/${fileUpload.name}`);
             // });
-            yield blobStream.on('complete', () => {
+            url = yield blobStream.on('complete', () => {
                 // The public URL can be used to directly access the file via HTTP.
                 // https://firebasestorage.googleapis.com/v0/b/thismybio.appspot.com/o/gp.jpeg?alt=media
                 // https://storage.cloud.google.com/thismybio.appspot.com/gp.jpeg
-                url = url_1.format(`https://storage.cloud.google.com/${bucket.name}/${fileUpload.name}`);
+                return url_1.format(`https://storage.cloud.google.com/${bucket.name}/${fileUpload.name}`);
             });
             yield blobStream.end(file.buffer);
             return url;

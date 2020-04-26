@@ -85,11 +85,11 @@ export class MediaService {
         //     url = format(`https://storage.cloud.google.com/${bucket.name}/${fileUpload.name}`);
         // });
 
-        await blobStream.on('complete', () => {
+        url = await blobStream.on('complete', () => {
             // The public URL can be used to directly access the file via HTTP.
             // https://firebasestorage.googleapis.com/v0/b/thismybio.appspot.com/o/gp.jpeg?alt=media
             // https://storage.cloud.google.com/thismybio.appspot.com/gp.jpeg
-            url = format(`https://storage.cloud.google.com/${bucket.name}/${fileUpload.name}`);
+            return format(`https://storage.cloud.google.com/${bucket.name}/${fileUpload.name}`);
         });
     
         await blobStream.end(file.buffer);
