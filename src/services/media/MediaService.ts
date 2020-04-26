@@ -41,13 +41,14 @@ export class MediaService {
                 media.detail = file.fileSize;
                 media.provider_path = bucket.name;
                 media.type = "IMAGE";
-                media.url = url;
+                media.url = `https://storage.googleapis.com/` + url;
+                media.private_url = `https://storage.cloud.google.com/` + url;
                 const mediaInserted = await mediaRepository.save(media);
 
                 let details = await detailRepository.findByType(DetailType.IMAGE, userId);
                 let detail = details[0] || new Detail();
                 detail.type = DetailType.IMAGE;
-                detail.text1 = url;
+                detail.text1 = media.url;
                 detail.user_id = userId;
                 if (detail.id) {
                     await detailRepository.update(detail);
@@ -83,10 +84,12 @@ export class MediaService {
             // The public URL can be used to directly access the file via HTTP.
             // https://firebasestorage.googleapis.com/v0/b/thismybio.appspot.com/o/gp.jpeg?alt=media
             // https://storage.cloud.google.com/thismybio.appspot.com/gp.jpeg
-            return format(`https://storage.cloud.google.com/${bucket.name}/${fileUpload.name}`).toString();
+            // https://storage.googleapis.com/thismybio.appspot.com/gp.jpeg_1587912784594
+            // format(`https://storage.cloud.google.com/${bucket.name}/${fileUpload.name}`).toString();
+            return `${bucket.name}/${fileUpload.name}`;
         });
     
         await blobStream.end(file.buffer);
-        return format(`https://storage.cloud.google.com/${bucket.name}/${fileUpload.name}`).toString();
+        return `${bucket.name}/${fileUpload.name}`;
     }
 }

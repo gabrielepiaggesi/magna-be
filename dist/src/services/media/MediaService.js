@@ -12,7 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = require("../../integration/middleware/index");
 const Logger_1 = require("../../utils/Logger");
 const storage_1 = require("@google-cloud/storage");
-const url_1 = require("url");
 const database_1 = require("../../database");
 const Media_1 = require("../../models/media/Media");
 const MediaRepository_1 = require("../../repositories/media/MediaRepository");
@@ -47,12 +46,13 @@ class MediaService {
                     media.detail = file.fileSize;
                     media.provider_path = bucket.name;
                     media.type = "IMAGE";
-                    media.url = url;
+                    media.url = `https://storage.googleapis.com/` + url;
+                    media.private_url = `https://storage.cloud.google.com/` + url;
                     const mediaInserted = yield mediaRepository.save(media);
                     let details = yield detailRepository.findByType(DetailType_1.DetailType.IMAGE, userId);
                     let detail = details[0] || new Detail_1.Detail();
                     detail.type = DetailType_1.DetailType.IMAGE;
-                    detail.text1 = url;
+                    detail.text1 = media.url;
                     detail.user_id = userId;
                     if (detail.id) {
                         yield detailRepository.update(detail);
@@ -90,10 +90,12 @@ class MediaService {
                 // The public URL can be used to directly access the file via HTTP.
                 // https://firebasestorage.googleapis.com/v0/b/thismybio.appspot.com/o/gp.jpeg?alt=media
                 // https://storage.cloud.google.com/thismybio.appspot.com/gp.jpeg
-                return url_1.format(`https://storage.cloud.google.com/${bucket.name}/${fileUpload.name}`).toString();
+                // https://storage.googleapis.com/thismybio.appspot.com/gp.jpeg_1587912784594
+                // format(`https://storage.cloud.google.com/${bucket.name}/${fileUpload.name}`).toString();
+                return `${bucket.name}/${fileUpload.name}`;
             });
             yield blobStream.end(file.buffer);
-            return url_1.format(`https://storage.cloud.google.com/${bucket.name}/${fileUpload.name}`).toString();
+            return `${bucket.name}/${fileUpload.name}`;
         });
     }
 }
