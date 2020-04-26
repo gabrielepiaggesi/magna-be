@@ -73,20 +73,13 @@ export class MediaService {
         const newFileName = `${file.originalname}_${Date.now()}`;
         const fileUpload = bucket.file(newFileName);
         const blobStream = await fileUpload.createWriteStream({ metadata: { contentType: file.mimetype } });
-        let url = null;
 
         await blobStream.on('error', (error) => {
             console.log(error);
-            throw { message: 'Something is wrong! Unable to upload at the moment.', code: 'unable_upload' }; });
-    
-        // await blobStream.on('finish', () => {
-        //     // The public URL can be used to directly access the file via HTTP.
-        //     // https://firebasestorage.googleapis.com/v0/b/thismybio.appspot.com/o/gp.jpeg?alt=media
-        //     // https://storage.cloud.google.com/thismybio.appspot.com/gp.jpeg
-        //     url = format(`https://storage.cloud.google.com/${bucket.name}/${fileUpload.name}`);
-        // });
+            throw { message: 'Something is wrong! Unable to upload at the moment.', code: 'unable_upload' }; 
+        });
 
-        url = await blobStream.on('complete', () => {
+        await blobStream.on('complete', () => {
             // The public URL can be used to directly access the file via HTTP.
             // https://firebasestorage.googleapis.com/v0/b/thismybio.appspot.com/o/gp.jpeg?alt=media
             // https://storage.cloud.google.com/thismybio.appspot.com/gp.jpeg
@@ -94,6 +87,6 @@ export class MediaService {
         });
     
         await blobStream.end(file.buffer);
-        return url;
+        return format(`https://storage.cloud.google.com/${bucket.name}/${fileUpload.name}`).toString();
     }
 }
