@@ -1,16 +1,25 @@
-// import express from "express";
-// import { UserService } from "../../services/user/UserService";
-// import { InsightService } from "../../services/media/MediaService";
-// const insightRoutes = express.Router();
+import express from "express";
+import { MediaService } from "../../services/media/MediaService";
+import { auth } from "../middleware/index";
+import multer, { memoryStorage } from 'multer'
+const mediaRoutes = express.Router();
 
-// // services
-// const insightService = new InsightService();
+const multerConfig = {
+    storage: memoryStorage(),
+    limits: {
+      fileSize: 5 * 1024 * 1024 // no larger than 5mb, you can change as needed.
+    }
+};
 
-// // routes
-// insightRoutes.get("/today/users", async (req, res) => await insightService.getTodayUsers(res));
-// insightRoutes.get("/today/stories", async (req, res) => await insightService.getTodayStories(res));
+// services
+const insightService = new MediaService();
 
-// insightRoutes.get("/total/users", async (req, res) => await insightService.getTotalUsers(res));
-// insightRoutes.get("/total/stories", async (req, res) => await insightService.getTotalStories(res));
+// routes
+mediaRoutes.post("/upload", 
+    auth.isUser, 
+    multer(multerConfig).single('file'), 
+    async (req, res) => await insightService.uploadMedia(res, req)
+);
 
-// export default insightRoutes;
+
+export default mediaRoutes;

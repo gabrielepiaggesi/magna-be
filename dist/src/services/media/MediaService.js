@@ -1,10 +1,137 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const UserRepository_1 = require("../../repositories/user/UserRepository");
+const index_1 = require("../../integration/middleware/index");
 const Logger_1 = require("../../utils/Logger");
+const storage_1 = require("@google-cloud/storage");
+const url_1 = require("url");
+const database_1 = require("../../database");
+const Media_1 = require("../../models/media/Media");
+const MediaRepository_1 = require("../../repositories/media/MediaRepository");
+const DetailType_1 = require("../../enums/user/DetailType");
+const DetailRepository_1 = require("../../repositories/user/DetailRepository");
+const Detail_1 = require("../../models/user/Detail");
 const LOG = new Logger_1.Logger("MediaService.class");
-const userRepository = new UserRepository_1.UserRepository();
+const mediaRepository = new MediaRepository_1.MediaRepository();
+const detailRepository = new DetailRepository_1.DetailRepository();
+const db = new database_1.Database();
+const storage = new storage_1.Storage({
+    projectId: "thismybio",
+    keyFilename: "./firebaseKey.json"
+});
+const bucket = storage.bucket("gs://thismybio.appspot.com");
 class MediaService {
+    uploadMedia(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const userId = index_1.auth.loggedId;
+            let file = req.file; //.file because on fe the input name is file
+            if (file) {
+                yield db.newTransaction();
+                try {
+                    const url = yield this.uploadImageToStorage(file);
+                    let media = new Media_1.Media();
+                    media.user_id = userId;
+                    media.detail = file.fileSize;
+                    media.provider_path = bucket.name;
+                    media.type = "IMAGE";
+                    media.url = url;
+                    const mediaInserted = yield mediaRepository.save(media);
+                    let details = yield detailRepository.findByType(DetailType_1.DetailType.IMAGE, userId);
+                    let detail = details[0] || new Detail_1.Detail();
+                    detail.type = DetailType_1.DetailType.IMAGE;
+                    detail.text1 = url;
+                    detail.user_id = userId;
+                    if (detail.id) {
+                        yield detailRepository.update(detail);
+                    }
+                    else {
+                        yield detailRepository.save(detail);
+                    }
+                    yield db.commit();
+                    return res.status(200).send({ url });
+                }
+                catch (e) {
+                    yield db.rollback();
+                    LOG.error("uploadMedia error", e);
+                    let msg = (e.message) ? e.message : null;
+                    let error_code = (e.code) ? e.code : e;
+                    let decline_code = (e.decline_code) ? e.decline_code : null;
+                    return res.status(500).send({ msg, error_code, decline_code });
+                }
+            }
+        });
+    }
+    uploadImageToStorage(file) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!file) {
+                throw { message: 'No image file', code: 'no_image' };
+            }
+            const newFileName = `${file.originalname}_${Date.now()}`;
+            const fileUpload = bucket.file(newFileName);
+            const blobStream = yield fileUpload.createWriteStream({ metadata: { contentType: file.mimetype } });
+            let url = null;
+            yield blobStream.on('error', (error) => {
+                throw { message: 'Something is wrong! Unable to upload at the moment.', code: 'unable_upload' };
+            });
+            yield blobStream.on('finish', () => {
+                // The public URL can be used to directly access the file via HTTP.
+                url = url_1.format(`https://storage.googleapis.com/${bucket.name}/${fileUpload.name}`);
+            });
+            yield blobStream.end(file.buffer);
+            return url;
+        });
+    }
 }
 exports.MediaService = MediaService;
+// /**
+//  * Adding new file to the storage
+//  */
+// app.post('/upload', multer.single('file'), (req, res) => {
+//   console.log('Upload Image');
+//   let file = req.file;
+//   if (file) {
+//     uploadImageToStorage(file).then((success) => {
+//       res.status(200).send({
+//         status: 'success'
+//       });
+//     }).catch((error) => {
+//       console.error(error);
+//     });
+//   }
+// });
+// /**
+//  * Upload the image file to Google Storage
+//  * @param {File} file object that will be uploaded to Google Storage
+//  */
+// const uploadImageToStorage = (file) => {
+//   return new Promise((resolve, reject) => {
+//     if (!file) {
+//       reject('No image file');
+//     }
+//     let newFileName = `${file.originalname}_${Date.now()}`;
+//     let fileUpload = bucket.file(newFileName);
+//     const blobStream = fileUpload.createWriteStream({
+//       metadata: {
+//         contentType: file.mimetype
+//       }
+//     });
+//     blobStream.on('error', (error) => {
+//       reject('Something is wrong! Unable to upload at the moment.');
+//     });
+//     blobStream.on('finish', () => {
+//       // The public URL can be used to directly access the file via HTTP.
+//       const url = format(`https://storage.googleapis.com/${bucket.name}/${fileUpload.name}`);
+//       resolve(url);
+//     });
+//     blobStream.end(file.buffer);
+//   });
+// }
 //# sourceMappingURL=MediaService.js.map
