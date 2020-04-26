@@ -31,7 +31,7 @@ class TransactionRepository extends Repository_1.Repository {
         card.last4, 
         card.payment_method_id as card_payment_method_id, 
         plan.title, 
-        plan.id as plan_id
+        plan.id as plan_id,
         sub.subscription_id as sub_stripe_subscription_id,
         sub.id as sub_id 
         from transactions tra 
