@@ -65,8 +65,10 @@ class PaymentService {
             const paymentMethod = yield stripeService.getStripePaymentMethod(paymentMethodId);
             let userCard = yield cardRepository.findByUserIdAndFingerprint(userId, paymentMethod.card.fingerprint);
             if (!userCard) {
+                yield cardRepository.resetNotPrincipalCard(userId);
                 const card = yield stripeService.attachAndSetPaymentMethod(new StripePaymentMethodReq_1.StripePaymentMethodReq(paymentMethodId, customerId));
                 userCard = new Card_1.Card();
+                userCard.principal = true;
                 userCard.user_id = userId;
                 userCard.payment_method_id = card.id;
                 userCard.last_4 = card.card.last4;

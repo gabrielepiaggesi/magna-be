@@ -5,6 +5,8 @@ export class Plan extends Table {
     public status: string;
     public amount: number;
     public frequency: string;
+    public title: string;
+    public bio: string;
 
     constructor() { super(); }
 }

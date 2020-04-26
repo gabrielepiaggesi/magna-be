@@ -27,6 +27,13 @@ class CardRepository extends Repository_1.Repository {
             return yield this.db.query(query || q).then((results) => results[0]);
         });
     }
+    resetNotPrincipalCard(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const q = `
+        update cards set principal = false where user_id = ${userId}`;
+            return yield this.db.query(q).then((results) => results[0]);
+        });
+    }
 }
 exports.CardRepository = CardRepository;
 //# sourceMappingURL=CardRepository.js.map

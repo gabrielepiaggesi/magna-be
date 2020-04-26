@@ -16,10 +16,14 @@ const UserRepository_1 = require("../../repositories/user/UserRepository");
 const PaymentService_1 = require("./PaymentService");
 const SubScription_1 = require("../../models/financial/SubScription");
 const SubScriptionRepository_1 = require("../../repositories/financial/SubScriptionRepository");
+const TransactionRepository_1 = require("../../repositories/financial/TransactionRepository");
+const CardRepository_1 = require("../../repositories/financial/CardRepository");
 const LOG = new Logger_1.Logger("FinancialService.class");
 const userRepository = new UserRepository_1.UserRepository();
 const paymentService = new PaymentService_1.PaymentService();
 const subScriptionRepository = new SubScriptionRepository_1.SubScriptionRepository();
+const transactionRepository = new TransactionRepository_1.TransactionRepository();
+const cardRepository = new CardRepository_1.CardRepository();
 const db = new database_1.Database();
 class FinancialService {
     payUserSubScription(res, obj) {
@@ -52,6 +56,22 @@ class FinancialService {
             let userSub = yield subScriptionRepository.findByUserIdAndPlanId(userLogged, planId);
             userSub = userSub || new SubScription_1.SubScription();
             return res.status(200).send(userSub);
+        });
+    }
+    getUserTransactions(res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            LOG.debug("getUserTransactions");
+            const userLogged = index_1.auth.loggedId;
+            let userTras = yield transactionRepository.findByUser(userLogged);
+            return res.status(200).send(userTras);
+        });
+    }
+    getUserCards(res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            LOG.debug("getUserCards");
+            const userLogged = index_1.auth.loggedId;
+            let userTras = yield cardRepository.findByUserId(userLogged);
+            return res.status(200).send(userTras);
         });
     }
 }

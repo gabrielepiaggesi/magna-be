@@ -9,11 +9,17 @@ import { User } from "../../models/user/User";
 import { SubScription } from "../../models/financial/SubScription";
 import { SubScriptionRepository } from "../../repositories/financial/SubScriptionRepository";
 import Stripe from "stripe";
+import { TransactionRepository } from "../../repositories/financial/TransactionRepository";
+import { Transaction } from "../../models/financial/Transaction";
+import { CardRepository } from "../../repositories/financial/CardRepository";
+import { Card } from "../../models/financial/Card";
 
 const LOG = new Logger("FinancialService.class");
 const userRepository = new UserRepository();
 const paymentService = new PaymentService();
 const subScriptionRepository = new SubScriptionRepository();
+const transactionRepository = new TransactionRepository();
+const cardRepository = new CardRepository();
 const db = new Database();
 
 export class FinancialService {
@@ -48,6 +54,20 @@ export class FinancialService {
         let userSub: SubScription = await subScriptionRepository.findByUserIdAndPlanId(userLogged, planId);
         userSub = userSub || new SubScription();
         return res.status(200).send(userSub);
+    }
+
+    public async getUserTransactions(res) {
+        LOG.debug("getUserTransactions");
+        const userLogged = auth.loggedId;
+        let userTras: Transaction[] = await transactionRepository.findByUser(userLogged);
+        return res.status(200).send(userTras);
+    }
+
+    public async getUserCards(res) {
+        LOG.debug("getUserCards");
+        const userLogged = auth.loggedId;
+        let userTras: Card[] = await cardRepository.findByUserId(userLogged);
+        return res.status(200).send(userTras);
     }
 
 }

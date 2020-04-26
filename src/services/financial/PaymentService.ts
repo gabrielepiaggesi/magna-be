@@ -62,9 +62,11 @@ export class PaymentService {
         let userCard: Card = await cardRepository.findByUserIdAndFingerprint(userId, paymentMethod.card.fingerprint);
         
         if (!userCard) {
+            await cardRepository.resetNotPrincipalCard(userId);
             const card = await stripeService.attachAndSetPaymentMethod(new StripePaymentMethodReq(paymentMethodId, customerId));
             
             userCard = new Card();
+            userCard.principal = true;
             userCard.user_id = userId;
             userCard.payment_method_id = card.id;
             userCard.last_4 = card.card.last4;

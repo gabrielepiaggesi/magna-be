@@ -9,6 +9,7 @@ export class Card extends Table {
     public three_d_secure_supported: boolean;
     public provider: string = 'STRIPE';
     public detail: string;
+    public principal: boolean;
 
     constructor() { super(); }
 }

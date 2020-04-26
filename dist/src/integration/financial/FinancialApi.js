@@ -22,6 +22,8 @@ const financialService = new FinancialService_1.FinancialService();
 const webHookService = new WebHookService_1.WebHookService();
 // routes
 storyRoutes.get("/subscription/:planId", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield financialService.getUserSubScription(res, req.params.planId); }));
+storyRoutes.get("/transactions", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield financialService.getUserTransactions(res); }));
+storyRoutes.get("/cards", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield financialService.getUserCards(res); }));
 storyRoutes.post("/pay", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield financialService.payUserSubScription(res, req.body); }));
 // webhook
 storyRoutes.post("/webhook/subscription", (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield webHookService.updateSubScriptionWH(res, req.body); }));

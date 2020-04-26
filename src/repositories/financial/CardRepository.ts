@@ -13,4 +13,10 @@ export class CardRepository extends Repository<Card> {
         const q = `select * from cards where user_id = ${userId} and fingerprint = "${fingerprint}" and deleted_at is null`;
         return await this.db.query(query || q).then((results) => results[0]);
     }
+
+    public async resetNotPrincipalCard(userId) {
+        const q = `
+        update cards set principal = false where user_id = ${userId}`;
+        return await this.db.query(q).then((results) => results[0]);
+    }
 }
