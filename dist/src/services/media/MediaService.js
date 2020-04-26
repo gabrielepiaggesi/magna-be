@@ -41,6 +41,7 @@ class MediaService {
                 yield db.newTransaction();
                 try {
                     const url = yield this.uploadImageToStorage(file);
+                    console.log(url);
                     let media = new Media_1.Media();
                     media.user_id = userId;
                     media.detail = file.fileSize;
@@ -96,7 +97,7 @@ class MediaService {
                 // The public URL can be used to directly access the file via HTTP.
                 // https://firebasestorage.googleapis.com/v0/b/thismybio.appspot.com/o/gp.jpeg?alt=media
                 // https://storage.cloud.google.com/thismybio.appspot.com/gp.jpeg
-                return url_1.format(`https://storage.cloud.google.com/${bucket.name}/${fileUpload.name}`);
+                return url_1.format(`https://storage.cloud.google.com/${bucket.name}/${fileUpload.name}`).toString();
             });
             yield blobStream.end(file.buffer);
             return url;
