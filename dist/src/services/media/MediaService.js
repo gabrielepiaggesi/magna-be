@@ -27,7 +27,7 @@ const storage = new storage_1.Storage({
     projectId: "thismybio",
     keyFilename: "./firebaseKey.json"
 });
-const bucket = storage.bucket("gs://thismybio.appspot.com");
+let bucket = storage.bucket("thismybio.appspot.com/profiles-images");
 class MediaService {
     // https://console.firebase.google.com/u/0/project/thismybio/storage/thismybio.appspot.com/files?hl=it
     // https://github.com/expressjs/multer
@@ -83,11 +83,14 @@ class MediaService {
             const blobStream = yield fileUpload.createWriteStream({ metadata: { contentType: file.mimetype } });
             let url = null;
             yield blobStream.on('error', (error) => {
+                console.log(error);
                 throw { message: 'Something is wrong! Unable to upload at the moment.', code: 'unable_upload' };
             });
             yield blobStream.on('finish', () => {
                 // The public URL can be used to directly access the file via HTTP.
-                url = url_1.format(`https://storage.googleapis.com/${bucket.name}/${fileUpload.name}`);
+                // https://firebasestorage.googleapis.com/v0/b/thismybio.appspot.com/o/gp.jpeg?alt=media
+                // https://storage.cloud.google.com/thismybio.appspot.com/gp.jpeg
+                url = url_1.format(`https://storage.cloud.google.com/${bucket.name}/${fileUpload.name}`);
             });
             yield blobStream.end(file.buffer);
             return url;
