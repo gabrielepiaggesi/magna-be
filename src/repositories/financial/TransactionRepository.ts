@@ -17,7 +17,7 @@ export class TransactionRepository extends Repository<Transaction> {
         tra.stripe_payment_method as tra_payment_method_id, 
         tra.id as tra_id, 
         card.id as card_id,
-        card.last4, 
+        card.last_4, 
         card.payment_method_id as card_payment_method_id, 
         plan.title, 
         plan.id as plan_id,
