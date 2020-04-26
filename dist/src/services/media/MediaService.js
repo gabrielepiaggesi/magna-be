@@ -81,7 +81,7 @@ class MediaService {
             }
             const newFileName = `${file.originalname}_${Date.now()}`;
             const fileUpload = bucket.file(newFileName);
-            const blobStream = yield fileUpload.createWriteStream({ metadata: { contentType: file.mimetype }, predefinedAcl: "publicRead" });
+            const blobStream = yield fileUpload.createWriteStream({ metadata: { contentType: file.mimetype } });
             yield blobStream.on('error', (error) => {
                 console.log(error);
                 throw { message: 'Something is wrong! Unable to upload at the moment.', code: 'unable_upload' };
