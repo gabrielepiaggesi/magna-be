@@ -18,7 +18,7 @@ class CardRepository extends Repository_1.Repository {
     findByUserId(userId, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const q = `select * from cards where user_id = ${userId} and deleted_at is null`;
-            return yield this.db.query(query || q).then((results) => results[0]);
+            return yield this.db.query(query || q).then((results) => results);
         });
     }
     findByUserIdAndFingerprint(userId, fingerprint, query = null) {

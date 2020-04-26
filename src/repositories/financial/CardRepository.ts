@@ -6,7 +6,7 @@ export class CardRepository extends Repository<Card> {
 
     public async findByUserId(userId, query = null) {
         const q = `select * from cards where user_id = ${userId} and deleted_at is null`;
-        return await this.db.query(query || q).then((results) => results[0]);
+        return await this.db.query(query || q).then((results) => results);
     }
 
     public async findByUserIdAndFingerprint(userId, fingerprint, query = null) {
