@@ -51,7 +51,7 @@ export class FinancialService {
         LOG.debug("getUserSubScription");
         const userLogged = auth.loggedId;
 
-        let userSub: SubScription = await subScriptionRepository.findByUserIdAndPlanId(userLogged, planId);
+        let userSub: SubScription = await subScriptionRepository.findCurrentSubForUser(userLogged, planId);
         userSub = userSub || new SubScription();
         return res.status(200).send(userSub);
     }

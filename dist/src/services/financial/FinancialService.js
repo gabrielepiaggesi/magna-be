@@ -53,7 +53,7 @@ class FinancialService {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.debug("getUserSubScription");
             const userLogged = index_1.auth.loggedId;
-            let userSub = yield subScriptionRepository.findByUserIdAndPlanId(userLogged, planId);
+            let userSub = yield subScriptionRepository.findCurrentSubForUser(userLogged, planId);
             userSub = userSub || new SubScription_1.SubScription();
             return res.status(200).send(userSub);
         });
