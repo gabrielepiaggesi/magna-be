@@ -18,7 +18,22 @@ class TransactionRepository extends Repository_1.Repository {
     findByUser(userId, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             query = `
-        select tra.* as transaction, sub.* as subscription, plan.* as plan 
+        select tra.amount, 
+        tra.operation_resume, 
+        tra.created_at, 
+        tra.stripe_payment_status, 
+        tra.stripe_invoice_status, 
+        tra.invoice_pdf_url, 
+        tra.status as tra_status, 
+        tra.stripe_payment_method as tra_payment_method_id, 
+        tra.id as tra_id, 
+        card.id as card_id,
+        card.last4, 
+        card.payment_method_id as card_payment_method_id, 
+        plan.title, 
+        plan.id as plan_id
+        sub.subscription_id as sub_stripe_subscription_id,
+        sub.id as sub_id 
         from transactions tra 
         inner join subscriptions sub on sub.subscription_id = tra.stripe_sub_id and sub.deleted_at is null 
         inner join cards card on card.payment_method_id = tra.stripe_payment_method and card.deleted_at is null 
