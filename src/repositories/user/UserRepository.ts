@@ -9,7 +9,7 @@ export class UserRepository extends Repository<User> {
 
     public findByUserName(username: string, query = null) {
         // tslint:disable-next-line:max-line-length
-        return this.db.query(query || `select * from ${this.table} where username = ${username} limit 1`).then((results) => results[0]);
+        return this.db.query(query || `select * from ${this.table} where username = "${username}" limit 1`).then((results) => results[0]);
     }
 
     public findByEmailAndPassword(email: string, password: string, query = null) {
