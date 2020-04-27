@@ -5,7 +5,7 @@ export class CardRepository extends Repository<Card> {
     public table = "cards";
 
     public async findByUserId(userId, query = null) {
-        const q = `select * from cards where user_id = ${userId} and deleted_at is null`;
+        const q = `select * from cards where user_id = ${userId} and deleted_at is null order by created_at desc`;
         return await this.db.query(query || q).then((results) => results);
     }
 
