@@ -154,7 +154,7 @@ export class DetailService {
             } else {
                 detail = new Detail();
                 detail.user_id = loggedId;
-                detail.type = DetailType.BIO;
+                detail.type = DetailType.NOW;
                 detail.text1 = obj.text1;
                 detail.text2 = obj.text2;
                 detailInserted = await detailRepository.save(detail);

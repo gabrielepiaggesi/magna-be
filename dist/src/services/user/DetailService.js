@@ -167,7 +167,7 @@ class DetailService {
                 else {
                     detail = new Detail_1.Detail();
                     detail.user_id = loggedId;
-                    detail.type = DetailType_1.DetailType.BIO;
+                    detail.type = DetailType_1.DetailType.NOW;
                     detail.text1 = obj.text1;
                     detail.text2 = obj.text2;
                     detailInserted = yield detailRepository.save(detail);
