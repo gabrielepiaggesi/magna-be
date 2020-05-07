@@ -71,7 +71,7 @@ export class MediaService {
 
     private async uploadImageToStorage(file): Promise<string> {
         if (!file) { throw { message: 'No image file', code: 'no_image' }; }
-        const newFileName = `${file.originalname}_${Date.now()}`;
+        const newFileName = `${auth.loggedId}_${Date.now()}`;
         const fileUpload = bucket.file(newFileName);
         const blobStream = await fileUpload.createWriteStream({ metadata: { contentType: file.mimetype } });
 

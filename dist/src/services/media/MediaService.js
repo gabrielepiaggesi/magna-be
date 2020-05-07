@@ -79,7 +79,7 @@ class MediaService {
             if (!file) {
                 throw { message: 'No image file', code: 'no_image' };
             }
-            const newFileName = `${file.originalname}_${Date.now()}`;
+            const newFileName = `${index_1.auth.loggedId}_${Date.now()}`;
             const fileUpload = bucket.file(newFileName);
             const blobStream = yield fileUpload.createWriteStream({ metadata: { contentType: file.mimetype } });
             yield blobStream.on('error', (error) => {
