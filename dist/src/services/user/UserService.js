@@ -13,8 +13,13 @@ const index_1 = require("../../integration/middleware/index");
 const User_1 = require("../../models/user/User");
 const UserRepository_1 = require("../../repositories/user/UserRepository");
 const Logger_1 = require("../../utils/Logger");
+const Detail_1 = require("../../models/user/Detail");
+const DetailRepository_1 = require("../../repositories/user/DetailRepository");
+const database_1 = require("../../database");
 const LOG = new Logger_1.Logger("UserService.class");
 const userRepository = new UserRepository_1.UserRepository();
+const detailRepository = new DetailRepository_1.DetailRepository();
+const db = new database_1.Database();
 class UserService {
     getUsers(res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -59,6 +64,26 @@ class UserService {
             const userUpdated = yield userRepository.update(user);
             LOG.debug("userUpdated ", userUpdated);
             return res.status(200).send(userUpdated);
+        });
+    }
+    saveEmail(res, body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield db.newTransaction();
+            try {
+                const detail = new Detail_1.Detail();
+                detail.user_id = 0;
+                detail.type = "SAVE";
+                detail.text1 = body.email;
+                const detailInserted = yield detailRepository.save(detail);
+                yield db.commit();
+                LOG.debug("updateBio success", detailInserted);
+                return res.status(200).send(detailInserted);
+            }
+            catch (e) {
+                yield db.rollback();
+                LOG.error("updateBio error", e);
+                return res.status(500).send(e);
+            }
         });
     }
 }

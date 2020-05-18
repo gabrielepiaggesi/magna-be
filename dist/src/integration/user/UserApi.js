@@ -22,5 +22,6 @@ const userService = new UserService_1.UserService();
 userRoutes.get("/me", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield userService.getLoggedUser(res); }));
 userRoutes.get("/:id", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield userService.getUser(res, parseInt(req.params.id, 10)); }));
 userRoutes.post("/create", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield userService.createUser(res, req.body); }));
+userRoutes.post("/save", (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield userService.saveEmail(res, req.body); }));
 exports.default = userRoutes;
 //# sourceMappingURL=UserApi.js.map
