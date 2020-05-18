@@ -4,9 +4,14 @@ import { auth } from "../../integration/middleware/index";
 import { User } from "../../models/user/User";
 import { UserRepository } from "../../repositories/user/UserRepository";
 import { Logger } from "../../utils/Logger";
+import { Detail } from "../../models/user/Detail";
+import { DetailRepository } from "../../repositories/user/DetailRepository";
+import { Database } from "../../database";
 
 const LOG = new Logger("UserService.class");
 const userRepository = new UserRepository();
+const detailRepository = new DetailRepository();
+const db = new Database();
 
 export class UserService {
 
@@ -52,5 +57,24 @@ export class UserService {
         const userUpdated = await userRepository.update(user);
         LOG.debug("userUpdated ", userUpdated);
         return res.status(200).send(userUpdated);
+    }
+
+    public async saveEmail(res: Response, body: any) {
+        await db.newTransaction();
+        try {
+            const detail = new Detail();
+            detail.user_id = 0;
+            detail.type = "SAVE";
+            detail.text1 = body.email;
+            const detailInserted = await detailRepository.save(detail);
+        
+            await db.commit();
+            LOG.debug("updateBio success", detailInserted);
+            return res.status(200).send(detailInserted);
+        } catch (e) {
+            await db.rollback();
+            LOG.error("updateBio error", e);
+            return res.status(500).send(e);
+        }
     }
 }
