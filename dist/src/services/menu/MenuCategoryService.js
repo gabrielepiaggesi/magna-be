@@ -34,23 +34,24 @@ class MenuCategoryService {
             try {
                 let menu = new MenuCategory_1.MenuCategory();
                 menu.menu_id = obj.menu_id;
-                if (obj.cat_id) {
-                    menu = yield menuCategoryRepository.findById(obj.cat_id);
+                if (obj.id) {
+                    menu = yield menuCategoryRepository.findById(obj.id);
                 }
                 menu.name = obj.name;
                 if (!obj.delete) {
-                    if (obj.cat_id) {
+                    if (obj.id) {
                         yield menuCategoryRepository.update(menu);
                     }
                     else {
-                        yield menuCategoryRepository.save(menu);
+                        const id = yield menuCategoryRepository.save(menu);
+                        menu.id = id;
                     }
                 }
-                else if (obj.cat_id) {
+                else if (obj.id) {
                     yield menuCategoryRepository.delete(menu);
                 }
                 yield db.commit();
-                return res.status(200).send({ status: "success" });
+                return res.status(200).send(menu);
             }
             catch (e) {
                 yield db.rollback();

@@ -24,24 +24,25 @@ export class MenuCategoryService {
         try {
             let menu = new MenuCategory();
             menu.menu_id = obj.menu_id;
-            if (obj.cat_id) {
-                menu = await menuCategoryRepository.findById(obj.cat_id);
+            if (obj.id) {
+                menu = await menuCategoryRepository.findById(obj.id);
             }
 
             menu.name = obj.name;
 
             if (!obj.delete) {
-                if (obj.cat_id) {
+                if (obj.id) {
                     await menuCategoryRepository.update(menu);
                 } else {
-                    await menuCategoryRepository.save(menu);
+                    const id = await menuCategoryRepository.save(menu);
+                    menu.id = id;
                 }
-            } else if (obj.cat_id) {
+            } else if (obj.id) {
                 await menuCategoryRepository.delete(menu);
             }
 
             await db.commit();
-            return res.status(200).send({ status: "success" });
+            return res.status(200).send(menu);
         } catch (e) {
             await db.rollback();
             LOG.error("new creator plan error", e);

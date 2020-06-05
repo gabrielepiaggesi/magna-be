@@ -24,8 +24,8 @@ export class MenuItemService {
         try {
             let menu = new MenuItem();
             menu.category_id = obj.category_id;
-            if (obj.item_id) {
-                menu = await menuItemRepository.findById(obj.item_id);
+            if (obj.id) {
+                menu = await menuItemRepository.findById(obj.id);
             }
 
             menu.name = obj.name;
@@ -33,17 +33,18 @@ export class MenuItemService {
             menu.price = obj.price;
 
             if (!obj.delete) {
-                if (obj.item_id) {
+                if (obj.id) {
                     await menuItemRepository.update(menu);
                 } else {
-                    await menuItemRepository.save(menu);
+                    const id = await menuItemRepository.save(menu);
+                    menu.id = id;
                 }
-            } else if (obj.item_id) {
+            } else if (obj.id) {
                 await menuItemRepository.delete(menu);
             }
 
             await db.commit();
-            return res.status(200).send({ status: "success" });
+            return res.status(200).send(menu);
         } catch (e) {
             await db.rollback();
             LOG.error("new creator plan error", e);

@@ -25,8 +25,8 @@ export class MenuService {
         await db.newTransaction();
         try {
             let menu = new Menu();
-            if (obj.menu_id) {
-                menu = await menuRepository.findById(obj.menu_id);
+            if (obj.id) {
+                menu = await menuRepository.findById(obj.id);
             }
 
             menu.business_id = loggedId;
@@ -34,17 +34,19 @@ export class MenuService {
             menu.status = 'active';
 
             if (!obj.delete) {
-                if (obj.menu_id) {
+                if (obj.id) {
                     await menuRepository.update(menu);
                 } else {
-                    await menuRepository.save(menu);
+                    const id = await menuRepository.save(menu);
+                    menu.id = id;
                 }
-            } else if (obj.menu_id) {
+            } else if (obj.id) {
                 await menuRepository.delete(menu);
             }
 
             await db.commit();
-            return res.status(200).send({ status: "success" });
+            const menus = await menuRepository.findByBusinessId(loggedId);
+            return res.status(200).send(menus);
         } catch (e) {
             await db.rollback();
             LOG.error("new creator plan error", e);

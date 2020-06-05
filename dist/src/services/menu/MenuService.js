@@ -35,25 +35,27 @@ class MenuService {
             yield db.newTransaction();
             try {
                 let menu = new Menu_1.Menu();
-                if (obj.menu_id) {
-                    menu = yield menuRepository.findById(obj.menu_id);
+                if (obj.id) {
+                    menu = yield menuRepository.findById(obj.id);
                 }
                 menu.business_id = loggedId;
                 menu.name = obj.name;
                 menu.status = 'active';
                 if (!obj.delete) {
-                    if (obj.menu_id) {
+                    if (obj.id) {
                         yield menuRepository.update(menu);
                     }
                     else {
-                        yield menuRepository.save(menu);
+                        const id = yield menuRepository.save(menu);
+                        menu.id = id;
                     }
                 }
-                else if (obj.menu_id) {
+                else if (obj.id) {
                     yield menuRepository.delete(menu);
                 }
                 yield db.commit();
-                return res.status(200).send({ status: "success" });
+                const menus = yield menuRepository.findByBusinessId(loggedId);
+                return res.status(200).send(menus);
             }
             catch (e) {
                 yield db.rollback();
