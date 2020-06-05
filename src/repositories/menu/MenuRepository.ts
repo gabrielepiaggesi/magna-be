@@ -18,4 +18,16 @@ export class MenuRepository extends Repository<Menu> {
             and deleted_at is null`
             ).then((results) => results);
     }
+
+    public getMenu(menuId: number, query = null): Promise<any[]> {
+        // tslint:disable-next-line:max-line-length
+        return db.query(query || 
+            `select * 
+            from ${this.table} m 
+            inner join menus_categories mc on mc.menu_id = m.id and mc.deleted_at is null 
+            inner join menus_items mi on mi.category_id = mc.id and mi.deleted_at is null 
+            where m.id = ${menuId} 
+            and m.deleted_at is null`
+            ).then((results) => results);
+    }
 }

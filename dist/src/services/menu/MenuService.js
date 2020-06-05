@@ -25,7 +25,7 @@ class MenuService {
     }
     getMenu(res, menuId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const plan = yield menuRepository.findById(menuId);
+            const plan = yield menuRepository.getMenu(menuId);
             return res.status(200).send(plan);
         });
     }

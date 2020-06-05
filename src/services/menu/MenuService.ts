@@ -16,7 +16,7 @@ export class MenuService {
     }
 
     public async getMenu(res: Response, menuId: number) {
-        const plan = await menuRepository.findById(menuId);
+        const plan = await menuRepository.getMenu(menuId);
         return res.status(200).send(plan);
     }
 
