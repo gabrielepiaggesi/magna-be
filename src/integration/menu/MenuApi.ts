@@ -12,7 +12,8 @@ const menuCatService = new MenuCategoryService();
 const menuItemService = new MenuItemService();
 
 // routes
-menuRoutes.get("/:businessId", async (req, res) => await menuService.getMenu(res, parseInt(req.params.businessId, 10)));
+menuRoutes.get("/:businessId", async (req, res) => await menuService.getMenus(res, parseInt(req.params.businessId, 10)));
+menuRoutes.get("/menu/:menuId", async (req, res) => await menuService.getMenu(res, parseInt(req.params.menuId, 10)));
 menuRoutes.get("/item/:itemId", async (req, res) => await menuItemService.getMenuItem(res, parseInt(req.params.itemId, 10)));
 
 menuRoutes.post("/menu", auth.isUser, async (req, res) => await menuService.updateMenu(res, req.body));
