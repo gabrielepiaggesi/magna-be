@@ -5,7 +5,7 @@ const LOG = new Logger("UserRepository.class");
 const db = require("../../database");
 
 export class BusinessRepository extends Repository<Business> {
-    public table = "users";
+    public table = "business";
 
     public findByUserName(username: string, query = null) {
         // tslint:disable-next-line:max-line-length
@@ -26,7 +26,7 @@ export class BusinessRepository extends Repository<Business> {
         const datetime = new Date();
         const from = datetime.toISOString().slice(0,10) + ' 00:00:00';
         const to = datetime.toISOString().slice(0,10) + ' 23:59:59';
-        const q = `select count(*) as count from users where created_at between '${from}' and '${to}'`;
+        const q = `select count(*) as count from business where created_at between '${from}' and '${to}'`;
         return await db.query(query || q).then((results) => results[0]);
     }
 

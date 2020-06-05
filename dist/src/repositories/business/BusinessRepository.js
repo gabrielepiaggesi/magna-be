@@ -16,7 +16,7 @@ const db = require("../../database");
 class BusinessRepository extends Repository_1.Repository {
     constructor() {
         super(...arguments);
-        this.table = "users";
+        this.table = "business";
     }
     findByUserName(username, query = null) {
         // tslint:disable-next-line:max-line-length
@@ -35,7 +35,7 @@ class BusinessRepository extends Repository_1.Repository {
             const datetime = new Date();
             const from = datetime.toISOString().slice(0, 10) + ' 00:00:00';
             const to = datetime.toISOString().slice(0, 10) + ' 23:59:59';
-            const q = `select count(*) as count from users where created_at between '${from}' and '${to}'`;
+            const q = `select count(*) as count from business where created_at between '${from}' and '${to}'`;
             return yield db.query(query || q).then((results) => results[0]);
         });
     }
