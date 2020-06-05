@@ -22,10 +22,10 @@ class MenuRepository extends Repository_1.Repository {
     getMenu(menuId, query = null) {
         // tslint:disable-next-line:max-line-length
         return db.query(query ||
-            `select * 
+            `select m.* as menu, mc.* as category, mi.* as item 
             from ${this.table} m 
-            inner join menus_categories mc on mc.menu_id = m.id and mc.deleted_at is null 
-            inner join menus_items mi on mi.category_id = mc.id and mi.deleted_at is null 
+            left join menus_categories mc on mc.menu_id = m.id and mc.deleted_at is null 
+            left join menus_items mi on mi.category_id = mc.id and mi.deleted_at is null 
             where m.id = ${menuId} 
             and m.deleted_at is null 
             limit 1`).then((results) => results[0]);
