@@ -1,11 +1,9 @@
 import { Response } from "express";
-import { Database } from "../../database";
 import { auth } from "../../integration/middleware/index";
 import { Logger } from "../../utils/Logger";
-import { UserRepository } from "../../repositories/user/UserRepository";
+import { BusinessRepository } from "../../repositories/business/BusinessRepository";
 import { SubScriptionReq } from "./classes/SubScriptionReq";
 import { PaymentService } from "./PaymentService";
-import { User } from "../../models/user/User";
 import { SubScription } from "../../models/financial/SubScription";
 import { SubScriptionRepository } from "../../repositories/financial/SubScriptionRepository";
 import Stripe from "stripe";
@@ -13,14 +11,15 @@ import { TransactionRepository } from "../../repositories/financial/TransactionR
 import { Transaction } from "../../models/financial/Transaction";
 import { CardRepository } from "../../repositories/financial/CardRepository";
 import { Card } from "../../models/financial/Card";
+import { Business } from "../../models/business/Business";
 
 const LOG = new Logger("FinancialService.class");
-const userRepository = new UserRepository();
+const userRepository = new BusinessRepository();
 const paymentService = new PaymentService();
 const subScriptionRepository = new SubScriptionRepository();
 const transactionRepository = new TransactionRepository();
 const cardRepository = new CardRepository();
-const db = new Database();
+const db = require("../../database");
 
 export class FinancialService {
 
@@ -30,7 +29,7 @@ export class FinancialService {
 
         await db.newTransaction();
         try {
-            const user: User = await userRepository.findById(userLogged);
+            const user: Business = await userRepository.findById(userLogged);
             LOG.debug("user", user.id);
             obj.userId = user.id;
             const subscription = await paymentService.subscribeTo(obj);

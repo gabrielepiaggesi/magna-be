@@ -9,22 +9,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const database_1 = require("../../database");
 const index_1 = require("../../integration/middleware/index");
 const Logger_1 = require("../../utils/Logger");
-const UserRepository_1 = require("../../repositories/user/UserRepository");
+const BusinessRepository_1 = require("../../repositories/business/BusinessRepository");
 const PaymentService_1 = require("./PaymentService");
 const SubScription_1 = require("../../models/financial/SubScription");
 const SubScriptionRepository_1 = require("../../repositories/financial/SubScriptionRepository");
 const TransactionRepository_1 = require("../../repositories/financial/TransactionRepository");
 const CardRepository_1 = require("../../repositories/financial/CardRepository");
 const LOG = new Logger_1.Logger("FinancialService.class");
-const userRepository = new UserRepository_1.UserRepository();
+const userRepository = new BusinessRepository_1.BusinessRepository();
 const paymentService = new PaymentService_1.PaymentService();
 const subScriptionRepository = new SubScriptionRepository_1.SubScriptionRepository();
 const transactionRepository = new TransactionRepository_1.TransactionRepository();
 const cardRepository = new CardRepository_1.CardRepository();
-const db = new database_1.Database();
+const db = require("../../database");
 class FinancialService {
     payUserSubScription(res, obj) {
         return __awaiter(this, void 0, void 0, function* () {

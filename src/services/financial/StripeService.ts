@@ -4,7 +4,7 @@ import Stripe from 'stripe';
 import { StripePaymentMethodReq } from "./classes/StripePaymentMethodReq";
 import { StripeSubScriptionReq } from "./classes/StripeSubScriptionReq";
 import { SubScription } from "../../models/financial/SubScription";
-const stripe = new Stripe('sk_live_b81pW4GV39JFBsOCJCHhCRBw00ymniER51', null);
+const stripe = new Stripe('sk_test_g7a5tHbE9UvEBUNuTFSsFYvu00x2rejFec', null);
 const LOG = new Logger("StripeService.class");
 
 export class StripeService {

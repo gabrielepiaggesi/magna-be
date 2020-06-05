@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Repository_1 = require("../Repository");
+const db = require("../../database");
 class SubScriptionRepository extends Repository_1.Repository {
     constructor() {
         super(...arguments);
@@ -20,13 +21,13 @@ class SubScriptionRepository extends Repository_1.Repository {
             const q = `select * from subscriptions sub 
         inner join plans plan on plan.id = sub.plan_id 
         where sub.user_id = ${userId} and sub.plan_id = ${planId} and sub.subscription_status not in ("canceled", "unpaid") and sub.deleted_at is null`;
-            return yield this.db.query(query || q).then((results) => results[0]);
+            return yield db.query(query || q).then((results) => results[0]);
         });
     }
     findByUserIdAndPlanId(userId, planId, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const q = `select * from subscriptions where user_id = ${userId} and plan_id = ${planId} and subscription_status not in ("canceled", "unpaid") and deleted_at is null`;
-            return yield this.db.query(query || q).then((results) => results[0]);
+            return yield db.query(query || q).then((results) => results[0]);
         });
     }
 }

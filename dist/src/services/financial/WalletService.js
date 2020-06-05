@@ -9,9 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const database_1 = require("../../database");
 const Logger_1 = require("../../utils/Logger");
-const UserRepository_1 = require("../../repositories/user/UserRepository");
+const BusinessRepository_1 = require("../../repositories/business/BusinessRepository");
 const SubScription_1 = require("../../models/financial/SubScription");
 const SubScriptionRepository_1 = require("../../repositories/financial/SubScriptionRepository");
 const StripeRepository_1 = require("../../repositories/financial/StripeRepository");
@@ -22,13 +21,13 @@ const Transaction_1 = require("../../models/financial/Transaction");
 const TransactionRepository_1 = require("../../repositories/financial/TransactionRepository");
 const OperationSign_1 = require("../../enums/financial/OperationSign");
 const LOG = new Logger_1.Logger("WalletService.class");
-const userRepository = new UserRepository_1.UserRepository();
+const userRepository = new BusinessRepository_1.BusinessRepository();
 const subScriptionRepository = new SubScriptionRepository_1.SubScriptionRepository();
 const transactionRepository = new TransactionRepository_1.TransactionRepository();
 const stripeRepository = new StripeRepository_1.StripeRepository();
 const planRepository = new PlanRepository_1.PlanRepository();
 const stripeService = new StripeService_1.StripeService();
-const db = new database_1.Database();
+const db = require("../../database");
 class WalletService {
     updateUserWallet(sub) {
         return __awaiter(this, void 0, void 0, function* () {

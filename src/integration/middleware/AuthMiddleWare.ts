@@ -1,11 +1,11 @@
 import passport from "passport";
 import passportJWT from "passport-jwt";
 import { jwtConfig } from "../../../environment/dev/jwt";
-import { UserRepository } from "../../repositories/user/UserRepository";
+import { BusinessRepository } from "../../repositories/business/BusinessRepository";
 const ExtractJwt = passportJWT.ExtractJwt;
 // tslint:disable-next-line:variable-name
 const JwtStrategy = passportJWT.Strategy;
-const userRepository = new UserRepository();
+const userRepository = new BusinessRepository();
 
 export class AuthMiddleWare {
   public jwtOptions = { jwtFromRequest: null, secretOrKey: null };

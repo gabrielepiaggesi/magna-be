@@ -2,18 +2,16 @@ import bcrypt from "bcrypt";
 import { Response } from "express";
 import jwt from "jsonwebtoken";
 import { jwtConfig } from "../../environment/dev/jwt";
-import { Database } from "../database";
 import { LoginDTO } from "../dtos/LoginDTO";
 import { SignupDTO } from "../dtos/SignupDTO";
-import { UserDTO } from "../dtos/UserDTO";
 import { auth } from "../integration/middleware";
-import { User } from "../models/user/User";
-import { UserRepository } from "../repositories/user/UserRepository";
+import { BusinessRepository } from "../repositories/business/BusinessRepository";
 import { Logger } from "../utils/Logger";
+import { Business } from "../models/business/Business";
 
 const LOG = new Logger("AuthService.class");
-const userRepository = new UserRepository();
-const db = new Database();
+const userRepository = new BusinessRepository();
+const db = require("../database");
 
 export class AuthService {
 
@@ -47,10 +45,10 @@ export class AuthService {
     public async signup(res: Response, user: SignupDTO) {
         LOG.debug("signup...", user);
 
-        const userWithThisUserName = await userRepository.findByUserName(user.username);
+        const userWithThisUserName = await userRepository.findByEmail(user.email);
 
-        if (userWithThisUserName || !user.username) {
-            return res.status(500).json({ msg: "Username already exists", code: 'Auth.Username' });
+        if (userWithThisUserName || !user.email) {
+            return res.status(500).json({ msg: "Generic Error", code: 'Auth.Generic' });
         }
 
         await bcrypt.hash(user.password, 10, async (err, hash) => {
@@ -59,10 +57,12 @@ export class AuthService {
             } else if (hash) {
                 await db.newTransaction();
                 try {
-                    const newUser = new User();
+                    const newUser = new Business();
                     newUser.email = user.email;
                     newUser.status = 'new_user';
-                    newUser.username = user.username;
+                    newUser.name = user.name;
+                    newUser.address = user.address;
+                    newUser.address = user.contact;
                     newUser.password = hash;
 
                     const userInserted = await userRepository.save(newUser);

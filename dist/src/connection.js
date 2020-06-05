@@ -65,5 +65,6 @@ dbConnection.on("error", (err) => {
 //         });
 //     });
 // };
-exports.db = dbConnection;
+module.exports = dbConnection;
+// export const db = dbConnection;
 //# sourceMappingURL=connection.js.map

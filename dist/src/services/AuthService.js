@@ -15,14 +15,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const jwt_1 = require("../../environment/dev/jwt");
-const database_1 = require("../database");
 const middleware_1 = require("../integration/middleware");
-const User_1 = require("../models/user/User");
-const UserRepository_1 = require("../repositories/user/UserRepository");
+const BusinessRepository_1 = require("../repositories/business/BusinessRepository");
 const Logger_1 = require("../utils/Logger");
+const Business_1 = require("../models/business/Business");
 const LOG = new Logger_1.Logger("AuthService.class");
-const userRepository = new UserRepository_1.UserRepository();
-const db = new database_1.Database();
+const userRepository = new BusinessRepository_1.BusinessRepository();
+const db = require("../database");
 class AuthService {
     login(res, user) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -56,9 +55,9 @@ class AuthService {
     signup(res, user) {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.debug("signup...", user);
-            const userWithThisUserName = yield userRepository.findByUserName(user.username);
-            if (userWithThisUserName || !user.username) {
-                return res.status(500).json({ msg: "Username already exists", code: 'Auth.Username' });
+            const userWithThisUserName = yield userRepository.findByEmail(user.email);
+            if (userWithThisUserName || !user.email) {
+                return res.status(500).json({ msg: "Generic Error", code: 'Auth.Generic' });
             }
             yield bcrypt_1.default.hash(user.password, 10, (err, hash) => __awaiter(this, void 0, void 0, function* () {
                 if (err) {
@@ -67,10 +66,12 @@ class AuthService {
                 else if (hash) {
                     yield db.newTransaction();
                     try {
-                        const newUser = new User_1.User();
+                        const newUser = new Business_1.Business();
                         newUser.email = user.email;
                         newUser.status = 'new_user';
-                        newUser.username = user.username;
+                        newUser.name = user.name;
+                        newUser.address = user.address;
+                        newUser.address = user.contact;
                         newUser.password = hash;
                         const userInserted = yield userRepository.save(newUser);
                         LOG.debug("newUserId ", userInserted.insertId);

@@ -1,6 +1,5 @@
-import { Database } from "../../database";
 import { Logger } from "../../utils/Logger";
-import { UserRepository } from "../../repositories/user/UserRepository";
+import { BusinessRepository } from "../../repositories/business/BusinessRepository";
 import { PaymentService } from "./PaymentService";
 import { SubScription } from "../../models/financial/SubScription";
 import { SubScriptionRepository } from "../../repositories/financial/SubScriptionRepository";
@@ -16,13 +15,13 @@ import { TransactionRepository } from "../../repositories/financial/TransactionR
 import { OperationSign } from "../../enums/financial/OperationSign";
 
 const LOG = new Logger("WalletService.class");
-const userRepository = new UserRepository();
+const userRepository = new BusinessRepository();
 const subScriptionRepository = new SubScriptionRepository();
 const transactionRepository = new TransactionRepository();
 const stripeRepository = new StripeRepository();
 const planRepository = new PlanRepository();
 const stripeService = new StripeService();
-const db = new Database();
+const db = require("../../database");
 
 export class WalletService {
 

@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Repository_1 = require("../Repository");
+const db = require("../../database");
 class TransactionRepository extends Repository_1.Repository {
     constructor() {
         super(...arguments);
@@ -42,19 +43,19 @@ class TransactionRepository extends Repository_1.Repository {
         and tra.deleted_at is null 
         order by tra.created_at desc limit 10 
         `;
-            return yield this.db.query(query).then((results) => results);
+            return yield db.query(query).then((results) => results);
         });
     }
     findByPaymentIntentId(piId, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const q = `select * from transactions where stripe_payment_id = "${piId}" and deleted_at is null order by id desc limit 1`;
-            return yield this.db.query(query || q).then((results) => results[0]);
+            return yield db.query(query || q).then((results) => results[0]);
         });
     }
     findLastOfUserIdAndSubId(userId, subId, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const q = `select * from transactions where user_id = ${userId} and stripe_sub_id = "${subId}" and deleted_at is null order by id desc limit 1`;
-            return yield this.db.query(query || q).then((results) => results[0]);
+            return yield db.query(query || q).then((results) => results[0]);
         });
     }
 }

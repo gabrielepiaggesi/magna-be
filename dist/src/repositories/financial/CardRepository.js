@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Repository_1 = require("../Repository");
+const db = require("../../database");
 class CardRepository extends Repository_1.Repository {
     constructor() {
         super(...arguments);
@@ -18,20 +19,20 @@ class CardRepository extends Repository_1.Repository {
     findByUserId(userId, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const q = `select * from cards where user_id = ${userId} and deleted_at is null order by created_at desc`;
-            return yield this.db.query(query || q).then((results) => results);
+            return yield db.query(query || q).then((results) => results);
         });
     }
     findByUserIdAndFingerprint(userId, fingerprint, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const q = `select * from cards where user_id = ${userId} and fingerprint = "${fingerprint}" and deleted_at is null`;
-            return yield this.db.query(query || q).then((results) => results[0]);
+            return yield db.query(query || q).then((results) => results[0]);
         });
     }
     resetNotPrincipalCard(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             const q = `
         update cards set principal = false where user_id = ${userId}`;
-            return yield this.db.query(q).then((results) => results[0]);
+            return yield db.query(q).then((results) => results[0]);
         });
     }
 }

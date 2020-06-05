@@ -2,7 +2,6 @@
 import bodyParser from "body-parser";
 import cors from "cors";
 import express from "express";
-import { db } from "./connection";
 import api from "./integration/api";
 import { initMiddlewares } from "./integration/middleware/index";
 

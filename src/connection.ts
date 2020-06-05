@@ -63,5 +63,5 @@ dbConnection.on("error", (err) => {
 //         });
 //     });
 // };
-
-export const db = dbConnection;
+module.exports = dbConnection;
+// export const db = dbConnection;
