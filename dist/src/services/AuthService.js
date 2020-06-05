@@ -70,8 +70,9 @@ class AuthService {
                         newUser.email = user.email;
                         newUser.status = 'new_user';
                         newUser.name = user.name;
+                        newUser.type = 'business';
                         newUser.address = user.address;
-                        newUser.address = user.contact;
+                        newUser.contact = user.contact;
                         newUser.password = hash;
                         const userInserted = yield userRepository.save(newUser);
                         LOG.debug("newUserId ", userInserted.insertId);

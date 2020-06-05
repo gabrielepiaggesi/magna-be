@@ -4,6 +4,7 @@ export class Business extends Table {
     public email: string;
     public password: string;
     public status: string;
+    public type: string;
     public name: string;
     public address: string;
     public contact: string;
