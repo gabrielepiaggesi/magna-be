@@ -27,7 +27,8 @@ class MenuRepository extends Repository_1.Repository {
             inner join menus_categories mc on mc.menu_id = m.id and mc.deleted_at is null 
             inner join menus_items mi on mi.category_id = mc.id and mi.deleted_at is null 
             where m.id = ${menuId} 
-            and m.deleted_at is null`).then((results) => results);
+            and m.deleted_at is null 
+            limit 1`).then((results) => results[0]);
     }
 }
 exports.MenuRepository = MenuRepository;
