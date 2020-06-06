@@ -20,5 +20,6 @@ const userRoutes = express_1.default.Router();
 const userService = new BusinessService_1.BusinessService();
 // routes
 userRoutes.get("/me", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield userService.getLoggedBusiness(res); }));
+userRoutes.post("/me", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield userService.updateBusiness(res, req.body); }));
 exports.default = userRoutes;
 //# sourceMappingURL=BusinessApi.js.map

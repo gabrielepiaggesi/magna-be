@@ -73,8 +73,8 @@ const db = require("./connection");
 
 module.exports.query = async function (query) {
     LOG.debug("executing query...", query);
-    return new Promise<any>((resolve, reject) => {
-        db.query(query, (error, result, fields) => {
+    return new Promise<any>(async (resolve, reject) => {
+        await db.query(query, (error, result, fields) => {
             if (error) {
                 console.log("error 1", error); reject(error);
             } else {
@@ -87,12 +87,12 @@ module.exports.query = async function (query) {
 }
 
 module.exports.destroy = async function () {
-    db.destroy();
+    await db.destroy();
 }
 
 module.exports.newTransaction = async function () {
-    return new Promise<any>((resolve, reject) => {
-        db.beginTransaction((err) => {
+    return new Promise<any>(async (resolve, reject) => {
+        await db.beginTransaction((err) => {
             LOG.debug("beginTransaction...");
             if (err) {
                 this.rollback();
@@ -105,8 +105,8 @@ module.exports.newTransaction = async function () {
 }
 
 module.exports.commit = async function () {
-    return new Promise<any>((resolve, reject) => {
-        db.commit((err) => {
+    return new Promise<any>(async (resolve, reject) => {
+        await db.commit((err) => {
             LOG.debug("commit...");
             if (err) {
                 this.rollback();
@@ -119,8 +119,8 @@ module.exports.commit = async function () {
 }
 
 module.exports.rollback = async function () {
-    return new Promise<any>((resolve, reject) => {
-        db.rollback((err) => {
+    return new Promise<any>(async (resolve, reject) => {
+        await db.rollback((err) => {
             LOG.debug("rollback...");
             if (err) {
                 console.log("Rollback Error: ", err);

@@ -46,7 +46,7 @@ class MenuItemService {
                     }
                     else {
                         const id = yield menuItemRepository.save(menu);
-                        menu.id = id;
+                        menu.id = id.insertId;
                     }
                 }
                 else if (obj.id) {

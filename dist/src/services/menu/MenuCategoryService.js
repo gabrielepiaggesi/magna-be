@@ -44,7 +44,7 @@ class MenuCategoryService {
                     }
                     else {
                         const id = yield menuCategoryRepository.save(menu);
-                        menu.id = id;
+                        menu.id = id.insertId;
                     }
                 }
                 else if (obj.id) {

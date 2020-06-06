@@ -22,13 +22,19 @@ class MenuRepository extends Repository_1.Repository {
     getMenu(menuId, query = null) {
         // tslint:disable-next-line:max-line-length
         return db.query(query ||
-            `select m.* as menu, mc.* as category, mi.* as item 
-            from ${this.table} m 
-            left join menus_categories mc on mc.menu_id = m.id and mc.deleted_at is null 
+            `select 
+            mc.id as id,
+            mc.name as catName,
+            mc.menu_id as catMenuId,
+            mi.name as itemName,
+            mi.bio as itemBio,
+            mi.price as itemPrice,
+            mi.id as itemId,
+            mi.category_id as catId 
+            from menus_categories mc 
             left join menus_items mi on mi.category_id = mc.id and mi.deleted_at is null 
-            where m.id = ${menuId} 
-            and m.deleted_at is null 
-            limit 1`).then((results) => results[0]);
+            where mc.menu_id = ${menuId} 
+            and mc.deleted_at is null`).then((results) => results);
     }
 }
 exports.MenuRepository = MenuRepository;

@@ -14,12 +14,18 @@ dbConnection.connect((err) => {
 });
 dbConnection.on("error", (err) => {
     console.log("db error", err.code);
+    if (err.fatal) {
+        console.trace('fatal error: ' + err.message);
+    }
     if (err.code === "PROTOCOL_CONNECTION_LOST") {
         this.dbConnection = mysql.createConnection(dev);
     } else {
+        console.trace('error: ' + err.message);
         throw err;
     }
 });
+
+module.exports = dbConnection;
 
 // export const newTransaction = () => {
 //     return new Promise<any>((resolve, reject) => {
@@ -63,5 +69,4 @@ dbConnection.on("error", (err) => {
 //         });
 //     });
 // };
-module.exports = dbConnection;
 // export const db = dbConnection;

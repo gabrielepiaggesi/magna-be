@@ -16,4 +16,25 @@ export class BusinessService {
         LOG.debug("user", user);
         return res.status(200).send(user);
     }
+
+    public async updateBusiness(res: Response, obj) {
+        const loggedId = auth.loggedId;
+        await db.newTransaction();
+        try {
+            let business = await businessRepository.findById(loggedId);
+
+            business.name = obj.name;
+            business.contact = obj.contact;
+            business.address = obj.address;
+            await businessRepository.update(business);
+
+            await db.commit();
+            business = await businessRepository.findById(loggedId);
+            return res.status(200).send(business);
+        } catch (e) {
+            await db.rollback();
+            LOG.error("new creator plan error", e);
+            return res.status(500).send(e);
+        }
+    }
 }

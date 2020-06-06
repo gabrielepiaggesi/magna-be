@@ -13,8 +13,12 @@ const Logger_1 = require("../../utils/Logger");
 const middleware_1 = require("../../integration/middleware");
 const MenuRepository_1 = require("../../repositories/menu/MenuRepository");
 const Menu_1 = require("../../models/menu/Menu");
+const MenuCategoryRepository_1 = require("../../repositories/menu/MenuCategoryRepository");
+const MenuItemRepository_1 = require("../../repositories/menu/MenuItemRepository");
 const LOG = new Logger_1.Logger("MenuService.class");
 const menuRepository = new MenuRepository_1.MenuRepository();
+const catRepo = new MenuCategoryRepository_1.MenuCategoryRepository();
+const itemRepo = new MenuItemRepository_1.MenuItemRepository();
 const db = require("../../database");
 class MenuService {
     getMenus(res, creatorId) {
@@ -25,8 +29,18 @@ class MenuService {
     }
     getMenu(res, menuId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const plan = yield menuRepository.getMenu(menuId);
-            return res.status(200).send(plan);
+            let arra = [];
+            let cats = yield catRepo.findByMenuId(menuId);
+            for (let cat of cats) {
+                const items = yield itemRepo.findByCategoryId(cat.id);
+                const categ = {
+                    name: cat.name,
+                    id: cat.id,
+                    items
+                };
+                arra.push(categ);
+            }
+            return res.status(200).send(arra);
         });
     }
     updateMenu(res, obj) {
@@ -47,7 +61,7 @@ class MenuService {
                     }
                     else {
                         const id = yield menuRepository.save(menu);
-                        menu.id = id;
+                        menu.id = id.insertId;
                     }
                 }
                 else if (obj.id) {

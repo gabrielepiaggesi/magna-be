@@ -35,7 +35,7 @@ export class MenuCategoryService {
                     await menuCategoryRepository.update(menu);
                 } else {
                     const id = await menuCategoryRepository.save(menu);
-                    menu.id = id;
+                    menu.id = id.insertId;
                 }
             } else if (obj.id) {
                 await menuCategoryRepository.delete(menu);

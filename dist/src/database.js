@@ -78,8 +78,8 @@ const db = require("./connection");
 module.exports.query = function (query) {
     return __awaiter(this, void 0, void 0, function* () {
         LOG.debug("executing query...", query);
-        return new Promise((resolve, reject) => {
-            db.query(query, (error, result, fields) => {
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            yield db.query(query, (error, result, fields) => {
                 if (error) {
                     console.log("error 1", error);
                     reject(error);
@@ -90,18 +90,18 @@ module.exports.query = function (query) {
                     resolve(JSON.parse(data));
                 }
             });
-        });
+        }));
     });
 };
 module.exports.destroy = function () {
     return __awaiter(this, void 0, void 0, function* () {
-        db.destroy();
+        yield db.destroy();
     });
 };
 module.exports.newTransaction = function () {
     return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve, reject) => {
-            db.beginTransaction((err) => {
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            yield db.beginTransaction((err) => {
                 LOG.debug("beginTransaction...");
                 if (err) {
                     this.rollback();
@@ -111,13 +111,13 @@ module.exports.newTransaction = function () {
                     resolve(true);
                 }
             });
-        });
+        }));
     });
 };
 module.exports.commit = function () {
     return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve, reject) => {
-            db.commit((err) => {
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            yield db.commit((err) => {
                 LOG.debug("commit...");
                 if (err) {
                     this.rollback();
@@ -127,13 +127,13 @@ module.exports.commit = function () {
                     resolve(true);
                 }
             });
-        });
+        }));
     });
 };
 module.exports.rollback = function () {
     return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve, reject) => {
-            db.rollback((err) => {
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            yield db.rollback((err) => {
                 LOG.debug("rollback...");
                 if (err) {
                     console.log("Rollback Error: ", err);
@@ -144,7 +144,7 @@ module.exports.rollback = function () {
                     resolve(true);
                 }
             });
-        });
+        }));
     });
 };
 //# sourceMappingURL=database.js.map

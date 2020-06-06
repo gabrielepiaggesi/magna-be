@@ -37,7 +37,7 @@ export class MenuItemService {
                     await menuItemRepository.update(menu);
                 } else {
                     const id = await menuItemRepository.save(menu);
-                    menu.id = id;
+                    menu.id = id.insertId;
                 }
             } else if (obj.id) {
                 await menuItemRepository.delete(menu);

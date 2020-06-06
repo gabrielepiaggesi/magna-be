@@ -3,9 +3,13 @@ import { Logger } from "../../utils/Logger";
 import { auth } from "../../integration/middleware";
 import { MenuRepository } from "../../repositories/menu/MenuRepository";
 import { Menu } from "../../models/menu/Menu";
+import { MenuCategoryRepository } from "../../repositories/menu/MenuCategoryRepository";
+import { MenuItemRepository } from "../../repositories/menu/MenuItemRepository";
 
 const LOG = new Logger("MenuService.class");
 const menuRepository = new MenuRepository();
+const catRepo = new MenuCategoryRepository();
+const itemRepo = new MenuItemRepository();
 const db = require("../../database");
 
 export class MenuService {
@@ -16,8 +20,18 @@ export class MenuService {
     }
 
     public async getMenu(res: Response, menuId: number) {
-        const plan = await menuRepository.getMenu(menuId);
-        return res.status(200).send(plan);
+        let arra = [];
+        let cats = await catRepo.findByMenuId(menuId);
+        for(let cat of cats) {
+            const items = await itemRepo.findByCategoryId(cat.id);
+            const categ = {
+                name: cat.name,
+                id: cat.id,
+                items
+            };
+            arra.push(categ);
+        }
+        return res.status(200).send(arra);
     }
 
     public async updateMenu(res: Response, obj) {
@@ -38,7 +52,7 @@ export class MenuService {
                     await menuRepository.update(menu);
                 } else {
                     const id = await menuRepository.save(menu);
-                    menu.id = id;
+                    menu.id = id.insertId;
                 }
             } else if (obj.id) {
                 await menuRepository.delete(menu);

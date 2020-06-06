@@ -13,7 +13,7 @@ export class MenuItemRepository extends Repository<MenuItem> {
     public findByCategoryId(categoryId: number, query = null): Promise<MenuItem[]> {
         // tslint:disable-next-line:max-line-length
         return db.query(query || 
-            `select * 
+            `select id, name, bio, price, category_id 
             from ${this.table} 
             where category_id = ${categoryId} 
             and deleted_at is null`

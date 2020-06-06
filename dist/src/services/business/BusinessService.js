@@ -25,6 +25,27 @@ class BusinessService {
             return res.status(200).send(user);
         });
     }
+    updateBusiness(res, obj) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const loggedId = index_1.auth.loggedId;
+            yield db.newTransaction();
+            try {
+                let business = yield businessRepository.findById(loggedId);
+                business.name = obj.name;
+                business.contact = obj.contact;
+                business.address = obj.address;
+                yield businessRepository.update(business);
+                yield db.commit();
+                business = yield businessRepository.findById(loggedId);
+                return res.status(200).send(business);
+            }
+            catch (e) {
+                yield db.rollback();
+                LOG.error("new creator plan error", e);
+                return res.status(500).send(e);
+            }
+        });
+    }
 }
 exports.BusinessService = BusinessService;
 //# sourceMappingURL=BusinessService.js.map
