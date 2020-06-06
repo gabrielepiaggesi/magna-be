@@ -6,6 +6,7 @@ export class MenuItem extends Table {
     public bio: string;
     public price: string;
     public image_url: string;
+    public available: boolean;
 
     // tslint:disable-next-line:no-empty
     constructor() { super(); }

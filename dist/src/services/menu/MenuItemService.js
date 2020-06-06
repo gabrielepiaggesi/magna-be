@@ -38,6 +38,7 @@ class MenuItemService {
                     menu = yield menuItemRepository.findById(obj.id);
                 }
                 menu.name = obj.name;
+                menu.available = obj.available || true;
                 menu.bio = obj.bio;
                 menu.price = obj.price;
                 if (!obj.delete) {

@@ -29,6 +29,7 @@ export class MenuItemService {
             }
 
             menu.name = obj.name;
+            menu.available = obj.available || true;
             menu.bio = obj.bio;
             menu.price = obj.price;
 
