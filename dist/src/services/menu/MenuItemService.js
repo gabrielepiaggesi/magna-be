@@ -37,6 +37,9 @@ class MenuItemService {
                 if (obj.id) {
                     menu = yield menuItemRepository.findById(obj.id);
                 }
+                obj.name.replace(/"/g, "'");
+                obj.name.bio(/"/g, "'");
+                obj.name.price(/"/g, "'");
                 menu.name = obj.name;
                 menu.status = (obj.status && obj.status != ' ' && obj.status != '') ? obj.status : 'active';
                 menu.bio = obj.bio;
