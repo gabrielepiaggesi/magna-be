@@ -29,8 +29,8 @@ export class MenuItemService {
             }
 
             obj.name.replace(/"/g, "'");
-            obj.name.bio(/"/g, "'");
-            obj.name.price(/"/g, "'");
+            obj.name.replace(/"/g, "'");
+            obj.name.replace(/"/g, "'");
 
             menu.name = obj.name;
             menu.status = (obj.status && obj.status != ' ' && obj.status != '') ? obj.status : 'active';
