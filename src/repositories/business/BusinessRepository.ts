@@ -3,6 +3,7 @@ import { Repository } from "../Repository";
 import { Business } from "../../models/business/Business";
 const LOG = new Logger("UserRepository.class");
 const db = require("../../database");
+import mysql from "mysql";
 
 export class BusinessRepository extends Repository<Business> {
     public table = "business";
@@ -19,7 +20,7 @@ export class BusinessRepository extends Repository<Business> {
 
     public findByEmail(email: string, query = null) {
         // tslint:disable-next-line:max-line-length
-        return db.query(query || `select * from ${this.table} where email = "${email}" limit 1`).then((results) => results[0]);
+        return db.query(query || `select * from ${mysql.escape(this.table)} where email = "${mysql.escape(email)}" limit 1`).then((results) => results[0]);
     }
 
     public async findTodayUsers(query = null) {

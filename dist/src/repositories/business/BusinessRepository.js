@@ -8,11 +8,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const Logger_1 = require("../../utils/Logger");
 const Repository_1 = require("../Repository");
 const LOG = new Logger_1.Logger("UserRepository.class");
 const db = require("../../database");
+const mysql_1 = __importDefault(require("mysql"));
 class BusinessRepository extends Repository_1.Repository {
     constructor() {
         super(...arguments);
@@ -28,7 +32,7 @@ class BusinessRepository extends Repository_1.Repository {
     }
     findByEmail(email, query = null) {
         // tslint:disable-next-line:max-line-length
-        return db.query(query || `select * from ${this.table} where email = "${email}" limit 1`).then((results) => results[0]);
+        return db.query(query || `select * from ${mysql_1.default.escape(this.table)} where email = "${mysql_1.default.escape(email)}" limit 1`).then((results) => results[0]);
     }
     findTodayUsers(query = null) {
         return __awaiter(this, void 0, void 0, function* () {
