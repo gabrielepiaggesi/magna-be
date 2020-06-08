@@ -10,17 +10,17 @@ export class BusinessRepository extends Repository<Business> {
 
     public findByUserName(username: string, query = null) {
         // tslint:disable-next-line:max-line-length
-        return db.query(query || `select * from ${this.table} where username = "${username}" limit 1`).then((results) => results[0]);
+        return db.query(query || `select * from ${this.table} where username = ${mysql.escape(username)} limit 1`).then((results) => results[0]);
     }
 
     public findByEmailAndPassword(email: string, password: string, query = null) {
         // tslint:disable-next-line:max-line-length
-        return db.query(query || `select * from ${this.table} where email = "${email}" and password = "${password}" limit 1`).then((results) => results[0]);
+        return db.query(query || `select * from ${this.table} where email = ${mysql.escape(email)} and password = ${mysql.escape(password)} limit 1`).then((results) => results[0]);
     }
 
     public findByEmail(email: string, query = null) {
         // tslint:disable-next-line:max-line-length
-        return db.query(query || `select * from ${mysql.escape(this.table)} where email = "${mysql.escape(email)}" limit 1`).then((results) => results[0]);
+        return db.query(query || `select * from ${mysql.escape(this.table)} where email = ${mysql.escape(email)} limit 1`).then((results) => results[0]);
     }
 
     public async findTodayUsers(query = null) {

@@ -24,15 +24,15 @@ class BusinessRepository extends Repository_1.Repository {
     }
     findByUserName(username, query = null) {
         // tslint:disable-next-line:max-line-length
-        return db.query(query || `select * from ${this.table} where username = "${username}" limit 1`).then((results) => results[0]);
+        return db.query(query || `select * from ${this.table} where username = ${mysql_1.default.escape(username)} limit 1`).then((results) => results[0]);
     }
     findByEmailAndPassword(email, password, query = null) {
         // tslint:disable-next-line:max-line-length
-        return db.query(query || `select * from ${this.table} where email = "${email}" and password = "${password}" limit 1`).then((results) => results[0]);
+        return db.query(query || `select * from ${this.table} where email = ${mysql_1.default.escape(email)} and password = ${mysql_1.default.escape(password)} limit 1`).then((results) => results[0]);
     }
     findByEmail(email, query = null) {
         // tslint:disable-next-line:max-line-length
-        return db.query(query || `select * from ${mysql_1.default.escape(this.table)} where email = "${mysql_1.default.escape(email)}" limit 1`).then((results) => results[0]);
+        return db.query(query || `select * from ${mysql_1.default.escape(this.table)} where email = ${mysql_1.default.escape(email)} limit 1`).then((results) => results[0]);
     }
     findTodayUsers(query = null) {
         return __awaiter(this, void 0, void 0, function* () {

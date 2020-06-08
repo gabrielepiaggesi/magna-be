@@ -1,11 +1,12 @@
 import { Repository } from "../Repository";
 import { Transaction } from "../../models/financial/Transaction";
 const db = require("../../database");
+import mysql from "mysql";
 
 export class TransactionRepository extends Repository<Transaction> {
     public table = "transactions";
 
-    public async findByUser(userId, query = null) {
+    public async findByUser(userId: number, query = null) {
         query = `
         select tra.amount, 
         tra.operation_resume, 
@@ -35,12 +36,12 @@ export class TransactionRepository extends Repository<Transaction> {
     }
 
     public async findByPaymentIntentId(piId, query = null) {
-        const q = `select * from transactions where stripe_payment_id = "${piId}" and deleted_at is null order by id desc limit 1`;
+        const q = `select * from transactions where stripe_payment_id = ${mysql.escape(piId)} and deleted_at is null order by id desc limit 1`;
         return await db.query(query || q).then((results) => results[0]);
     }
 
-    public async findLastOfUserIdAndSubId(userId, subId, query = null) {
-        const q = `select * from transactions where user_id = ${userId} and stripe_sub_id = "${subId}" and deleted_at is null order by id desc limit 1`;
+    public async findLastOfUserIdAndSubId(userId: number, subId, query = null) {
+        const q = `select * from transactions where user_id = ${userId} and stripe_sub_id = ${mysql.escape(subId)} and deleted_at is null order by id desc limit 1`;
         return await db.query(query || q).then((results) => results[0]);
     }
 

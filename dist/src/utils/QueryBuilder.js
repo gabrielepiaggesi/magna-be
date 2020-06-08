@@ -1,5 +1,9 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+const mysql_1 = __importDefault(require("mysql"));
 class QueryBuilder {
     // tslint:disable-next-line:no-shadowed-variable
     save(model, table) {
@@ -7,7 +11,7 @@ class QueryBuilder {
         let values = "";
         let i = 0;
         Object.keys(model).forEach((key) => {
-            const value = (typeof model[key] !== "number") ? `"${model[key]}"` : model[key];
+            const value = (typeof model[key] !== "number") ? ((model[key] && model[key] != '' && model[key] != ' ') ? `${mysql_1.default.escape(model[key])}` : `NULL`) : model[key];
             columns += (i === 0) ? key : ", " + key;
             values += (i === 0) ? value : ", " + value;
             i++;
@@ -19,7 +23,7 @@ class QueryBuilder {
         let columns = "";
         let i = 0;
         Object.keys(model).forEach((key) => {
-            const value = (typeof model[key] !== "number") ? ((model[key]) ? `"${model[key]}"` : `NULL`) : model[key];
+            const value = (typeof model[key] !== "number") ? ((model[key] && model[key] != '' && model[key] != ' ') ? `${mysql_1.default.escape(model[key])}` : `NULL`) : model[key];
             columns += (i === 0) ? key + " = " + value : ", " + key + " = " + value;
             i++;
         });

@@ -8,9 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const Repository_1 = require("../Repository");
 const db = require("../../database");
+const mysql_1 = __importDefault(require("mysql"));
 class PlanRepository extends Repository_1.Repository {
     constructor() {
         super(...arguments);
@@ -18,7 +22,7 @@ class PlanRepository extends Repository_1.Repository {
     }
     findByStripePlanId(stripeId, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            const q = `select * from plans where stripe_plan_id = "${stripeId}" and deleted_at is null`;
+            const q = `select * from plans where stripe_plan_id = ${mysql_1.default.escape(stripeId)} and deleted_at is null`;
             return yield db.query(query || q).then((results) => results[0]);
         });
     }

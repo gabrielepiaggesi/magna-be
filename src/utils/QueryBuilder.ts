@@ -1,3 +1,4 @@
+import mysql from "mysql";
 export class QueryBuilder<T> {
 
     // tslint:disable-next-line:no-shadowed-variable
@@ -6,7 +7,7 @@ export class QueryBuilder<T> {
         let values = "";
         let i = 0;
         Object.keys(model).forEach((key) => {
-            const value = (typeof model[key] !== "number") ? `"${model[key]}"` : model[key];
+            const value = (typeof model[key] !== "number") ? ((model[key] && model[key] != '' && model[key] != ' ') ? `${mysql.escape(model[key])}` : `NULL`) : model[key];
 
             columns += (i === 0) ? key : ", " + key;
             values += (i === 0) ? value : ", " + value;
@@ -20,7 +21,7 @@ export class QueryBuilder<T> {
         let columns = "";
         let i = 0;
         Object.keys(model).forEach((key) => {
-            const value = (typeof model[key] !== "number") ? ((model[key]) ? `"${model[key]}"` : `NULL`) : model[key];
+            const value = (typeof model[key] !== "number") ? ((model[key] && model[key] != '' && model[key] != ' ') ? `${mysql.escape(model[key])}` : `NULL`) : model[key];
             columns += (i === 0) ? key + " = " + value : ", " + key + " = " + value;
             i++;
         });

@@ -5,14 +5,14 @@ const db = require("../../database");
 export class SubScriptionRepository extends Repository<SubScription> {
     public table = "subscriptions";
 
-    public async findCurrentSubForUser(userId, planId, query = null) {
+    public async findCurrentSubForUser(userId: number, planId: number, query = null) {
         const q = `select * from subscriptions sub 
         inner join plans plan on plan.id = sub.plan_id 
         where sub.user_id = ${userId} and sub.plan_id = ${planId} and sub.subscription_status not in ("canceled", "unpaid") and sub.deleted_at is null`;
         return await db.query(query || q).then((results) => results[0]);
     }
 
-    public async findByUserIdAndPlanId(userId, planId, query = null) {
+    public async findByUserIdAndPlanId(userId: number, planId: number, query = null) {
         const q = `select * from subscriptions where user_id = ${userId} and plan_id = ${planId} and subscription_status not in ("canceled", "unpaid") and deleted_at is null`;
         return await db.query(query || q).then((results) => results[0]);
     }

@@ -8,9 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const Repository_1 = require("../Repository");
 const db = require("../../database");
+const mysql_1 = __importDefault(require("mysql"));
 class TransactionRepository extends Repository_1.Repository {
     constructor() {
         super(...arguments);
@@ -48,13 +52,13 @@ class TransactionRepository extends Repository_1.Repository {
     }
     findByPaymentIntentId(piId, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            const q = `select * from transactions where stripe_payment_id = "${piId}" and deleted_at is null order by id desc limit 1`;
+            const q = `select * from transactions where stripe_payment_id = ${mysql_1.default.escape(piId)} and deleted_at is null order by id desc limit 1`;
             return yield db.query(query || q).then((results) => results[0]);
         });
     }
     findLastOfUserIdAndSubId(userId, subId, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            const q = `select * from transactions where user_id = ${userId} and stripe_sub_id = "${subId}" and deleted_at is null order by id desc limit 1`;
+            const q = `select * from transactions where user_id = ${userId} and stripe_sub_id = ${mysql_1.default.escape(subId)} and deleted_at is null order by id desc limit 1`;
             return yield db.query(query || q).then((results) => results[0]);
         });
     }
