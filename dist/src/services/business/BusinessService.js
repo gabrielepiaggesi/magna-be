@@ -25,6 +25,14 @@ class BusinessService {
             return res.status(200).send(user);
         });
     }
+    getBusiness(res, businessId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield businessRepository.findById(businessId);
+            delete user.password;
+            LOG.debug("user", user);
+            return res.status(200).send(user);
+        });
+    }
     updateBusiness(res, obj) {
         return __awaiter(this, void 0, void 0, function* () {
             const loggedId = index_1.auth.loggedId;

@@ -17,6 +17,14 @@ export class BusinessService {
         return res.status(200).send(user);
     }
 
+    public async getBusiness(res: Response, businessId: number) {
+        const user = await businessRepository.findById(businessId);
+        delete user.password;
+        LOG.debug("user", user);
+        return res.status(200).send(user);
+    }
+
+
     public async updateBusiness(res: Response, obj) {
         const loggedId = auth.loggedId;
         await db.newTransaction();
