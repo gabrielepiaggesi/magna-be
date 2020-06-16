@@ -32,7 +32,12 @@ class MenuService {
             let arra = [];
             let cats = yield catRepo.findByMenuId(menuId);
             for (let cat of cats) {
-                const items = yield itemRepo.findByCategoryId(cat.id);
+                let items = yield itemRepo.findByCategoryId(cat.id);
+                // foreach item
+                // assign postition = position || id
+                items = items.map((i) => { i.position = (i.position) ? i.position : i.id; return i; });
+                // order sort array based on position
+                items = items.sort((a, b) => a.position - b.position);
                 const categ = {
                     name: cat.name,
                     id: cat.id,

@@ -2,6 +2,7 @@ import { Table } from "../Table";
 
 export class MenuItem extends Table {
     public category_id: number;
+    public position: number;
     public name: string;
     public bio: string;
     public price: string;

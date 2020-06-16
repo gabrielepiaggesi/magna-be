@@ -35,6 +35,7 @@ export class MenuItemService {
             menu.name = obj.name;
             menu.status = (obj.status && obj.status != ' ' && obj.status != '') ? obj.status : 'active';
             menu.bio = obj.bio;
+            menu.position = obj.position;
             menu.price = obj.price;
 
             if (!obj.delete) {
