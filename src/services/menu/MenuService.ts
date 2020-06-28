@@ -36,10 +36,12 @@ export class MenuService {
             const categ = {
                 name: cat.name,
                 id: cat.id,
+                position: cat.position,
                 items
             };
             arra.push(categ);
         }
+        arra = arra.sort((a,b) => a.position - b.position);
         return res.status(200).send(arra);
     }
 
