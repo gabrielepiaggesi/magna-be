@@ -26,6 +26,7 @@ export class MenuService {
         cats = cats.map((i) => { i.position = (i.position) ? i.position : i.id; return i; });
         // order sort array based on position
         cats = cats.sort((a,b) => a.position - b.position);
+        LOG.debug('array cat', cats);
         for(let cat of cats) {
             let items = await itemRepo.findByCategoryId(cat.id);
             // foreach item
