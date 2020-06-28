@@ -31,6 +31,11 @@ class MenuService {
         return __awaiter(this, void 0, void 0, function* () {
             let arra = [];
             let cats = yield catRepo.findByMenuId(menuId);
+            // assign postition = position || id
+            cats = cats.map((i) => { i.position = (i.position) ? i.position : i.id; return i; });
+            // order sort array based on position
+            cats = cats.sort((a, b) => a.position - b.position);
+            LOG.debug('array cat', cats);
             for (let cat of cats) {
                 let items = yield itemRepo.findByCategoryId(cat.id);
                 // foreach item
@@ -41,10 +46,12 @@ class MenuService {
                 const categ = {
                     name: cat.name,
                     id: cat.id,
+                    position: cat.position,
                     items
                 };
                 arra.push(categ);
             }
+            arra = arra.sort((a, b) => a.position - b.position);
             return res.status(200).send(arra);
         });
     }
