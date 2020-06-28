@@ -22,6 +22,10 @@ export class MenuService {
     public async getMenu(res: Response, menuId: number) {
         let arra = [];
         let cats = await catRepo.findByMenuId(menuId);
+        // assign postition = position || id
+        cats = cats.map((i) => { i.position = (i.position) ? i.position : i.id; return i; });
+        // order sort array based on position
+        cats = cats.sort((a,b) => a.position - b.position);
         for(let cat of cats) {
             let items = await itemRepo.findByCategoryId(cat.id);
             // foreach item
