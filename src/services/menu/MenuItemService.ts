@@ -29,7 +29,7 @@ export class MenuItemService {
             }
 
             obj.name = obj.name.replace(/"/g, "'");
-            obj.bio = obj.bio.replace(/"/g, "'");
+            obj.bio = (obj.bio) ? obj.bio.replace(/"/g, "'") : null;
             obj.price = obj.price.replace(/"/g, "'");
 
             menu.name = obj.name;
