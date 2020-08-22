@@ -24,9 +24,11 @@ const menuCatService = new MenuCategoryService_1.MenuCategoryService();
 const menuItemService = new MenuItemService_1.MenuItemService();
 // routes
 menuRoutes.get("/:businessId", (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield menuService.getMenus(res, parseInt(req.params.businessId, 10)); }));
+menuRoutes.get("/comment/:businessId", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield menuService.getComments(res, parseInt(req.params.businessId, 10)); }));
 menuRoutes.get("/menu/:menuId", (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield menuService.getMenu(res, parseInt(req.params.menuId, 10)); }));
 menuRoutes.get("/item/:itemId", (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield menuItemService.getMenuItem(res, parseInt(req.params.itemId, 10)); }));
 menuRoutes.post("/menu", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield menuService.updateMenu(res, req.body); }));
+menuRoutes.post("/comment/:businessId", (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield menuService.commentMenu(res, parseInt(req.params.businessId, 10), req.body); }));
 menuRoutes.post("/category", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield menuCatService.updateMenuCategory(res, req.body); }));
 menuRoutes.post("/item", index_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield menuItemService.updateMenuItem(res, req.body); }));
 exports.default = menuRoutes;

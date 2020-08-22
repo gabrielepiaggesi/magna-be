@@ -5,10 +5,13 @@ import { MenuRepository } from "../../repositories/menu/MenuRepository";
 import { Menu } from "../../models/menu/Menu";
 import { MenuCategoryRepository } from "../../repositories/menu/MenuCategoryRepository";
 import { MenuItemRepository } from "../../repositories/menu/MenuItemRepository";
+import { Comment } from "../../models/menu/Comment";
+import { CommentRepository } from "../../repositories/menu/CommentRepository";
 
 const LOG = new Logger("MenuService.class");
 const menuRepository = new MenuRepository();
 const catRepo = new MenuCategoryRepository();
+const comRepository = new CommentRepository();
 const itemRepo = new MenuItemRepository();
 const db = require("../../database");
 
@@ -16,6 +19,11 @@ export class MenuService {
 
     public async getMenus(res: Response, creatorId: number) {
         const plans = await menuRepository.findByBusinessId(creatorId);
+        return res.status(200).send(plans);
+    }
+
+    public async getComments(res: Response, creatorId: number) {
+        const plans = await comRepository.findByBusinessId(creatorId);
         return res.status(200).send(plans);
     }
 
@@ -76,6 +84,23 @@ export class MenuService {
         } catch (e) {
             await db.rollback();
             LOG.error("new creator plan error", e);
+            return res.status(500).send(e);
+        }
+    }
+
+    public async commentMenu(res: Response, businessId: number, obj) {
+        await db.newTransaction();
+        try {
+            let menu = new Comment()
+            menu.business_id = businessId;
+            menu.text = obj.comment;
+
+            await comRepository.save(menu);
+            await db.commit();
+            return res.status(200).send({status: "success"});
+        } catch (e) {
+            await db.rollback();
+            LOG.error("new comment error", e);
             return res.status(500).send(e);
         }
     }

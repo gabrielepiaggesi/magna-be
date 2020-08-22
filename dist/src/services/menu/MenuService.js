@@ -15,15 +15,24 @@ const MenuRepository_1 = require("../../repositories/menu/MenuRepository");
 const Menu_1 = require("../../models/menu/Menu");
 const MenuCategoryRepository_1 = require("../../repositories/menu/MenuCategoryRepository");
 const MenuItemRepository_1 = require("../../repositories/menu/MenuItemRepository");
+const Comment_1 = require("../../models/menu/Comment");
+const CommentRepository_1 = require("../../repositories/menu/CommentRepository");
 const LOG = new Logger_1.Logger("MenuService.class");
 const menuRepository = new MenuRepository_1.MenuRepository();
 const catRepo = new MenuCategoryRepository_1.MenuCategoryRepository();
+const comRepository = new CommentRepository_1.CommentRepository();
 const itemRepo = new MenuItemRepository_1.MenuItemRepository();
 const db = require("../../database");
 class MenuService {
     getMenus(res, creatorId) {
         return __awaiter(this, void 0, void 0, function* () {
             const plans = yield menuRepository.findByBusinessId(creatorId);
+            return res.status(200).send(plans);
+        });
+    }
+    getComments(res, creatorId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const plans = yield comRepository.findByBusinessId(creatorId);
             return res.status(200).send(plans);
         });
     }
@@ -86,6 +95,24 @@ class MenuService {
             catch (e) {
                 yield db.rollback();
                 LOG.error("new creator plan error", e);
+                return res.status(500).send(e);
+            }
+        });
+    }
+    commentMenu(res, businessId, obj) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield db.newTransaction();
+            try {
+                let menu = new Comment_1.Comment();
+                menu.business_id = businessId;
+                menu.text = obj.comment;
+                yield comRepository.save(menu);
+                yield db.commit();
+                return res.status(200).send({ status: "success" });
+            }
+            catch (e) {
+                yield db.rollback();
+                LOG.error("new comment error", e);
                 return res.status(500).send(e);
             }
         });
