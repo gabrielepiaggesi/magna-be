@@ -24,7 +24,6 @@ dbConnection.on("error", (err) => {
         throw err;
     }
 });
-
 module.exports = dbConnection;
 
 // export const newTransaction = () => {
