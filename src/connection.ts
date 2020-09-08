@@ -1,29 +1,59 @@
 import mysql from "mysql";
 import { dev } from "../environment/dev/dev";
 
-const dbConnection = mysql.createConnection(dev);
+const pool = mysql.createPool(dev);
+let dbConnection = null;
 
 console.log("connection...");
-dbConnection.connect((err) => {
-    if (err) {
-        console.log("error when connecting to db:", err);
-        // setTimeout(this.dbConnection = mysql.createConnection(dev), 2000);
-    } else {
-        console.log("connected!");
+const startConnection = () => pool.getConnection((err, connection) => {
+    if (err) { console.log("error when connecting to db:", err); throw err; }
+    if (dbConnection) {
+        try {
+            dbConnection.release();
+        } catch(e) { console.log("impossible to release connection", e);}
     }
+    dbConnection = connection;
+    console.log("connected!");
+    startErrorListener();
 });
-dbConnection.on("error", (err) => {
-    console.log("db error", err.code);
-    if (err.fatal) {
-        console.trace('fatal error: ' + err.message);
+const startErrorListener = () => dbConnection.on("error", (err) => {
+    console.log("db error", err, err.code);
+    if (dbConnection) {
+        try {
+            dbConnection.release();
+        } catch(e) { console.log("impossible to release connection", e);}
     }
-    if (err.code === "PROTOCOL_CONNECTION_LOST") {
-        this.dbConnection = mysql.createConnection(dev);
-    } else {
-        console.trace('error: ' + err.message);
-        throw err;
-    }
+    startConnection();
 });
+
+
+startConnection();
+// startErrorListener();
+
+
+// dbConnection.connect((err) => {
+//     if (err) {
+//         console.log("error when connecting to db:", err);
+//         // setTimeout(this.dbConnection = mysql.createConnection(dev), 2000);
+//     } else {
+//         console.log("connected!");
+//     }
+// });
+// dbConnection.on("error", (err) => {
+    // console.log("db error", err, err.code);
+    // if (err.fatal) {
+    //     console.trace('fatal error: ' + err.message);
+    // }
+    // if (err.code === "PROTOCOL_CONNECTION_LOST") {
+    //     try {
+    //         dbConnection.release();
+    //     } catch(e) { console.log("impossible to release connection", e);}
+    //     startConnection();
+    // } else {
+    //     console.trace('error: ' + err.message);
+    //     throw err;
+    // }
+// });
 module.exports = dbConnection;
 
 // export const newTransaction = () => {
