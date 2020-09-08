@@ -2,7 +2,12 @@ import mysql from "mysql";
 import { dev } from "../environment/dev/dev";
 
 const pool = mysql.createPool(dev);
-let dbConnection = null;
+let dbConnection = pool.getConnection((err, connection) => {
+    console.log("...");
+    if (err) { console.log("error when connecting to db:", err); throw err; }
+    console.log("connection estabilished");
+    return connection;
+});
 
 console.log("connection...");
 const startConnection = () => pool.getConnection((err, connection) => {

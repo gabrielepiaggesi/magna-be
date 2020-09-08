@@ -6,7 +6,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mysql_1 = __importDefault(require("mysql"));
 const dev_1 = require("../environment/dev/dev");
 const pool = mysql_1.default.createPool(dev_1.dev);
-let dbConnection = null;
+let dbConnection = pool.getConnection((err, connection) => {
+    console.log("...");
+    if (err) {
+        console.log("error when connecting to db:", err);
+        throw err;
+    }
+    console.log("connection estabilished");
+    return connection;
+});
 console.log("connection...");
 const startConnection = () => pool.getConnection((err, connection) => {
     if (err) {
