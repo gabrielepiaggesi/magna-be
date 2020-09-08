@@ -10,26 +10,34 @@ let dbConnection = pool.getConnection((err, connection) => {
 });
 
 console.log("connection...");
-const startConnection = () => pool.getConnection((err, connection) => {
-    if (err) { console.log("error when connecting to db:", err); throw err; }
-    if (dbConnection) {
-        try {
-            dbConnection.release();
-        } catch(e) { console.log("impossible to release connection", e);}
-    }
-    dbConnection = connection;
-    console.log("connected!");
-    startErrorListener();
-});
-const startErrorListener = () => dbConnection.on("error", (err) => {
-    console.log("db error", err, err.code);
-    if (dbConnection) {
-        try {
-            dbConnection.release();
-        } catch(e) { console.log("impossible to release connection", e);}
-    }
-    startConnection();
-});
+// export const initConnection = (app) => {
+//     this.auth = new AuthMiddleWare();
+//     app.use(this.auth.init());
+// };
+export const startConnection = () => {
+    pool.getConnection((err, connection) => {
+        if (err) { console.log("error when connecting to db:", err); throw err; }
+        if (dbConnection) {
+            try {
+                dbConnection.release();
+            } catch(e) { console.log("impossible to release connection", e);}
+        }
+        dbConnection = connection;
+        console.log("connected!");
+        startErrorListener();
+    });
+}
+export const startErrorListener = () => {
+    dbConnection.on("error", (err) => {
+        console.log("db error", err, err.code);
+        if (dbConnection) {
+            try {
+                dbConnection.release();
+            } catch(e) { console.log("impossible to release connection", e);}
+        }
+        startConnection();
+    });
+}
 
 
 startConnection();

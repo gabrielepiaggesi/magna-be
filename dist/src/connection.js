@@ -16,36 +16,44 @@ let dbConnection = pool.getConnection((err, connection) => {
     return connection;
 });
 console.log("connection...");
-const startConnection = () => pool.getConnection((err, connection) => {
-    if (err) {
-        console.log("error when connecting to db:", err);
-        throw err;
-    }
-    if (dbConnection) {
-        try {
-            dbConnection.release();
+// export const initConnection = (app) => {
+//     this.auth = new AuthMiddleWare();
+//     app.use(this.auth.init());
+// };
+exports.startConnection = () => {
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.log("error when connecting to db:", err);
+            throw err;
         }
-        catch (e) {
-            console.log("impossible to release connection", e);
+        if (dbConnection) {
+            try {
+                dbConnection.release();
+            }
+            catch (e) {
+                console.log("impossible to release connection", e);
+            }
         }
-    }
-    dbConnection = connection;
-    console.log("connected!");
-    startErrorListener();
-});
-const startErrorListener = () => dbConnection.on("error", (err) => {
-    console.log("db error", err, err.code);
-    if (dbConnection) {
-        try {
-            dbConnection.release();
+        dbConnection = connection;
+        console.log("connected!");
+        exports.startErrorListener();
+    });
+};
+exports.startErrorListener = () => {
+    dbConnection.on("error", (err) => {
+        console.log("db error", err, err.code);
+        if (dbConnection) {
+            try {
+                dbConnection.release();
+            }
+            catch (e) {
+                console.log("impossible to release connection", e);
+            }
         }
-        catch (e) {
-            console.log("impossible to release connection", e);
-        }
-    }
-    startConnection();
-});
-startConnection();
+        exports.startConnection();
+    });
+};
+exports.startConnection();
 // startErrorListener();
 // dbConnection.connect((err) => {
 //     if (err) {

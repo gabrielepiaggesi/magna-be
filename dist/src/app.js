@@ -14,6 +14,7 @@ const app = express_1.default();
 const port = process.env.PORT || 3000;
 // db.connect();
 index_1.initMiddlewares(app);
+// startConnection();
 app.use(cors_1.default());
 app.use(body_parser_1.default.json());
 app.use(api_1.default);
