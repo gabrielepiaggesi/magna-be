@@ -37,10 +37,12 @@ class FinancialService {
                 obj.userId = user.id;
                 const subscription = yield paymentService.subscribeTo(obj, connection);
                 yield connection.commit();
+                yield connection.release();
                 return res.status(200).send(subscription);
             }
             catch (e) {
                 yield connection.rollback();
+                yield connection.release();
                 LOG.error("new subscription error", e);
                 let msg = (e.message) ? e.message : null;
                 let error_code = (e.code) ? e.code : null;
@@ -53,7 +55,9 @@ class FinancialService {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.debug("getUserSubScription");
             const userLogged = index_1.auth.loggedId;
-            let userSub = yield subScriptionRepository.findCurrentSubForUser(userLogged, planId);
+            const connection = yield db.connection();
+            let userSub = yield subScriptionRepository.findCurrentSubForUser(userLogged, planId, connection);
+            yield connection.release();
             userSub = userSub || new SubScription_1.SubScription();
             return res.status(200).send(userSub);
         });
@@ -62,7 +66,9 @@ class FinancialService {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.debug("getUserTransactions");
             const userLogged = index_1.auth.loggedId;
-            let userTras = yield transactionRepository.findByUser(userLogged);
+            const connection = yield db.connection();
+            let userTras = yield transactionRepository.findByUser(userLogged, connection);
+            yield connection.release();
             return res.status(200).send(userTras);
         });
     }
@@ -70,7 +76,9 @@ class FinancialService {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.debug("getUserCards");
             const userLogged = index_1.auth.loggedId;
-            let userTras = yield cardRepository.findByUserId(userLogged);
+            const connection = yield db.connection();
+            let userTras = yield cardRepository.findByUserId(userLogged, connection);
+            yield connection.release();
             return res.status(200).send(userTras);
         });
     }

@@ -86,7 +86,7 @@ class PaymentService {
             let userSub = yield subScriptionRepository.findByUserIdAndPlanId(userId, planId, conn);
             if (!userSub) {
                 const sub = yield stripeService.getOrCreateStripeSubScription(new StripeSubScriptionReq_1.StripeSubScriptionReq(customerId, stipePlanId));
-                userSub = yield walletService.updateUserWallet(sub);
+                userSub = yield walletService.updateUserWallet(sub, conn);
             }
             else if ((userSub.subscription_status == 'past_due' || userSub.subscription_status == 'incomplete') && userSub.status != PaymentStatus_1.PaymentStatus.PENDING) {
                 const lastTra = yield transactionRepository.findLastOfUserIdAndSubId(userSub.user_id, userSub.subscription_id, conn);

@@ -25,8 +25,7 @@ const db = require("../../connection");
 
 export class WalletService {
 
-    public async updateUserWallet(sub: Stripe.Subscription, conn = null): Promise<SubScription> {
-        conn = conn || await db.connection();
+    public async updateUserWallet(sub: Stripe.Subscription, conn): Promise<SubScription> {
         let userStripe: UserStripe = await stripeRepository.findByCustomerId(sub.customer.toString(), conn);
         let userPlan: Plan = await planRepository.findByStripePlanId(sub.plan.id, conn);
         

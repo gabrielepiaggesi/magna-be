@@ -11,14 +11,18 @@ export class BusinessService {
 
     public async getLoggedBusiness(res: Response) {
         const loggedId = auth.loggedId;
-        const user = await businessRepository.findById(loggedId);
+        const connection = await db.connection();
+        const user = await businessRepository.findById(loggedId, connection);
+        await connection.release();
         delete user.password;
         LOG.debug("user", user);
         return res.status(200).send(user);
     }
 
     public async getBusiness(res: Response, businessId: number) {
-        const user = await businessRepository.findById(businessId);
+        const connection = await db.connection();
+        const user = await businessRepository.findById(businessId, connection);
+        await connection.release();
         delete user.password;
         LOG.debug("user", user);
         return res.status(200).send(user);
@@ -39,9 +43,11 @@ export class BusinessService {
 
             business = await businessRepository.findById(loggedId, connection);
             await connection.commit();
+            await connection.release();
             return res.status(200).send(business);
         } catch (e) {
             await connection.rollback();
+            await connection.release();
             LOG.error("new creator plan error", e);
             return res.status(500).send(e);
         }

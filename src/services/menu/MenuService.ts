@@ -18,12 +18,16 @@ const db = require("../../connection");
 export class MenuService {
 
     public async getMenus(res: Response, creatorId: number) {
-        const plans = await menuRepository.findByBusinessId(creatorId);
+        const connection = await db.connection();
+        const plans = await menuRepository.findByBusinessId(creatorId, connection);
+        await connection.release();
         return res.status(200).send(plans);
     }
 
     public async getComments(res: Response, creatorId: number) {
-        const plans = await comRepository.findByBusinessId(creatorId);
+        const connection = await db.connection();
+        const plans = await comRepository.findByBusinessId(creatorId, connection);
+        await connection.release();
         return res.status(200).send(plans);
     }
 
@@ -52,6 +56,7 @@ export class MenuService {
             arra.push(categ);
         }
         arra = arra.sort((a,b) => a.position - b.position);
+        await connection.release();
         return res.status(200).send(arra);
     }
 
@@ -82,9 +87,11 @@ export class MenuService {
 
             const menus = await menuRepository.findByBusinessId(loggedId, connection);
             await connection.commit();
+            await connection.release();
             return res.status(200).send(menus);
         } catch (e) {
             await connection.rollback();
+            await connection.release();
             LOG.error("new creator plan error", e);
             return res.status(500).send(e);
         }
@@ -100,9 +107,11 @@ export class MenuService {
 
             await comRepository.save(menu, connection);
             await connection.commit();
+            await connection.release();
             return res.status(200).send({status: "success"});
         } catch (e) {
             await connection.rollback();
+            await connection.release();
             LOG.error("new comment error", e);
             return res.status(500).send(e);
         }

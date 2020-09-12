@@ -19,6 +19,7 @@ export class WebHookService {
         try {
             const walletIsUpdated = await walletService.updateUserWallet(sub, connection);
             await connection.commit();
+            await connection.release();
 
             if (sub.status == 'past_due' ||
                 sub.status == 'canceled' ||
@@ -30,6 +31,7 @@ export class WebHookService {
             return res.status(200).send({ status: "success" });
         } catch (e) {
             await connection.rollback();
+            await connection.release();
             LOG.error("subscription webhook error", e);
             return res.status(500).send({ status: "error" });
         }

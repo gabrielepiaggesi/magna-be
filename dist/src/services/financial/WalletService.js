@@ -29,9 +29,8 @@ const planRepository = new PlanRepository_1.PlanRepository();
 const stripeService = new StripeService_1.StripeService();
 const db = require("../../connection");
 class WalletService {
-    updateUserWallet(sub, conn = null) {
+    updateUserWallet(sub, conn) {
         return __awaiter(this, void 0, void 0, function* () {
-            conn = conn || (yield db.connection());
             let userStripe = yield stripeRepository.findByCustomerId(sub.customer.toString(), conn);
             let userPlan = yield planRepository.findByStripePlanId(sub.plan.id, conn);
             let inv = yield stripeService.getStripeInvoice(sub.latest_invoice['id']);

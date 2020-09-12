@@ -19,7 +19,9 @@ class BusinessService {
     getLoggedBusiness(res) {
         return __awaiter(this, void 0, void 0, function* () {
             const loggedId = index_1.auth.loggedId;
-            const user = yield businessRepository.findById(loggedId);
+            const connection = yield db.connection();
+            const user = yield businessRepository.findById(loggedId, connection);
+            yield connection.release();
             delete user.password;
             LOG.debug("user", user);
             return res.status(200).send(user);
@@ -27,7 +29,9 @@ class BusinessService {
     }
     getBusiness(res, businessId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield businessRepository.findById(businessId);
+            const connection = yield db.connection();
+            const user = yield businessRepository.findById(businessId, connection);
+            yield connection.release();
             delete user.password;
             LOG.debug("user", user);
             return res.status(200).send(user);
@@ -46,10 +50,12 @@ class BusinessService {
                 yield businessRepository.update(business, connection);
                 business = yield businessRepository.findById(loggedId, connection);
                 yield connection.commit();
+                yield connection.release();
                 return res.status(200).send(business);
             }
             catch (e) {
                 yield connection.rollback();
+                yield connection.release();
                 LOG.error("new creator plan error", e);
                 return res.status(500).send(e);
             }

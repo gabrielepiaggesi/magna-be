@@ -35,9 +35,11 @@ export class FinancialService {
             const subscription = await paymentService.subscribeTo(obj, connection);
             
             await connection.commit();
+            await connection.release();
             return res.status(200).send(subscription);
         } catch (e) {
             await connection.rollback();
+            await connection.release();
             LOG.error("new subscription error", e);
             let msg = (e.message) ? e.message : null;
             let error_code = (e.code) ? e.code : null;
@@ -50,7 +52,9 @@ export class FinancialService {
         LOG.debug("getUserSubScription");
         const userLogged = auth.loggedId;
 
-        let userSub: SubScription = await subScriptionRepository.findCurrentSubForUser(userLogged, planId);
+        const connection = await db.connection();
+        let userSub: SubScription = await subScriptionRepository.findCurrentSubForUser(userLogged, planId, connection);
+        await connection.release();
         userSub = userSub || new SubScription();
         return res.status(200).send(userSub);
     }
@@ -58,14 +62,18 @@ export class FinancialService {
     public async getUserTransactions(res) {
         LOG.debug("getUserTransactions");
         const userLogged = auth.loggedId;
-        let userTras: Transaction[] = await transactionRepository.findByUser(userLogged);
+        const connection = await db.connection();
+        let userTras: Transaction[] = await transactionRepository.findByUser(userLogged, connection);
+        await connection.release();
         return res.status(200).send(userTras);
     }
 
     public async getUserCards(res) {
         LOG.debug("getUserCards");
         const userLogged = auth.loggedId;
-        let userTras: Card[] = await cardRepository.findByUserId(userLogged);
+        const connection = await db.connection();
+        let userTras: Card[] = await cardRepository.findByUserId(userLogged, connection);
+        await connection.release();
         return res.status(200).send(userTras);
     }
 

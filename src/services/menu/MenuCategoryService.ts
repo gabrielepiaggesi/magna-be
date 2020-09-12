@@ -10,12 +10,16 @@ const db = require("../../connection");
 export class MenuCategoryService {
 
     public async getMenusCategories(res: Response, menuId: number) {
-        const plans = await menuCategoryRepository.findByMenuId(menuId);
+        const connection = await db.connection();
+        const plans = await menuCategoryRepository.findByMenuId(menuId, connection);
+        await connection.release();
         return res.status(200).send(plans);
     }
 
     public async getMenuCategory(res: Response, catId: number) {
-        const plan = await menuCategoryRepository.findById(catId);
+        const connection = await db.connection();
+        const plan = await menuCategoryRepository.findById(catId, connection);
+        await connection.release();
         return res.status(200).send(plan);
     }
 
@@ -43,9 +47,11 @@ export class MenuCategoryService {
             }
 
             await connection.commit();
+            await connection.release();
             return res.status(200).send(menu);
         } catch (e) {
             await connection.rollback();
+            await connection.release();
             LOG.error("new creator plan error", e);
             return res.status(500).send(e);
         }

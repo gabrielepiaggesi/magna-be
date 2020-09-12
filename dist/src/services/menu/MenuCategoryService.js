@@ -18,13 +18,17 @@ const db = require("../../connection");
 class MenuCategoryService {
     getMenusCategories(res, menuId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const plans = yield menuCategoryRepository.findByMenuId(menuId);
+            const connection = yield db.connection();
+            const plans = yield menuCategoryRepository.findByMenuId(menuId, connection);
+            yield connection.release();
             return res.status(200).send(plans);
         });
     }
     getMenuCategory(res, catId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const plan = yield menuCategoryRepository.findById(catId);
+            const connection = yield db.connection();
+            const plan = yield menuCategoryRepository.findById(catId, connection);
+            yield connection.release();
             return res.status(200).send(plan);
         });
     }
@@ -52,10 +56,12 @@ class MenuCategoryService {
                     yield menuCategoryRepository.delete(menu, connection);
                 }
                 yield connection.commit();
+                yield connection.release();
                 return res.status(200).send(menu);
             }
             catch (e) {
                 yield connection.rollback();
+                yield connection.release();
                 LOG.error("new creator plan error", e);
                 return res.status(500).send(e);
             }

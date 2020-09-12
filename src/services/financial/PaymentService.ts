@@ -85,7 +85,7 @@ export class PaymentService {
         
         if (!userSub) {
             const sub = await stripeService.getOrCreateStripeSubScription(new StripeSubScriptionReq(customerId, stipePlanId));
-            userSub = await walletService.updateUserWallet(sub);
+            userSub = await walletService.updateUserWallet(sub, conn);
         } else if ((userSub.subscription_status == 'past_due' || userSub.subscription_status == 'incomplete') && userSub.status != PaymentStatus.PENDING) {
             const lastTra: Transaction = await transactionRepository.findLastOfUserIdAndSubId(userSub.user_id, userSub.subscription_id, conn);
             if (lastTra.stripe_invoice_status == 'open') {

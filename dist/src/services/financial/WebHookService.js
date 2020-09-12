@@ -26,6 +26,7 @@ class WebHookService {
             try {
                 const walletIsUpdated = yield walletService.updateUserWallet(sub, connection);
                 yield connection.commit();
+                yield connection.release();
                 if (sub.status == 'past_due' ||
                     sub.status == 'canceled' ||
                     sub.status == 'unpaid') {
@@ -35,6 +36,7 @@ class WebHookService {
             }
             catch (e) {
                 yield connection.rollback();
+                yield connection.release();
                 LOG.error("subscription webhook error", e);
                 return res.status(500).send({ status: "error" });
             }

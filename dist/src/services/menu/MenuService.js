@@ -26,13 +26,17 @@ const db = require("../../connection");
 class MenuService {
     getMenus(res, creatorId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const plans = yield menuRepository.findByBusinessId(creatorId);
+            const connection = yield db.connection();
+            const plans = yield menuRepository.findByBusinessId(creatorId, connection);
+            yield connection.release();
             return res.status(200).send(plans);
         });
     }
     getComments(res, creatorId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const plans = yield comRepository.findByBusinessId(creatorId);
+            const connection = yield db.connection();
+            const plans = yield comRepository.findByBusinessId(creatorId, connection);
+            yield connection.release();
             return res.status(200).send(plans);
         });
     }
@@ -62,6 +66,7 @@ class MenuService {
                 arra.push(categ);
             }
             arra = arra.sort((a, b) => a.position - b.position);
+            yield connection.release();
             return res.status(200).send(arra);
         });
     }
@@ -92,10 +97,12 @@ class MenuService {
                 }
                 const menus = yield menuRepository.findByBusinessId(loggedId, connection);
                 yield connection.commit();
+                yield connection.release();
                 return res.status(200).send(menus);
             }
             catch (e) {
                 yield connection.rollback();
+                yield connection.release();
                 LOG.error("new creator plan error", e);
                 return res.status(500).send(e);
             }
@@ -111,10 +118,12 @@ class MenuService {
                 menu.text = obj.comment;
                 yield comRepository.save(menu, connection);
                 yield connection.commit();
+                yield connection.release();
                 return res.status(200).send({ status: "success" });
             }
             catch (e) {
                 yield connection.rollback();
+                yield connection.release();
                 LOG.error("new comment error", e);
                 return res.status(500).send(e);
             }
