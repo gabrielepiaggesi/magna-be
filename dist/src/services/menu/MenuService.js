@@ -39,14 +39,15 @@ class MenuService {
     getMenu(res, menuId) {
         return __awaiter(this, void 0, void 0, function* () {
             let arra = [];
-            let cats = yield catRepo.findByMenuId(menuId);
+            const connection = yield db.connection();
+            let cats = yield catRepo.findByMenuId(menuId, connection);
             // assign postition = position || id
             cats = cats.map((i) => { i.position = (i.position) ? i.position : i.id; return i; });
             // order sort array based on position
             cats = cats.sort((a, b) => a.position - b.position);
             LOG.debug('array cat', cats);
             for (let cat of cats) {
-                let items = yield itemRepo.findByCategoryId(cat.id);
+                let items = yield itemRepo.findByCategoryId(cat.id, connection);
                 // foreach item
                 // assign postition = position || id
                 items = items.map((i) => { i.position = (i.position) ? i.position : i.id; return i; });
