@@ -5,14 +5,15 @@ import { Menu } from "../../models/menu/Menu";
 import { Comment } from "../../models/menu/Comment";
 const LOG = new Logger("MenuRepository.class");
 const queryBuilder = new QueryBuilder();
-const db = require("../../database");
+const db = require("../../connection");
 
 export class CommentRepository extends Repository<Comment> {
     public table = "comments";
 
-    public findByBusinessId(businessId: number, query = null): Promise<Comment[]> {
+    public async findByBusinessId(businessId: number, conn = null, query = null): Promise<Comment[]> {
         // tslint:disable-next-line:max-line-length
-        return db.query(query || 
+        const c = conn || await db.connection();
+        return c.query(query || 
             `select * 
             from ${this.table} 
             where business_id = ${businessId} 

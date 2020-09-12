@@ -13,23 +13,25 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Repository_1 = require("../Repository");
-const db = require("../../database");
+const db = require("../../connection");
 const mysql_1 = __importDefault(require("mysql"));
 class StripeRepository extends Repository_1.Repository {
     constructor() {
         super(...arguments);
         this.table = "stripes";
     }
-    findByUserId(userId, query = null) {
+    findByUserId(userId, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
+            const c = conn || (yield db.connection());
             const q = `select * from stripes where user_id = ${userId} and deleted_at is null`;
-            return yield db.query(query || q).then((results) => results[0]);
+            return yield c.query(query || q).then((results) => results[0]);
         });
     }
-    findByCustomerId(cId, query = null) {
+    findByCustomerId(cId, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
+            const c = conn || (yield db.connection());
             const q = `select * from stripes where customer_id = ${mysql_1.default.escape(cId)} and deleted_at is null`;
-            return yield db.query(query || q).then((results) => results[0]);
+            return yield c.query(query || q).then((results) => results[0]);
         });
     }
 }

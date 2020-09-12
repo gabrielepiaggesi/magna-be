@@ -11,7 +11,7 @@ import { Business } from "../models/business/Business";
 
 const LOG = new Logger("AuthService.class");
 const userRepository = new BusinessRepository();
-const db = require("../database");
+const db = require("../connection");
 
 export class AuthService {
 
@@ -55,7 +55,8 @@ export class AuthService {
             if (err) {
                 return res.status(500).json({ msg: "Cannot Create Password", code: 'Auth.Password' });
             } else if (hash) {
-                await db.newTransaction();
+                const connection = await db.connection();
+                await connection.newTransaction();
                 try {
                     const newUser = new Business();
                     newUser.email = user.email;
@@ -66,17 +67,17 @@ export class AuthService {
                     newUser.contact = user.contact;
                     newUser.password = hash;
 
-                    const userInserted = await userRepository.save(newUser);
+                    const userInserted = await userRepository.save(newUser, connection);
                     LOG.debug("newUserId ", userInserted.insertId);
                     const userId = userInserted.insertId;
                     auth.setLoggedId(userId);
 
-                    await db.commit();
+                    await connection.commit();
                     const payload = { id: userId };
                     const token = jwt.sign(payload, jwtConfig.secretOrKey);
                     return res.status(200).json({ msg: "ok", token });
                 } catch (e) {
-                    await db.rollback();
+                    await connection.rollback();
                     return res.status(500).json({ msg: "Cannot Create User", code: 'Auth.User'});
                 }
             } else {

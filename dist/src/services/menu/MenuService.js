@@ -22,7 +22,7 @@ const menuRepository = new MenuRepository_1.MenuRepository();
 const catRepo = new MenuCategoryRepository_1.MenuCategoryRepository();
 const comRepository = new CommentRepository_1.CommentRepository();
 const itemRepo = new MenuItemRepository_1.MenuItemRepository();
-const db = require("../../database");
+const db = require("../../connection");
 class MenuService {
     getMenus(res, creatorId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -67,33 +67,34 @@ class MenuService {
     updateMenu(res, obj) {
         return __awaiter(this, void 0, void 0, function* () {
             const loggedId = middleware_1.auth.loggedId;
-            yield db.newTransaction();
+            const connection = yield db.connection();
+            yield connection.newTransaction();
             try {
                 let menu = new Menu_1.Menu();
                 if (obj.id) {
-                    menu = yield menuRepository.findById(obj.id);
+                    menu = yield menuRepository.findById(obj.id, connection);
                 }
                 menu.business_id = loggedId;
                 menu.name = obj.name;
                 menu.status = 'active';
                 if (!obj.delete) {
                     if (obj.id) {
-                        yield menuRepository.update(menu);
+                        yield menuRepository.update(menu, connection);
                     }
                     else {
-                        const id = yield menuRepository.save(menu);
+                        const id = yield menuRepository.save(menu, connection);
                         menu.id = id.insertId;
                     }
                 }
                 else if (obj.id) {
-                    yield menuRepository.delete(menu);
+                    yield menuRepository.delete(menu, connection);
                 }
-                yield db.commit();
-                const menus = yield menuRepository.findByBusinessId(loggedId);
+                const menus = yield menuRepository.findByBusinessId(loggedId, connection);
+                yield connection.commit();
                 return res.status(200).send(menus);
             }
             catch (e) {
-                yield db.rollback();
+                yield connection.rollback();
                 LOG.error("new creator plan error", e);
                 return res.status(500).send(e);
             }
@@ -101,17 +102,18 @@ class MenuService {
     }
     commentMenu(res, businessId, obj) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield db.newTransaction();
+            const connection = yield db.connection();
+            yield connection.newTransaction();
             try {
                 let menu = new Comment_1.Comment();
                 menu.business_id = businessId;
                 menu.text = obj.comment;
-                yield comRepository.save(menu);
-                yield db.commit();
+                yield comRepository.save(menu, connection);
+                yield connection.commit();
                 return res.status(200).send({ status: "success" });
             }
             catch (e) {
-                yield db.rollback();
+                yield connection.rollback();
                 LOG.error("new comment error", e);
                 return res.status(500).send(e);
             }

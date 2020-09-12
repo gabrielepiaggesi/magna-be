@@ -23,23 +23,24 @@ const paymentService = new PaymentService_1.PaymentService();
 const subScriptionRepository = new SubScriptionRepository_1.SubScriptionRepository();
 const transactionRepository = new TransactionRepository_1.TransactionRepository();
 const cardRepository = new CardRepository_1.CardRepository();
-const db = require("../../database");
+const db = require("../../connection");
 class FinancialService {
     payUserSubScription(res, obj) {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.debug("payUserSubScription", obj);
             const userLogged = index_1.auth.loggedId;
-            yield db.newTransaction();
+            const connection = yield db.connection();
+            yield connection.newTransaction();
             try {
-                const user = yield userRepository.findById(userLogged);
+                const user = yield userRepository.findById(userLogged, connection);
                 LOG.debug("user", user.id);
                 obj.userId = user.id;
-                const subscription = yield paymentService.subscribeTo(obj);
-                yield db.commit();
+                const subscription = yield paymentService.subscribeTo(obj, connection);
+                yield connection.commit();
                 return res.status(200).send(subscription);
             }
             catch (e) {
-                yield db.rollback();
+                yield connection.rollback();
                 LOG.error("new subscription error", e);
                 let msg = (e.message) ? e.message : null;
                 let error_code = (e.code) ? e.code : null;

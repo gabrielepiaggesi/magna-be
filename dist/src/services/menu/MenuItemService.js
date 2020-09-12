@@ -14,7 +14,7 @@ const MenuItemRepository_1 = require("../../repositories/menu/MenuItemRepository
 const MenuItem_1 = require("../../models/menu/MenuItem");
 const LOG = new Logger_1.Logger("MenuItemService.class");
 const menuItemRepository = new MenuItemRepository_1.MenuItemRepository();
-const db = require("../../database");
+const db = require("../../connection");
 class MenuItemService {
     getMenusItems(res, categoryId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -30,12 +30,13 @@ class MenuItemService {
     }
     updateMenuItem(res, obj) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield db.newTransaction();
+            const connection = yield db.connection();
+            yield connection.newTransaction();
             try {
                 let menu = new MenuItem_1.MenuItem();
                 menu.category_id = obj.category_id;
                 if (obj.id) {
-                    menu = yield menuItemRepository.findById(obj.id);
+                    menu = yield menuItemRepository.findById(obj.id, connection);
                 }
                 obj.name = obj.name.replace(/"/g, "'");
                 obj.bio = (obj.bio) ? obj.bio.replace(/"/g, "'") : null;
@@ -47,21 +48,21 @@ class MenuItemService {
                 menu.price = obj.price;
                 if (!obj.delete) {
                     if (obj.id) {
-                        yield menuItemRepository.update(menu);
+                        yield menuItemRepository.update(menu, connection);
                     }
                     else {
-                        const id = yield menuItemRepository.save(menu);
+                        const id = yield menuItemRepository.save(menu, connection);
                         menu.id = id.insertId;
                     }
                 }
                 else if (obj.id) {
-                    yield menuItemRepository.delete(menu);
+                    yield menuItemRepository.delete(menu, connection);
                 }
-                yield db.commit();
+                yield connection.commit();
                 return res.status(200).send(menu);
             }
             catch (e) {
-                yield db.rollback();
+                yield connection.rollback();
                 LOG.error("new creator plan error", e);
                 return res.status(500).send(e);
             }

@@ -13,7 +13,7 @@ const menuRepository = new MenuRepository();
 const catRepo = new MenuCategoryRepository();
 const comRepository = new CommentRepository();
 const itemRepo = new MenuItemRepository();
-const db = require("../../database");
+const db = require("../../connection");
 
 export class MenuService {
 
@@ -56,11 +56,12 @@ export class MenuService {
 
     public async updateMenu(res: Response, obj) {
         const loggedId = auth.loggedId;
-        await db.newTransaction();
+        const connection = await db.connection();
+        await connection.newTransaction();
         try {
             let menu = new Menu();
             if (obj.id) {
-                menu = await menuRepository.findById(obj.id);
+                menu = await menuRepository.findById(obj.id, connection);
             }
 
             menu.business_id = loggedId;
@@ -69,37 +70,38 @@ export class MenuService {
 
             if (!obj.delete) {
                 if (obj.id) {
-                    await menuRepository.update(menu);
+                    await menuRepository.update(menu, connection);
                 } else {
-                    const id = await menuRepository.save(menu);
+                    const id = await menuRepository.save(menu, connection);
                     menu.id = id.insertId;
                 }
             } else if (obj.id) {
-                await menuRepository.delete(menu);
+                await menuRepository.delete(menu, connection);
             }
 
-            await db.commit();
-            const menus = await menuRepository.findByBusinessId(loggedId);
+            const menus = await menuRepository.findByBusinessId(loggedId, connection);
+            await connection.commit();
             return res.status(200).send(menus);
         } catch (e) {
-            await db.rollback();
+            await connection.rollback();
             LOG.error("new creator plan error", e);
             return res.status(500).send(e);
         }
     }
 
     public async commentMenu(res: Response, businessId: number, obj) {
-        await db.newTransaction();
+        const connection = await db.connection();
+        await connection.newTransaction();
         try {
             let menu = new Comment()
             menu.business_id = businessId;
             menu.text = obj.comment;
 
-            await comRepository.save(menu);
-            await db.commit();
+            await comRepository.save(menu, connection);
+            await connection.commit();
             return res.status(200).send({status: "success"});
         } catch (e) {
-            await db.rollback();
+            await connection.rollback();
             LOG.error("new comment error", e);
             return res.status(500).send(e);
         }

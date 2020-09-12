@@ -27,19 +27,20 @@ const transactionRepository = new TransactionRepository_1.TransactionRepository(
 const stripeRepository = new StripeRepository_1.StripeRepository();
 const planRepository = new PlanRepository_1.PlanRepository();
 const stripeService = new StripeService_1.StripeService();
-const db = require("../../database");
+const db = require("../../connection");
 class WalletService {
-    updateUserWallet(sub) {
+    updateUserWallet(sub, conn = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            let userStripe = yield stripeRepository.findByCustomerId(sub.customer.toString());
-            let userPlan = yield planRepository.findByStripePlanId(sub.plan.id);
+            conn = conn || (yield db.connection());
+            let userStripe = yield stripeRepository.findByCustomerId(sub.customer.toString(), conn);
+            let userPlan = yield planRepository.findByStripePlanId(sub.plan.id, conn);
             let inv = yield stripeService.getStripeInvoice(sub.latest_invoice['id']);
             let pi = yield stripeService.getStripePaymentIntent(sub.latest_invoice['payment_intent']['id']);
             inv = inv || null;
             pi = pi || null;
             if (userStripe) {
-                const userSubUpdated = yield this.updateUserSubScription(userStripe.user_id, userPlan.id, sub, inv, pi);
-                yield this.updateUserTransaction(userStripe.user_id, userPlan.id, sub, inv, pi);
+                const userSubUpdated = yield this.updateUserSubScription(userStripe.user_id, userPlan.id, sub, inv, pi, conn);
+                yield this.updateUserTransaction(userStripe.user_id, userPlan.id, sub, inv, pi, conn);
                 return userSubUpdated;
             }
             else {
@@ -48,10 +49,10 @@ class WalletService {
             }
         });
     }
-    updateUserSubScription(userId, planId, sub, inv, pi) {
+    updateUserSubScription(userId, planId, sub, inv, pi, conn) {
         return __awaiter(this, void 0, void 0, function* () {
             const now = new Date(Date.now());
-            let userSub = yield subScriptionRepository.findByUserIdAndPlanId(userId, planId);
+            let userSub = yield subScriptionRepository.findByUserIdAndPlanId(userId, planId, conn);
             userSub = userSub || new SubScription_1.SubScription();
             userSub.subscription_id = sub.id;
             userSub.user_id = userId;
@@ -62,22 +63,22 @@ class WalletService {
             userSub.last_renew = now.toISOString();
             userSub.next_renew = new Date((now.setMonth(now.getMonth() + 1))).toISOString();
             if (userSub.id) {
-                const userSubUpdated = yield yield subScriptionRepository.update(userSub);
+                const userSubUpdated = yield yield subScriptionRepository.update(userSub, conn);
             }
             else {
-                const userSubInserted = yield subScriptionRepository.save(userSub);
+                const userSubInserted = yield subScriptionRepository.save(userSub, conn);
                 userSub.id = userSubInserted.insertId;
                 LOG.info('new subscription', userSubInserted.insertId);
             }
-            const user = yield userRepository.findById(userId);
+            const user = yield userRepository.findById(userId, conn);
             user.status = (userSub.status == PaymentStatus_1.PaymentStatus.SUCCESS) ? 'active' : 'suspended';
-            const userUpdated = yield userRepository.update(user);
+            const userUpdated = yield userRepository.update(user, conn);
             return userSub;
         });
     }
-    updateUserTransaction(userId, planId, sub, inv, pi) {
+    updateUserTransaction(userId, planId, sub, inv, pi, conn) {
         return __awaiter(this, void 0, void 0, function* () {
-            let tra = yield transactionRepository.findByPaymentIntentId(pi.id);
+            let tra = yield transactionRepository.findByPaymentIntentId(pi.id, conn);
             tra = tra || new Transaction_1.Transaction();
             tra.user_id = userId;
             tra.stripe_sub_id = sub.id || null;
@@ -94,10 +95,10 @@ class WalletService {
             tra.operation_sign = OperationSign_1.OperationSign.NEGATIVE;
             tra.operation_resume = -tra.amount;
             if (tra.id) {
-                const traUpdated = yield transactionRepository.update(tra);
+                const traUpdated = yield transactionRepository.update(tra, conn);
             }
             else {
-                const traInserted = yield transactionRepository.save(tra);
+                const traInserted = yield transactionRepository.save(tra, conn);
                 tra.id = traInserted.insertId;
                 LOG.info('new transaction', traInserted.insertId);
             }

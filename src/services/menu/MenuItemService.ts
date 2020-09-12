@@ -5,7 +5,7 @@ import { MenuItem } from "../../models/menu/MenuItem";
 
 const LOG = new Logger("MenuItemService.class");
 const menuItemRepository = new MenuItemRepository();
-const db = require("../../database");
+const db = require("../../connection");
 
 export class MenuItemService {
 
@@ -20,12 +20,13 @@ export class MenuItemService {
     }
 
     public async updateMenuItem(res: Response, obj) {
-        await db.newTransaction();
+        const connection = await db.connection();
+        await connection.newTransaction();
         try {
             let menu = new MenuItem();
             menu.category_id = obj.category_id;
             if (obj.id) {
-                menu = await menuItemRepository.findById(obj.id);
+                menu = await menuItemRepository.findById(obj.id, connection);
             }
 
             obj.name = obj.name.replace(/"/g, "'");
@@ -40,19 +41,19 @@ export class MenuItemService {
 
             if (!obj.delete) {
                 if (obj.id) {
-                    await menuItemRepository.update(menu);
+                    await menuItemRepository.update(menu, connection);
                 } else {
-                    const id = await menuItemRepository.save(menu);
+                    const id = await menuItemRepository.save(menu, connection);
                     menu.id = id.insertId;
                 }
             } else if (obj.id) {
-                await menuItemRepository.delete(menu);
+                await menuItemRepository.delete(menu, connection);
             }
 
-            await db.commit();
+            await connection.commit();
             return res.status(200).send(menu);
         } catch (e) {
-            await db.rollback();
+            await connection.rollback();
             LOG.error("new creator plan error", e);
             return res.status(500).send(e);
         }

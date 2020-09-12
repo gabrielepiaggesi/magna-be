@@ -34,38 +34,38 @@ const subScriptionRepository = new SubScriptionRepository_1.SubScriptionReposito
 const transactionRepository = new TransactionRepository_1.TransactionRepository();
 const walletService = new WalletService_1.WalletService();
 class PaymentService {
-    subscribeTo(obj) {
+    subscribeTo(obj, conn = null) {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.debug("subscribeTo", obj);
-            const user = yield userRepository.findById(obj.userId);
-            const plan = yield planRepository.findById(obj.planId);
-            const userStripe = yield this.updateUserStripeCustomer(user.id, user.email);
-            const userCard = yield this.updateUserStripePaymentMethod(user.id, obj.fingerprint, obj.paymentMethodId, userStripe.customer_id);
-            const userSub = yield this.updateUserStripeSubScription(user.id, userCard.id, userStripe.customer_id, plan.stripe_plan_id, plan.id);
+            const user = yield userRepository.findById(obj.userId, conn);
+            const plan = yield planRepository.findById(obj.planId, conn);
+            const userStripe = yield this.updateUserStripeCustomer(user.id, user.email, conn);
+            const userCard = yield this.updateUserStripePaymentMethod(user.id, obj.fingerprint, obj.paymentMethodId, userStripe.customer_id, conn);
+            const userSub = yield this.updateUserStripeSubScription(user.id, userCard.id, userStripe.customer_id, plan.stripe_plan_id, plan.id, conn);
             return userSub;
         });
     }
-    updateUserStripeCustomer(userId, userEmail) {
+    updateUserStripeCustomer(userId, userEmail, conn = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            let userStripe = yield stripeRepository.findByUserId(userId);
+            let userStripe = yield stripeRepository.findByUserId(userId, conn);
             if (!userStripe) {
                 const cus = yield stripeService.getOrCreateStripeCustomer(new StripeCustomerReq_1.StripeCustomerReq(userEmail));
                 userStripe = new UserStripe_1.UserStripe();
                 userStripe.user_id = userId;
                 userStripe.customer_id = cus.id;
-                const userStripeInserted = yield stripeRepository.save(userStripe);
+                const userStripeInserted = yield stripeRepository.save(userStripe, conn);
                 userStripe.id = userStripeInserted.insertId;
             }
             LOG.debug("updateUserStripeCustomer", userStripe.id);
             return userStripe;
         });
     }
-    updateUserStripePaymentMethod(userId, fingerprint, paymentMethodId, customerId) {
+    updateUserStripePaymentMethod(userId, fingerprint, paymentMethodId, customerId, conn = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const paymentMethod = yield stripeService.getStripePaymentMethod(paymentMethodId);
-            let userCard = yield cardRepository.findByUserIdAndFingerprint(userId, paymentMethod.card.fingerprint);
+            let userCard = yield cardRepository.findByUserIdAndFingerprint(userId, paymentMethod.card.fingerprint, conn);
             if (!userCard) {
-                yield cardRepository.resetNotPrincipalCard(userId);
+                yield cardRepository.resetNotPrincipalCard(userId, conn);
                 const card = yield stripeService.attachAndSetPaymentMethod(new StripePaymentMethodReq_1.StripePaymentMethodReq(paymentMethodId, customerId));
                 userCard = new Card_1.Card();
                 userCard.principal = true;
@@ -74,25 +74,25 @@ class PaymentService {
                 userCard.last_4 = card.card.last4;
                 userCard.fingerprint = card.card.fingerprint;
                 userCard.three_d_secure_supported = card.card.three_d_secure_usage.supported;
-                const userCardInserted = yield cardRepository.save(userCard);
+                const userCardInserted = yield cardRepository.save(userCard, conn);
                 userCard.id = userCardInserted.insertId;
             }
             LOG.debug("updateUserStripePaymentMethod", userCard.id);
             return userCard;
         });
     }
-    updateUserStripeSubScription(userId, cardId, customerId, stipePlanId, planId) {
+    updateUserStripeSubScription(userId, cardId, customerId, stipePlanId, planId, conn = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            let userSub = yield subScriptionRepository.findByUserIdAndPlanId(userId, planId);
+            let userSub = yield subScriptionRepository.findByUserIdAndPlanId(userId, planId, conn);
             if (!userSub) {
                 const sub = yield stripeService.getOrCreateStripeSubScription(new StripeSubScriptionReq_1.StripeSubScriptionReq(customerId, stipePlanId));
                 userSub = yield walletService.updateUserWallet(sub);
             }
             else if ((userSub.subscription_status == 'past_due' || userSub.subscription_status == 'incomplete') && userSub.status != PaymentStatus_1.PaymentStatus.PENDING) {
-                const lastTra = yield transactionRepository.findLastOfUserIdAndSubId(userSub.user_id, userSub.subscription_id);
+                const lastTra = yield transactionRepository.findLastOfUserIdAndSubId(userSub.user_id, userSub.subscription_id, conn);
                 if (lastTra.stripe_invoice_status == 'open') {
                     userSub.status = PaymentStatus_1.PaymentStatus.PENDING;
-                    yield subScriptionRepository.update(userSub);
+                    yield subScriptionRepository.update(userSub, conn);
                     const inv = yield stripeService.payStripeInvoice(lastTra.stripe_invoice_id);
                     // webhook should do the work
                     // const sub = await stripeService.getStripeSubscription(userSub.subscription_id);

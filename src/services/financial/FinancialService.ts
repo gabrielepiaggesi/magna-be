@@ -19,25 +19,25 @@ const paymentService = new PaymentService();
 const subScriptionRepository = new SubScriptionRepository();
 const transactionRepository = new TransactionRepository();
 const cardRepository = new CardRepository();
-const db = require("../../database");
+const db = require("../../connection");
 
 export class FinancialService {
 
     public async payUserSubScription(res: Response, obj: SubScriptionReq) {
         LOG.debug("payUserSubScription", obj);
         const userLogged = auth.loggedId;
-
-        await db.newTransaction();
+        const connection = await db.connection();
+        await connection.newTransaction();
         try {
-            const user: Business = await userRepository.findById(userLogged);
+            const user: Business = await userRepository.findById(userLogged, connection);
             LOG.debug("user", user.id);
             obj.userId = user.id;
-            const subscription = await paymentService.subscribeTo(obj);
+            const subscription = await paymentService.subscribeTo(obj, connection);
             
-            await db.commit();
+            await connection.commit();
             return res.status(200).send(subscription);
         } catch (e) {
-            await db.rollback();
+            await connection.rollback();
             LOG.error("new subscription error", e);
             let msg = (e.message) ? e.message : null;
             let error_code = (e.code) ? e.code : null;

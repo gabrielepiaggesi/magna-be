@@ -13,17 +13,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Repository_1 = require("../Repository");
-const db = require("../../database");
+const db = require("../../connection");
 const mysql_1 = __importDefault(require("mysql"));
 class PlanRepository extends Repository_1.Repository {
     constructor() {
         super(...arguments);
         this.table = "plans";
     }
-    findByStripePlanId(stripeId, query = null) {
+    findByStripePlanId(stripeId, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
+            const c = conn || (yield db.connection());
             const q = `select * from plans where stripe_plan_id = ${mysql_1.default.escape(stripeId)} and deleted_at is null`;
-            return yield db.query(query || q).then((results) => results[0]);
+            return yield c.query(query || q).then((results) => results[0]);
         });
     }
 }

@@ -4,7 +4,6 @@ import cors from "cors";
 import express from "express";
 import api from "./integration/api";
 import { initMiddlewares } from "./integration/middleware/index";
-import { startConnection } from "./connection";
 
 // initialize
 const app = express();

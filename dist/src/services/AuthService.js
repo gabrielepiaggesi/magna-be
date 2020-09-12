@@ -21,7 +21,7 @@ const Logger_1 = require("../utils/Logger");
 const Business_1 = require("../models/business/Business");
 const LOG = new Logger_1.Logger("AuthService.class");
 const userRepository = new BusinessRepository_1.BusinessRepository();
-const db = require("../database");
+const db = require("../connection");
 class AuthService {
     login(res, user) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -64,7 +64,8 @@ class AuthService {
                     return res.status(500).json({ msg: "Cannot Create Password", code: 'Auth.Password' });
                 }
                 else if (hash) {
-                    yield db.newTransaction();
+                    const connection = yield db.connection();
+                    yield connection.newTransaction();
                     try {
                         const newUser = new Business_1.Business();
                         newUser.email = user.email;
@@ -74,17 +75,17 @@ class AuthService {
                         newUser.address = user.address;
                         newUser.contact = user.contact;
                         newUser.password = hash;
-                        const userInserted = yield userRepository.save(newUser);
+                        const userInserted = yield userRepository.save(newUser, connection);
                         LOG.debug("newUserId ", userInserted.insertId);
                         const userId = userInserted.insertId;
                         middleware_1.auth.setLoggedId(userId);
-                        yield db.commit();
+                        yield connection.commit();
                         const payload = { id: userId };
                         const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
                         return res.status(200).json({ msg: "ok", token });
                     }
                     catch (e) {
-                        yield db.rollback();
+                        yield connection.rollback();
                         return res.status(500).json({ msg: "Cannot Create User", code: 'Auth.User' });
                     }
                 }

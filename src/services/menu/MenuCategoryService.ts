@@ -5,7 +5,7 @@ import { MenuCategory } from "../../models/menu/MenuCategory";
 
 const LOG = new Logger("MenuCategoryService.class");
 const menuCategoryRepository = new MenuCategoryRepository();
-const db = require("../../database");
+const db = require("../../connection");
 
 export class MenuCategoryService {
 
@@ -20,31 +20,32 @@ export class MenuCategoryService {
     }
 
     public async updateMenuCategory(res: Response, obj) {
-        await db.newTransaction();
+        const connection = await db.connection();
+        await connection.newTransaction();
         try {
             let menu = new MenuCategory();
             menu.menu_id = obj.menu_id;
             if (obj.id) {
-                menu = await menuCategoryRepository.findById(obj.id);
+                menu = await menuCategoryRepository.findById(obj.id, connection);
             }
 
             menu.name = obj.name;
 
             if (!obj.delete) {
                 if (obj.id) {
-                    await menuCategoryRepository.update(menu);
+                    await menuCategoryRepository.update(menu, connection);
                 } else {
-                    const id = await menuCategoryRepository.save(menu);
+                    const id = await menuCategoryRepository.save(menu, connection);
                     menu.id = id.insertId;
                 }
             } else if (obj.id) {
-                await menuCategoryRepository.delete(menu);
+                await menuCategoryRepository.delete(menu, connection);
             }
 
-            await db.commit();
+            await connection.commit();
             return res.status(200).send(menu);
         } catch (e) {
-            await db.rollback();
+            await connection.rollback();
             LOG.error("new creator plan error", e);
             return res.status(500).send(e);
         }

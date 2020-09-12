@@ -5,7 +5,7 @@ import { Logger } from "../../utils/Logger";
 
 const LOG = new Logger("BusinessService.class");
 const businessRepository = new BusinessRepository();
-const db = require("../../database");
+const db = require("../../connection");
 
 export class BusinessService {
 
@@ -27,20 +27,21 @@ export class BusinessService {
 
     public async updateBusiness(res: Response, obj) {
         const loggedId = auth.loggedId;
-        await db.newTransaction();
+        const connection = await db.connection();
+        await connection.newTransaction();
         try {
-            let business = await businessRepository.findById(loggedId);
+            let business = await businessRepository.findById(loggedId, connection);
 
             business.name = obj.name;
             business.contact = obj.contact;
             business.address = obj.address;
-            await businessRepository.update(business);
+            await businessRepository.update(business, connection);
 
-            await db.commit();
-            business = await businessRepository.findById(loggedId);
+            business = await businessRepository.findById(loggedId, connection);
+            await connection.commit();
             return res.status(200).send(business);
         } catch (e) {
-            await db.rollback();
+            await connection.rollback();
             LOG.error("new creator plan error", e);
             return res.status(500).send(e);
         }

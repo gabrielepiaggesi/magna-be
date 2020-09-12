@@ -13,15 +13,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Repository_1 = require("../Repository");
-const db = require("../../database");
+const db = require("../../connection");
 const mysql_1 = __importDefault(require("mysql"));
 class TransactionRepository extends Repository_1.Repository {
     constructor() {
         super(...arguments);
         this.table = "transactions";
     }
-    findByUser(userId, query = null) {
+    findByUser(userId, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
+            const c = conn || (yield db.connection());
             query = `
         select tra.amount, 
         tra.operation_resume, 
@@ -47,19 +48,21 @@ class TransactionRepository extends Repository_1.Repository {
         and tra.deleted_at is null 
         order by tra.created_at desc limit 10 
         `;
-            return yield db.query(query).then((results) => results);
+            return yield c.query(query).then((results) => results);
         });
     }
-    findByPaymentIntentId(piId, query = null) {
+    findByPaymentIntentId(piId, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
+            const c = conn || (yield db.connection());
             const q = `select * from transactions where stripe_payment_id = ${mysql_1.default.escape(piId)} and deleted_at is null order by id desc limit 1`;
-            return yield db.query(query || q).then((results) => results[0]);
+            return yield c.query(query || q).then((results) => results[0]);
         });
     }
-    findLastOfUserIdAndSubId(userId, subId, query = null) {
+    findLastOfUserIdAndSubId(userId, subId, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
+            const c = conn || (yield db.connection());
             const q = `select * from transactions where user_id = ${userId} and stripe_sub_id = ${mysql_1.default.escape(subId)} and deleted_at is null order by id desc limit 1`;
-            return yield db.query(query || q).then((results) => results[0]);
+            return yield c.query(query || q).then((results) => results[0]);
         });
     }
 }

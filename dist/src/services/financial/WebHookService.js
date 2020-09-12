@@ -15,16 +15,17 @@ const StripeService_1 = require("./StripeService");
 const LOG = new Logger_1.Logger("WebHookService.class");
 const walletService = new WalletService_1.WalletService();
 const stripeService = new StripeService_1.StripeService();
-const db = require("../../database");
+const db = require("../../connection");
 class WebHookService {
     updateSubScriptionWH(res, sub) {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.debug("subscription webhook", sub.data.object.id);
             sub = yield stripeService.getStripeSubscription(sub.data.object.id);
-            yield db.newTransaction();
+            const connection = yield db.connection();
+            yield connection.newTransaction();
             try {
-                const walletIsUpdated = yield walletService.updateUserWallet(sub);
-                yield db.commit();
+                const walletIsUpdated = yield walletService.updateUserWallet(sub, connection);
+                yield connection.commit();
                 if (sub.status == 'past_due' ||
                     sub.status == 'canceled' ||
                     sub.status == 'unpaid') {
@@ -33,7 +34,7 @@ class WebHookService {
                 return res.status(200).send({ status: "success" });
             }
             catch (e) {
-                yield db.rollback();
+                yield connection.rollback();
                 LOG.error("subscription webhook error", e);
                 return res.status(500).send({ status: "error" });
             }

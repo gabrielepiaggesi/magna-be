@@ -14,7 +14,7 @@ const BusinessRepository_1 = require("../../repositories/business/BusinessReposi
 const Logger_1 = require("../../utils/Logger");
 const LOG = new Logger_1.Logger("BusinessService.class");
 const businessRepository = new BusinessRepository_1.BusinessRepository();
-const db = require("../../database");
+const db = require("../../connection");
 class BusinessService {
     getLoggedBusiness(res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -36,19 +36,20 @@ class BusinessService {
     updateBusiness(res, obj) {
         return __awaiter(this, void 0, void 0, function* () {
             const loggedId = index_1.auth.loggedId;
-            yield db.newTransaction();
+            const connection = yield db.connection();
+            yield connection.newTransaction();
             try {
-                let business = yield businessRepository.findById(loggedId);
+                let business = yield businessRepository.findById(loggedId, connection);
                 business.name = obj.name;
                 business.contact = obj.contact;
                 business.address = obj.address;
-                yield businessRepository.update(business);
-                yield db.commit();
-                business = yield businessRepository.findById(loggedId);
+                yield businessRepository.update(business, connection);
+                business = yield businessRepository.findById(loggedId, connection);
+                yield connection.commit();
                 return res.status(200).send(business);
             }
             catch (e) {
-                yield db.rollback();
+                yield connection.rollback();
                 LOG.error("new creator plan error", e);
                 return res.status(500).send(e);
             }

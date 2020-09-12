@@ -2,113 +2,66 @@ import mysql from "mysql";
 import { dev } from "../environment/dev/dev";
 
 const pool = mysql.createPool(dev);
-let dbConnection = pool.getConnection((err, connection) => {
-    console.log("...");
-    if (err) { console.log("error when connecting to db:", err); throw err; }
-    console.log("connection estabilished");
-    return connection;
-});
-
-console.log("connection...");
-// export const initConnection = (app) => {
-//     this.auth = new AuthMiddleWare();
-//     app.use(this.auth.init());
-// };
-export const startConnection = () => {
-    pool.getConnection((err, connection) => {
-        if (err) { console.log("error when connecting to db:", err); throw err; }
-        if (dbConnection) {
-            try {
-                dbConnection.release();
-            } catch(e) { console.log("impossible to release connection", e);}
-        }
-        dbConnection = connection;
-        console.log("connected!");
-        startErrorListener();
+const connection = () => {
+    return new Promise((resolve, reject) => {
+        pool.getConnection((err, connection) => {
+            if (err) reject(err);
+            console.log("MySQL pool connected: threadId " + connection.threadId);
+            const query = (sql, binding) => {
+                return new Promise((resolve, reject) => {
+                    connection.query(sql, binding, (err, result) => {
+                        if (err) reject(err);
+                        resolve(result);
+                    });
+                });
+            };
+            const newTransaction = () => {
+                return new Promise((resolve, reject) => {
+                    connection.beginTransaction((err) => {
+                        if (err) {
+                            this.rollback();
+                            reject(false);
+                        } else {
+                            resolve(true);
+                        }
+                    });
+                });
+            };
+            const commit = () => {
+                return new Promise((resolve, reject) => {
+                    connection.commit((err) => {
+                        if (err) {
+                            this.rollback();
+                            reject(false);
+                        } else {
+                            resolve(true);
+                        }
+                    });
+                });
+            };
+            const rollback = () => {
+                return new Promise((resolve, reject) => {
+                    connection.rollback((err) => {
+                        if (err) {
+                            console.log("Rollback Error: ", err);
+                            reject(false);
+                            throw err;
+                        } else {
+                            resolve(true);
+                        }
+                    });
+                });
+            };
+            const release = () => {
+                return new Promise((resolve, reject) => {
+                    if (err) reject(err);
+                    console.log("MySQL pool released: threadId " + connection.threadId);
+                    resolve(connection.release());
+                });
+            };
+            resolve({ query, release, commit, rollback, newTransaction });
+        });
     });
-}
-export const startErrorListener = () => {
-    dbConnection.on("error", (err) => {
-        console.log("db error", err, err.code);
-        if (dbConnection) {
-            try {
-                dbConnection.release();
-            } catch(e) { console.log("impossible to release connection", e);}
-        }
-        startConnection();
-    });
-}
+};
 
-
-startConnection();
-// startErrorListener();
-
-
-// dbConnection.connect((err) => {
-//     if (err) {
-//         console.log("error when connecting to db:", err);
-//         // setTimeout(this.dbConnection = mysql.createConnection(dev), 2000);
-//     } else {
-//         console.log("connected!");
-//     }
-// });
-// dbConnection.on("error", (err) => {
-    // console.log("db error", err, err.code);
-    // if (err.fatal) {
-    //     console.trace('fatal error: ' + err.message);
-    // }
-    // if (err.code === "PROTOCOL_CONNECTION_LOST") {
-    //     try {
-    //         dbConnection.release();
-    //     } catch(e) { console.log("impossible to release connection", e);}
-    //     startConnection();
-    // } else {
-    //     console.trace('error: ' + err.message);
-    //     throw err;
-    // }
-// });
-module.exports = dbConnection;
-
-// export const newTransaction = () => {
-//     return new Promise<any>((resolve, reject) => {
-//         this.dbConnection.beginTransaction((err) => {
-//             if (err) {
-//                 this.rollback();
-//                 reject(false);
-//             } else {
-//                 resolve(true);
-//             }
-//         });
-//     });
-// };
-
-// export const commit = () => {
-//     return new Promise<any>((resolve, reject) => {
-//         this.dbConnection.commit((err) => {
-//             if (err) {
-//                 this.rollback();
-//                 reject(false);
-//             } else {
-//                 this.dbConnection.release();
-//                 resolve(true);
-//             }
-//         });
-//     });
-// };
-
-// export const rollback = () => {
-//     return new Promise<any>((resolve, reject) => {
-//         this.dbConnection.rollback(() => {
-//             try {
-//                 this.dbConnection.release();
-//                 this.dbConnection.end();
-//                 resolve(true);
-//             } catch (e) {
-//                 console.log("Rollback Error: ", e);
-//                 reject(false);
-//                 throw e;
-//             }
-//         });
-//     });
-// };
-// export const db = dbConnection;
+module.exports = { pool, connection };

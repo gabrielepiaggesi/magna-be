@@ -21,13 +21,14 @@ const transactionRepository = new TransactionRepository();
 const stripeRepository = new StripeRepository();
 const planRepository = new PlanRepository();
 const stripeService = new StripeService();
-const db = require("../../database");
+const db = require("../../connection");
 
 export class WalletService {
 
-    public async updateUserWallet(sub: Stripe.Subscription): Promise<SubScription> {
-        let userStripe: UserStripe = await stripeRepository.findByCustomerId(sub.customer.toString());
-        let userPlan: Plan = await planRepository.findByStripePlanId(sub.plan.id);
+    public async updateUserWallet(sub: Stripe.Subscription, conn = null): Promise<SubScription> {
+        conn = conn || await db.connection();
+        let userStripe: UserStripe = await stripeRepository.findByCustomerId(sub.customer.toString(), conn);
+        let userPlan: Plan = await planRepository.findByStripePlanId(sub.plan.id, conn);
         
         let inv = await stripeService.getStripeInvoice(sub.latest_invoice['id']);
         let pi = await stripeService.getStripePaymentIntent(sub.latest_invoice['payment_intent']['id']);
@@ -35,8 +36,8 @@ export class WalletService {
         pi = pi || null;
         
         if (userStripe) {
-            const userSubUpdated = await this.updateUserSubScription(userStripe.user_id, userPlan.id, sub, inv, pi);
-            await this.updateUserTransaction(userStripe.user_id, userPlan.id, sub, inv, pi);
+            const userSubUpdated = await this.updateUserSubScription(userStripe.user_id, userPlan.id, sub, inv, pi, conn);
+            await this.updateUserTransaction(userStripe.user_id, userPlan.id, sub, inv, pi, conn);
             return userSubUpdated;
         } else {
             LOG.error('no stripe user found on db!', sub.customer.toString());
@@ -44,9 +45,9 @@ export class WalletService {
         }
     }
 
-    private async updateUserSubScription(userId, planId, sub: Stripe.Subscription, inv: Stripe.Invoice, pi: Stripe.PaymentIntent) {
+    private async updateUserSubScription(userId, planId, sub: Stripe.Subscription, inv: Stripe.Invoice, pi: Stripe.PaymentIntent, conn) {
         const now = new Date(Date.now());
-        let userSub: SubScription = await subScriptionRepository.findByUserIdAndPlanId(userId, planId);
+        let userSub: SubScription = await subScriptionRepository.findByUserIdAndPlanId(userId, planId, conn);
         userSub = userSub || new SubScription();
         
         userSub.subscription_id = sub.id;
@@ -59,22 +60,22 @@ export class WalletService {
         userSub.next_renew = new Date((now.setMonth(now.getMonth() + 1))).toISOString();
 
         if (userSub.id) {
-            const userSubUpdated = await await subScriptionRepository.update(userSub);
+            const userSubUpdated = await await subScriptionRepository.update(userSub, conn);
         } else {
-            const userSubInserted = await subScriptionRepository.save(userSub);
+            const userSubInserted = await subScriptionRepository.save(userSub, conn);
             userSub.id = userSubInserted.insertId;
             LOG.info('new subscription', userSubInserted.insertId);
         }
 
-        const user = await userRepository.findById(userId);
+        const user = await userRepository.findById(userId, conn);
         user.status = (userSub.status == PaymentStatus.SUCCESS) ? 'active' : 'suspended';
-        const userUpdated = await userRepository.update(user);
+        const userUpdated = await userRepository.update(user, conn);
 
         return userSub;
     }
 
-    private async updateUserTransaction(userId, planId, sub: Stripe.Subscription, inv: Stripe.Invoice, pi: Stripe.PaymentIntent) {
-        let tra: Transaction = await transactionRepository.findByPaymentIntentId(pi.id);
+    private async updateUserTransaction(userId, planId, sub: Stripe.Subscription, inv: Stripe.Invoice, pi: Stripe.PaymentIntent, conn) {
+        let tra: Transaction = await transactionRepository.findByPaymentIntentId(pi.id, conn);
         tra = tra || new Transaction();
         
         tra.user_id = userId;
@@ -93,9 +94,9 @@ export class WalletService {
         tra.operation_resume = -tra.amount;
 
         if (tra.id) {
-            const traUpdated = await transactionRepository.update(tra);
+            const traUpdated = await transactionRepository.update(tra, conn);
         } else {
-            const traInserted = await transactionRepository.save(tra);
+            const traInserted = await transactionRepository.save(tra, conn);
             tra.id = traInserted.insertId;
             LOG.info('new transaction', traInserted.insertId);
         }

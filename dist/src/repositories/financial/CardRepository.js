@@ -13,30 +13,33 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Repository_1 = require("../Repository");
-const db = require("../../database");
+const db = require("../../connection");
 const mysql_1 = __importDefault(require("mysql"));
 class CardRepository extends Repository_1.Repository {
     constructor() {
         super(...arguments);
         this.table = "cards";
     }
-    findByUserId(userId, query = null) {
+    findByUserId(userId, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
+            const c = conn || (yield db.connection());
             const q = `select * from cards where user_id = ${userId} and deleted_at is null order by created_at desc`;
-            return yield db.query(query || q).then((results) => results);
+            return yield c.query(query || q).then((results) => results);
         });
     }
-    findByUserIdAndFingerprint(userId, fingerprint, query = null) {
+    findByUserIdAndFingerprint(userId, fingerprint, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
+            const c = conn || (yield db.connection());
             const q = `select * from cards where user_id = ${userId} and fingerprint = ${mysql_1.default.escape(fingerprint)} and deleted_at is null`;
-            return yield db.query(query || q).then((results) => results[0]);
+            return yield c.query(query || q).then((results) => results[0]);
         });
     }
-    resetNotPrincipalCard(userId) {
+    resetNotPrincipalCard(userId, conn = null) {
         return __awaiter(this, void 0, void 0, function* () {
+            const c = conn || (yield db.connection());
             const q = `
         update cards set principal = false where user_id = ${userId}`;
-            return yield db.query(q).then((results) => results[0]);
+            return yield c.query(q).then((results) => results[0]);
         });
     }
 }

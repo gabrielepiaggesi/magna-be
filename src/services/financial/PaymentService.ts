@@ -28,20 +28,20 @@ const walletService = new WalletService();
 
 export class PaymentService {
 
-    public async subscribeTo(obj: SubScriptionReq) {
+    public async subscribeTo(obj: SubScriptionReq, conn = null) {
         LOG.debug("subscribeTo", obj);
-        const user = await userRepository.findById(obj.userId);
-        const plan = await planRepository.findById(obj.planId);
+        const user = await userRepository.findById(obj.userId, conn);
+        const plan = await planRepository.findById(obj.planId, conn);
 
-        const userStripe = await this.updateUserStripeCustomer(user.id, user.email);
-        const userCard = await this.updateUserStripePaymentMethod(user.id, obj.fingerprint, obj.paymentMethodId, userStripe.customer_id);
-        const userSub = await this.updateUserStripeSubScription(user.id, userCard.id, userStripe.customer_id, plan.stripe_plan_id, plan.id);
+        const userStripe = await this.updateUserStripeCustomer(user.id, user.email, conn);
+        const userCard = await this.updateUserStripePaymentMethod(user.id, obj.fingerprint, obj.paymentMethodId, userStripe.customer_id, conn);
+        const userSub = await this.updateUserStripeSubScription(user.id, userCard.id, userStripe.customer_id, plan.stripe_plan_id, plan.id, conn);
 
         return userSub;
     }
 
-    private async updateUserStripeCustomer(userId: number, userEmail: string) {
-        let userStripe: UserStripe = await stripeRepository.findByUserId(userId);
+    private async updateUserStripeCustomer(userId: number, userEmail: string, conn = null) {
+        let userStripe: UserStripe = await stripeRepository.findByUserId(userId, conn);
         
         if (!userStripe) {
             const cus = await stripeService.getOrCreateStripeCustomer(new StripeCustomerReq(userEmail));
@@ -49,7 +49,7 @@ export class PaymentService {
             userStripe = new UserStripe();
             userStripe.user_id = userId;
             userStripe.customer_id = cus.id;
-            const userStripeInserted = await stripeRepository.save(userStripe);
+            const userStripeInserted = await stripeRepository.save(userStripe, conn);
             userStripe.id = userStripeInserted.insertId;
         }
 
@@ -57,12 +57,12 @@ export class PaymentService {
         return userStripe;
     }
 
-    private async updateUserStripePaymentMethod(userId: number, fingerprint: string, paymentMethodId: string, customerId: string) {
+    private async updateUserStripePaymentMethod(userId: number, fingerprint: string, paymentMethodId: string, customerId: string, conn = null) {
         const paymentMethod = await stripeService.getStripePaymentMethod(paymentMethodId);
-        let userCard: Card = await cardRepository.findByUserIdAndFingerprint(userId, paymentMethod.card.fingerprint);
+        let userCard: Card = await cardRepository.findByUserIdAndFingerprint(userId, paymentMethod.card.fingerprint, conn);
         
         if (!userCard) {
-            await cardRepository.resetNotPrincipalCard(userId);
+            await cardRepository.resetNotPrincipalCard(userId, conn);
             const card = await stripeService.attachAndSetPaymentMethod(new StripePaymentMethodReq(paymentMethodId, customerId));
             
             userCard = new Card();
@@ -72,7 +72,7 @@ export class PaymentService {
             userCard.last_4 = card.card.last4;
             userCard.fingerprint = card.card.fingerprint;
             userCard.three_d_secure_supported = card.card.three_d_secure_usage.supported;
-            const userCardInserted = await cardRepository.save(userCard);
+            const userCardInserted = await cardRepository.save(userCard, conn);
             userCard.id = userCardInserted.insertId;
         }
 
@@ -80,17 +80,17 @@ export class PaymentService {
         return userCard;
     }
 
-    private async updateUserStripeSubScription(userId: number, cardId: number, customerId: string, stipePlanId: string, planId: number) {
-        let userSub: SubScription = await subScriptionRepository.findByUserIdAndPlanId(userId, planId);
+    private async updateUserStripeSubScription(userId: number, cardId: number, customerId: string, stipePlanId: string, planId: number, conn = null) {
+        let userSub: SubScription = await subScriptionRepository.findByUserIdAndPlanId(userId, planId, conn);
         
         if (!userSub) {
             const sub = await stripeService.getOrCreateStripeSubScription(new StripeSubScriptionReq(customerId, stipePlanId));
             userSub = await walletService.updateUserWallet(sub);
         } else if ((userSub.subscription_status == 'past_due' || userSub.subscription_status == 'incomplete') && userSub.status != PaymentStatus.PENDING) {
-            const lastTra: Transaction = await transactionRepository.findLastOfUserIdAndSubId(userSub.user_id, userSub.subscription_id);
+            const lastTra: Transaction = await transactionRepository.findLastOfUserIdAndSubId(userSub.user_id, userSub.subscription_id, conn);
             if (lastTra.stripe_invoice_status == 'open') {
                 userSub.status = PaymentStatus.PENDING;
-                await subScriptionRepository.update(userSub);
+                await subScriptionRepository.update(userSub, conn);
                 const inv = await stripeService.payStripeInvoice(lastTra.stripe_invoice_id);
                 // webhook should do the work
                 // const sub = await stripeService.getStripeSubscription(userSub.subscription_id);

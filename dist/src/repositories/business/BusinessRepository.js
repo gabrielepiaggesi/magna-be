@@ -15,38 +15,49 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Logger_1 = require("../../utils/Logger");
 const Repository_1 = require("../Repository");
 const LOG = new Logger_1.Logger("UserRepository.class");
-const db = require("../../database");
+const db = require("../../connection");
 const mysql_1 = __importDefault(require("mysql"));
 class BusinessRepository extends Repository_1.Repository {
     constructor() {
         super(...arguments);
         this.table = "business";
     }
-    findByUserName(username, query = null) {
-        // tslint:disable-next-line:max-line-length
-        return db.query(query || `select * from ${this.table} where username = ${mysql_1.default.escape(username)} limit 1`).then((results) => results[0]);
-    }
-    findByEmailAndPassword(email, password, query = null) {
-        // tslint:disable-next-line:max-line-length
-        return db.query(query || `select * from ${this.table} where email = ${mysql_1.default.escape(email)} and password = ${mysql_1.default.escape(password)} limit 1`).then((results) => results[0]);
-    }
-    findByEmail(email, query = null) {
-        // tslint:disable-next-line:max-line-length
-        return db.query(query || `select * from ${this.table} where email = ${mysql_1.default.escape(email)} limit 1`).then((results) => results[0]);
-    }
-    findTodayUsers(query = null) {
+    findByUserName(username, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
+            const c = conn || (yield db.connection());
+            // tslint:disable-next-line:max-line-length
+            return c.query(query || `select * from ${this.table} where username = ${mysql_1.default.escape(username)} limit 1`).then((results) => results[0]);
+        });
+    }
+    findByEmailAndPassword(email, password, conn = null, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn || (yield db.connection());
+            // tslint:disable-next-line:max-line-length
+            return c.query(query || `select * from ${this.table} where email = ${mysql_1.default.escape(email)} and password = ${mysql_1.default.escape(password)} limit 1`).then((results) => results[0]);
+        });
+    }
+    findByEmail(email, conn = null, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn || (yield db.connection());
+            // tslint:disable-next-line:max-line-length
+            return c.query(query || `select * from ${this.table} where email = ${mysql_1.default.escape(email)} limit 1`).then((results) => results[0]);
+        });
+    }
+    findTodayUsers(conn = null, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn || (yield db.connection());
             const datetime = new Date();
             const from = datetime.toISOString().slice(0, 10) + ' 00:00:00';
             const to = datetime.toISOString().slice(0, 10) + ' 23:59:59';
             const q = `select count(*) as count from business where created_at between '${from}' and '${to}'`;
-            return yield db.query(query || q).then((results) => results[0]);
+            return yield c.query(query || q).then((results) => results[0]);
         });
     }
-    findTotalUsers(query = null) {
+    findTotalUsers(conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
+            const c = conn || (yield db.connection());
             const q = `select count(*) as count from users`;
-            return yield db.query(query || q).then((results) => results[0]);
+            return yield c.query(query || q).then((results) => results[0]);
         });
     }
 }
