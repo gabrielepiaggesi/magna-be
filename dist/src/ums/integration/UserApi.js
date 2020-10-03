@@ -27,7 +27,7 @@ const userRoutes = express_1.default.Router();
 const multerConfig = {
     storage: multer_1.memoryStorage(),
     limits: {
-        fileSize: 2 * 1024 * 1024 // no larger than 5mb, you can change as needed.
+        fileSize: 1 * 1024 * 1024 // no larger than 1mb, you can change as needed.
     }
 };
 // services

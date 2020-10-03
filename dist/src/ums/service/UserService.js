@@ -84,7 +84,7 @@ class UserService {
     updateProfileImage(res, file) {
         return __awaiter(this, void 0, void 0, function* () {
             const loggedId = middleware_1.auth.loggedId;
-            if (file && file.size && (file.size / 1000000 > 5)) { // > 5MB
+            if (file && file.size && (file.size > (1 * 1024 * 1024))) { // > 1MB
                 return res.status(500).send("Immagine troppo pesante, cambiala");
             }
             const connection = yield db.connection();
