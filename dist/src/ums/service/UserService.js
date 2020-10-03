@@ -81,10 +81,9 @@ class UserService {
             }
         });
     }
-    updateProfileImage(res, obj) {
+    updateProfileImage(res, file) {
         return __awaiter(this, void 0, void 0, function* () {
             const loggedId = middleware_1.auth.loggedId;
-            const file = obj.file;
             if (file && file.size && (file.size / 1000000 > 5)) { // > 5MB
                 return res.status(500).send("Immagine troppo pesante, cambiala");
             }

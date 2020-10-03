@@ -20,6 +20,6 @@ userRoutes.get("/:userId", async (req, res) => await userService.getUser(res, pa
 userRoutes.get("/total/users", async (req, res) => await userService.getTotalUsers(res));
 
 userRoutes.post("/me", auth.isUser, async (req, res) => await userService.updateAccountDetails(res, req.body));
-userRoutes.post("/profileImage", auth.isUser, multer(multerConfig).single('file'), async (req, res) => await userService.updateProfileImage(res, req));
+userRoutes.post("/profileImage", auth.isUser, multer(multerConfig).single('file'), async (req, res) => await userService.updateProfileImage(res, req.file));
 
 export default userRoutes;

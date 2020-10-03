@@ -33,7 +33,7 @@ class AuthService {
                 const connection = yield db.connection();
                 const user = yield userRepository.findByEmail(email, connection);
                 if (!user) {
-                    return res.status(401).json({ message: "No such user found" });
+                    return res.status(401).json({ message: "Error" });
                 }
                 else {
                     yield bcrypt_1.default.compare(password, user.password, (err, right) => __awaiter(this, void 0, void 0, function* () {
@@ -41,7 +41,7 @@ class AuthService {
                             LOG.debug("right password");
                             // from now on we'll identify the user by the id and the id is the
                             // only personalized value that goes into our token
-                            const payload = { id: user.id };
+                            const payload = { id: user.id, type: 'PridePartyUser42' };
                             const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
                             middleware_1.auth.setLoggedId(user.id);
                             yield connection.release();
@@ -49,13 +49,13 @@ class AuthService {
                         }
                         else {
                             yield connection.release();
-                            return res.status(401).json({ msg: "Password is incorrect" });
+                            return res.status(401).json({ msg: "Email or Password incorrect" });
                         }
                     }));
                 }
             }
             else {
-                return res.status(401).json({ message: "No such user found" });
+                return res.status(401).json({ message: "Error" });
             }
         });
     }
@@ -95,7 +95,7 @@ class AuthService {
                         middleware_1.auth.setLoggedId(userId);
                         yield connection.commit();
                         yield connection.release();
-                        const payload = { id: userId };
+                        const payload = { id: userId, type: 'PridePartyUser42' };
                         const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
                         return res.status(200).json({ msg: "ok", token });
                     }

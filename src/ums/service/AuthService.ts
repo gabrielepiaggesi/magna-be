@@ -25,26 +25,26 @@ export class AuthService {
             const connection = await db.connection();
             const user = await userRepository.findByEmail(email, connection);
             if (!user) {
-                return res.status(401).json({ message: "No such user found" });
+                return res.status(401).json({ message: "Error" });
             } else {
                 await bcrypt.compare(password, user.password, async (err, right) => {
                     if (right) {
                         LOG.debug("right password");
                         // from now on we'll identify the user by the id and the id is the
                         // only personalized value that goes into our token
-                        const payload = { id: user.id };
+                        const payload = { id: user.id, type: 'PridePartyUser42' };
                         const token = jwt.sign(payload, jwtConfig.secretOrKey);
                         auth.setLoggedId(user.id);
                         await connection.release();
                         return res.status(200).json({ msg: "ok", token });
                     } else {
                         await connection.release();
-                        return res.status(401).json({ msg: "Password is incorrect" });
+                        return res.status(401).json({ msg: "Email or Password incorrect" });
                     }
                 });
             }
         } else {
-            return res.status(401).json({ message: "No such user found" });
+            return res.status(401).json({ message: "Error" });
         }
     }
 
@@ -89,7 +89,7 @@ export class AuthService {
 
                     await connection.commit();
                     await connection.release();
-                    const payload = { id: userId };
+                    const payload = { id: userId, type: 'PridePartyUser42' };
                     const token = jwt.sign(payload, jwtConfig.secretOrKey);
                     return res.status(200).json({ msg: "ok", token });
                 } catch (e) {

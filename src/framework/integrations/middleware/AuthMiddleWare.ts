@@ -19,10 +19,10 @@ export class AuthMiddleWare {
     // tslint:disable-next-line:variable-name
     this.strategy = new JwtStrategy(this.jwtOptions, async (jwt_payload, next) => {
       console.log("payload received", jwt_payload);
-      const user = await userRepository.findById(jwt_payload.id);
-      if (Boolean(user)) {
+      // const user = await userRepository.findById(jwt_payload.id);
+      if (jwt_payload.id && jwt_payload.type === 'PridePartyUser42') {
         this.loggedId = jwt_payload.id;
-        next(null, user);
+        next(null, true);
       } else {
         next(null, false);
       }

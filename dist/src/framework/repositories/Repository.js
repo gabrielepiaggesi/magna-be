@@ -18,14 +18,14 @@ class Repository {
     }
     save(model, conn = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            const c = conn || (yield db.connection());
+            const c = conn;
             const insert = this.queryBuilder.save(model, this.table);
             return yield c.query(insert);
         });
     }
     update(model, conn = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            const c = conn || (yield db.connection());
+            const c = conn;
             // tslint:disable-next-line:no-string-literal
             const id = model["id"];
             const update = this.queryBuilder.update(model, id, this.table);
@@ -34,7 +34,7 @@ class Repository {
     }
     delete(model, conn = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            const c = conn || (yield db.connection());
+            const c = conn;
             // tslint:disable-next-line:no-string-literal
             const id = model["id"];
             model['deleted_at'] = new Date(Date.now()).toISOString().substring(0, 19).replace("T", " ");
@@ -44,13 +44,13 @@ class Repository {
     }
     findAll(query = null, conn = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            const c = conn || (yield db.connection());
+            const c = conn;
             return yield c.query(query || `select * from ${this.table} limit 1000`);
         });
     }
     findById(id, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            const c = conn || (yield db.connection());
+            const c = conn;
             // tslint:disable-next-line:max-line-length
             return yield c.query(query || `select * from ${this.table} where id = ${id} limit 1`).then((results) => results[0]);
         });
