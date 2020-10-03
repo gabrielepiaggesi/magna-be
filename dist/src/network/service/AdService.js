@@ -25,6 +25,12 @@ class AdService {
             const connection = yield db.connection();
             const ads = yield adRepository.findAdsForFeed(page, connection);
             yield connection.release();
+            for (let i = 0; i < ads.length; i++) {
+                const ad = ads[i];
+                ad.user_telegram = (ad.user_telegram) ? true : false;
+                ad.user_whatsapp = (ad.user_whatsapp) ? true : false;
+                ads[i] = ad;
+            }
             return res.status(200).send(ads);
         });
     }
