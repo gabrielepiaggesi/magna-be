@@ -1,0 +1,8 @@
+export enum AdPurpose {
+    MEETING = "MEETING",
+    RELATIONSHIP = "RELATIONSHIP",
+    FRIENDSHIP = "FRIENDSHIP",
+    ENJOY = "ENJOY",
+    MASSAGE = "MASSAGE",
+    PARTY = "PARTY",
+}

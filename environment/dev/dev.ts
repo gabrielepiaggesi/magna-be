@@ -1,8 +1,8 @@
 export const dev = {
-    host: "database-1.cvgc4kl1vlnw.us-east-2.rds.amazonaws.com",
-    user: "admin",
-    password: "Googlechrome97",
-    database: "foodinodatabse",
+    host: "prideparty.ccvduuzboq8y.us-east-2.rds.amazonaws.com",
+    user: "prideparty",
+    password: "eJwPZP7pxMzMF4Teqa7MYVmwMm5BvZCu",
+    database: "prideparty",
     connectTimeout: 10000,
 };
 
