@@ -2,8 +2,8 @@
 import bodyParser from "body-parser";
 import cors from "cors";
 import express from "express";
-import api from "./integration/api";
-import { initMiddlewares } from "./integration/middleware/index";
+import api from "./framework/integrations/api";
+import { initMiddlewares } from "./framework/integrations/middleware";
 
 // initialize
 const app = express();

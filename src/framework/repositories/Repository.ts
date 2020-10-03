@@ -1,5 +1,5 @@
 import { QueryBuilder } from "../../utils/QueryBuilder";
-const db = require("../connection");
+const db = require("../../connection");
 
 export class Repository<T> {
     public queryBuilder: QueryBuilder<T> = new QueryBuilder<T>();

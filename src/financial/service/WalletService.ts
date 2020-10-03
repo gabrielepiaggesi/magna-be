@@ -13,6 +13,7 @@ import { Transaction } from "../model/Transaction";
 import { TransactionRepository } from "../repository/TransactionRepository";
 import { OperationSign } from "./classes/OperationSign";
 import { UserRepository } from "../../ums/repository/UserRepository";
+import { UserStatus } from "../../ums/service/classes/UserStatus";
 
 const LOG = new Logger("WalletService.class");
 const userRepository = new UserRepository();
@@ -67,7 +68,7 @@ export class WalletService {
         }
 
         const user = await userRepository.findById(userId, conn);
-        user.status = (userSub.status == PaymentStatus.SUCCESS) ? 'active' : 'suspended';
+        user.status = (userSub.status == PaymentStatus.SUCCESS) ? UserStatus.ACTIVE : UserStatus.SUSPENDED;
         const userUpdated = await userRepository.update(user, conn);
 
         return userSub;

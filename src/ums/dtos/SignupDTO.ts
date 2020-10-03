@@ -3,7 +3,7 @@ export class SignupDTO {
     public email: string;
     public password: string;
     public hasAccepted: boolean = false;
-    public referrer_id: number = null;
+    public age: number = null;
 
     // tslint:disable-next-line:no-empty
     constructor() {}

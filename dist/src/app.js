@@ -7,13 +7,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const body_parser_1 = __importDefault(require("body-parser"));
 const cors_1 = __importDefault(require("cors"));
 const express_1 = __importDefault(require("express"));
-const api_1 = __importDefault(require("./integration/api"));
-const index_1 = require("./integration/middleware/index");
+const api_1 = __importDefault(require("./framework/integrations/api"));
+const middleware_1 = require("./framework/integrations/middleware");
 // initialize
 const app = express_1.default();
 const port = process.env.PORT || 3000;
 // db.connect();
-index_1.initMiddlewares(app);
+middleware_1.initMiddlewares(app);
 // startConnection();
 app.use(cors_1.default());
 app.use(body_parser_1.default.json());

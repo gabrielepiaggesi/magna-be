@@ -24,11 +24,10 @@ export class AuthService {
             // tslint:disable-next-line:no-shadowed-variable
             const connection = await db.connection();
             const user = await userRepository.findByEmail(email, connection);
-            await connection.release();
             if (!user) {
                 return res.status(401).json({ message: "No such user found" });
             } else {
-                await bcrypt.compare(password, user.password, (err, right) => {
+                await bcrypt.compare(password, user.password, async (err, right) => {
                     if (right) {
                         LOG.debug("right password");
                         // from now on we'll identify the user by the id and the id is the
@@ -36,12 +35,16 @@ export class AuthService {
                         const payload = { id: user.id };
                         const token = jwt.sign(payload, jwtConfig.secretOrKey);
                         auth.setLoggedId(user.id);
+                        await connection.release();
                         return res.status(200).json({ msg: "ok", token });
                     } else {
+                        await connection.release();
                         return res.status(401).json({ msg: "Password is incorrect" });
                     }
                 });
             }
+        } else {
+            return res.status(401).json({ message: "No such user found" });
         }
     }
 
@@ -55,6 +58,10 @@ export class AuthService {
             return res.status(500).json({ msg: "General Error", code: 'Auth.Error' });
         }
 
+        if (!user.age || user.age < 18 || user.age > 100) {
+            return res.status(500).json({ msg: "Età Invalida! Sei troppo giovane, non puoi iscriverti", code: 'Auth.Age' });
+        }
+
         await bcrypt.hash(user.password, 10, async (err, hash) => {
             if (err) {
                 return res.status(500).json({ msg: "Cannot Create Password", code: 'Auth.Password' });
@@ -66,6 +73,7 @@ export class AuthService {
                     newUser.email = user.email;
                     newUser.status = UserStatus.ACTIVE;
                     newUser.password = hash;
+                    newUser.age = user.age;
                     newUser.accept_terms_and_conditions = tinyint;
                     newUser.accept_privacy_policy = tinyint;
                     newUser.accept_DCMA_policy = tinyint;

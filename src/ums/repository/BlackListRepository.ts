@@ -13,7 +13,7 @@ export class BlackListRepository extends Repository<BlackList> {
             `select count(*) 
             from ${this.table} rep 
             where rep.user_id = ${userId} ${whereIn} 
-            and rep.deletedAt is null 
+            and rep.deleted_at is null 
             and rep.created_at >= ${mysql.escape(this.getWeekAgo())}`
         ).then((results) => results[0]);
     }
@@ -25,7 +25,7 @@ export class BlackListRepository extends Repository<BlackList> {
             `select count(*) 
             from ${this.table} rep 
             where rep.reporter_id = ${userId} ${whereIn} 
-            and rep.deletedAt is null 
+            and rep.deleted_at is null 
             group by user_id 
             and rep.created_at >= ${mysql.escape(this.getWeekAgo())}`
         ).then((results) => results[0]);
@@ -39,7 +39,7 @@ export class BlackListRepository extends Repository<BlackList> {
             from ${this.table} rep 
             where rep.reporter_id = ${reporterId} ${whereIn} 
             and rep.user_id = ${userId} 
-            and rep.deletedAt is null 
+            and rep.deleted_at is null 
             and rep.created_at >= ${mysql.escape(this.getWeekAgo())}`
         ).then((results) => results[0]);
     }
