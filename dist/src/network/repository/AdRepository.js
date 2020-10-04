@@ -36,6 +36,24 @@ class AdRepository extends Repository_1.Repository {
             limit 9`).then((results) => results);
         });
     }
+    findAd(adId, conn = null, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            return c.query(query ||
+                `select ad.id as ad_id,
+            ad.purpose as ad_purpose,
+            ad.location as ad_location ,
+            user.id as user_id,
+            user.image_url as user_image,
+            user.age as user_age,
+            user.whatsapp as user_whatsapp,
+            user.telegram as user_telegram 
+            from ${this.table} ad  
+            inner join users user on user.id = ad.user_id and user.deleted_at is null and user.status = 'ACTIVE' 
+            where ad.deleted_at is null and ad.id = ${adId} 
+            limit 1`).then((results) => results[0]);
+        });
+    }
     findAdsByUserId(userId, lastPostId = 0, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn || (yield db.connection());

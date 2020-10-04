@@ -1,1 +1,1 @@
-{"version":3,"file":"Ad.js","sourceRoot":"","sources":["../../../../src/network/model/Ad.ts"],"names":[],"mappings":";;AAAA,wDAAqD;AAIrD,MAAa,EAAG,SAAQ,aAAK;IAKzB,gBAAgB,KAAK,EAAE,CAAC,CAAC,CAAC;CAC7B;AAND,gBAMC"}
+{"version":3,"file":"Ad.js","sourceRoot":"","sources":["../../../../src/network/model/Ad.ts"],"names":[],"mappings":";;AAAA,wDAAqD;AAIrD,MAAa,EAAG,SAAQ,aAAK;IAMzB;QAAgB,KAAK,EAAE,CAAC;QAJjB,gBAAW,GAAW,CAAC,CAAC;IAIN,CAAC;CAC7B;AAPD,gBAOC"}

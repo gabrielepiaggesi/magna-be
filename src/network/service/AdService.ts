@@ -35,7 +35,7 @@ export class AdService {
 
     public async getAd(res: Response, adId: number) {
         const connection = await db.connection();
-        let post = await adRepository.findById(adId, connection);
+        let post = await adRepository.findAd(adId, connection);
         post['report_reasons'] = [
             BlackListReason.FAKE_USER,
             BlackListReason.FAKE_PHOTO,
@@ -64,6 +64,7 @@ export class AdService {
         try {
             let ad = new Ad();
             ad.user_id = loggedId;
+            ad.category_id = 1;
             ad.location = AdLocation[obj.location] || null;
             ad.purpose = AdPurpose[obj.purpose] || null;
             const postInserted = await adRepository.save(ad, connection);

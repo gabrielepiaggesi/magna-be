@@ -119,6 +119,7 @@ export class UserService {
             } else {
                 let report = new BlackList();
                 report.user_id = obj.user_id;
+                report.ad_id = obj.ad_id;
                 report.reporter_id = loggedId;
                 report.reason = BlackListReason[obj.reason] || null;
                 report.text = obj.text;

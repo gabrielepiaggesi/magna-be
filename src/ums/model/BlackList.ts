@@ -3,6 +3,7 @@ import { BlackListReason } from "../service/classes/BlackListReason";
 
 export class BlackList extends Table {
     public user_id: number;
+    public ad_id: number;
     public reason: BlackListReason;
     public reporter_id: number;
     public text: string;

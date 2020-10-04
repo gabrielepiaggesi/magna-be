@@ -47,7 +47,7 @@ class AdService {
     getAd(res, adId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            let post = yield adRepository.findById(adId, connection);
+            let post = yield adRepository.findAd(adId, connection);
             post['report_reasons'] = [
                 BlackListReason_1.BlackListReason.FAKE_USER,
                 BlackListReason_1.BlackListReason.FAKE_PHOTO,
@@ -78,6 +78,7 @@ class AdService {
             try {
                 let ad = new Ad_1.Ad();
                 ad.user_id = loggedId;
+                ad.category_id = 1;
                 ad.location = AdLocation_1.AdLocation[obj.location] || null;
                 ad.purpose = AdPurpose_1.AdPurpose[obj.purpose] || null;
                 const postInserted = yield adRepository.save(ad, connection);
