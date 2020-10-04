@@ -10,9 +10,11 @@ const adsService = new AdService();
 const userService = new UserService();
 
 // routes
-networkRoutes.get("/feed/:lastPostId", async (req, res) => await adsService.getFeed(res, parseInt(req.params.lastPostId, 10)));
+networkRoutes.get("/feed/:lastPostId", async (req, res) => await adsService.getFeed(res, parseInt(req.params.lastPostId, 10), req.query));
 networkRoutes.get("/my/:lastPostId", auth.isUser, async (req, res) => await adsService.getMyAds(res, parseInt(req.params.lastPostId, 10)));
 networkRoutes.get("/:postId", auth.isUser, async (req, res) => await adsService.getAd(res, parseInt(req.params.postId, 10)));
+networkRoutes.post("/delete/:postId", auth.isUser, async (req, res) => await adsService.deleteAd(res, parseInt(req.params.postId, 10)));
+networkRoutes.post("/push/:postId", auth.isUser, async (req, res) => await adsService.pushAd(res, parseInt(req.params.postId, 10)));
 networkRoutes.post("/feed", auth.isUser, async (req, res) => await adsService.publishAd(res, req.body));
 networkRoutes.post("/report", auth.isUser, async (req, res) => await userService.blackListPublisher(res, req.body));
 

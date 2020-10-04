@@ -7,6 +7,7 @@ export class Ad extends Table {
     public category_id: number = 1;
     public purpose: AdPurpose;
     public location: AdLocation;
+    public feed_date: string;
 
     constructor() { super(); }
 }

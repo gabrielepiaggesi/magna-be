@@ -12,14 +12,17 @@ const db = require("../../connection");
 
 export class AdService {
 
-    public async getFeed(res: Response, page: number = 0) {
+    public async getFeed(res: Response, page: number = 0, queryParams) {
+        console.log('queryParams', queryParams);
         const connection = await db.connection();
-        const ads = await adRepository.findAdsForFeed(page, connection);
+        const ads = await adRepository.findAdsForFeed(page, parseInt(queryParams.from, 10) || 18, parseInt(queryParams.to, 10) || 65, connection);
         await connection.release();
         for (let i = 0; i < ads.length; i++) {
             const ad = ads[i];
             ad.user_telegram = (ad.user_telegram) ? true : false;
             ad.user_whatsapp = (ad.user_whatsapp) ? true : false;
+            ad.ad_feed_date = new Date(ad.ad_feed_date).toISOString().substring(0, 19);
+            ad.ad_created_at = new Date(ad.ad_created_at).toISOString().substring(0, 19);
             ads[i] = ad;
         }
         return res.status(200).send(ads);
@@ -44,13 +47,15 @@ export class AdService {
             BlackListReason.FRAUD,
             BlackListReason.DANGER
         ];
+        post.ad_feed_date = new Date(post.ad_feed_date).toISOString().substring(0, 19);
+        post.ad_created_at = new Date(post.ad_created_at).toISOString().substring(0, 19);
         await connection.release();
         return res.status(200).send(post);
     }
 
     public async getMyAds(res: Response, page: number = 0) {
         const connection = await db.connection();
-        const posts = await adRepository.findAdsByUserId(auth.loggedId, page, connection);
+        const posts = await adRepository.findAdsByUserId(auth.loggedId, page || 0, connection);
         await connection.release();
         LOG.debug("getMyPosts", posts.length);
         return res.status(200).send(posts);
@@ -67,6 +72,7 @@ export class AdService {
             ad.category_id = 1;
             ad.location = AdLocation[obj.location] || null;
             ad.purpose = AdPurpose[obj.purpose] || null;
+            ad.feed_date = new Date(Date.now()).toISOString().substring(0, 19).replace("T", " ");
             const postInserted = await adRepository.save(ad, connection);
             ad.id = postInserted.insertId;
 
@@ -90,6 +96,28 @@ export class AdService {
             let post = await adRepository.findById(adId, connection);
             if (post.user_id != loggedId) { return res.status(500).send({ message: 'You are not the owner' }); }
             await adRepository.delete(post, connection);
+
+            await connection.commit();
+            await connection.release();
+            return res.status(200).send({status: "success"});
+        } catch (e) {
+            await connection.rollback();
+            await connection.release();
+            LOG.error("new creator msg error", e);
+            return res.status(500).send({ message: e });
+        }
+    }
+
+    public async pushAd(res: Response, adId: number) {
+        const loggedId = auth.loggedId;
+        const connection = await db.connection();
+        await connection.newTransaction();
+
+        try {
+            let post = await adRepository.findById(adId, connection);
+            if (post.user_id != loggedId) { return res.status(500).send({ message: 'You are not the owner' }); }
+            post.feed_date = new Date(Date.now()).toISOString().substring(0, 19).replace("T", " ");
+            await adRepository.update(post, connection);
 
             await connection.commit();
             await connection.release();
