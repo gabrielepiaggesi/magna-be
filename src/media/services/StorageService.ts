@@ -67,7 +67,9 @@ export class StorageService {
 
     private async uploadImageToStorage(file): Promise<any> {
         if (!file) { throw { message: 'No image file', code: 'no_image' }; }
-        const newFileName = `${auth.loggedId}_${Date.now()}_${file.name || file.originalname}`;
+        let namee = (file.name || file.originalname);
+        namee = namee.replace(" ", "_")
+        const newFileName = `${auth.loggedId}_${Date.now()}_${namee}`;
         const fileUpload = await bucket.file(newFileName);
         const blobStream = await fileUpload.createWriteStream({ metadata: { contentType: file.mimetype } });
 
