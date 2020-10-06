@@ -29,10 +29,10 @@ export class AdService {
         return res.status(200).send(ads);
     }
 
-    public async getLimitedFeed(res: Response, page: number = 0) {
+    public async getLimitedFeed(res: Response, req, page: number = 0) {
         if (page > 0) return res.status(500).send("Registrati per vedere altri annunci!");
         const connection = await db.connection();
-        const ads = await adRepository.findAdsForFeed(auth.loggedId, page, connection);
+        const ads = await adRepository.findAdsForFeed(auth.getLoggedUserId(req), page, connection);
         await connection.release();
         return res.status(200).send(ads);
     }
@@ -54,16 +54,17 @@ export class AdService {
         return res.status(200).send(post);
     }
 
-    public async getMyAds(res: Response, page: number = 0) {
+    public async getMyAds(res: Response, req, page: number = 0) {
         const connection = await db.connection();
-        const posts = await adRepository.findAdsByUserId(auth.loggedId, page || 0, connection);
+        const posts = await adRepository.findAdsByUserId(auth.getLoggedUserId(req), page || 0, connection);
         await connection.release();
         LOG.debug("getMyPosts", posts.length);
         return res.status(200).send(posts);
     }
 
-    public async publishAd(res: Response, obj) {
-        const loggedId = auth.loggedId;
+    public async publishAd(res: Response, req) {
+        const loggedId = auth.getLoggedUserId(req);
+        const obj = req.body
         console.log("new ad", obj);
         const connection = await db.connection();
         await connection.newTransaction();
@@ -88,8 +89,8 @@ export class AdService {
         }
     }
 
-    public async deleteAd(res: Response, adId: number) {
-        const loggedId = auth.loggedId;
+    public async deleteAd(res: Response, req, adId: number) {
+        const loggedId = auth.getLoggedUserId(req);
         const connection = await db.connection();
         await connection.newTransaction();
 
@@ -109,8 +110,8 @@ export class AdService {
         }
     }
 
-    public async pushAd(res: Response, adId: number) {
-        const loggedId = auth.loggedId;
+    public async pushAd(res: Response, req, adId: number) {
+        const loggedId = auth.getLoggedUserId(req);
         const connection = await db.connection();
         await connection.newTransaction();
 

@@ -34,7 +34,7 @@ export class StorageService {
         let file = obj.file;  //.file because on fe the input name is file
         if (file) {
             try {
-                const fileUploaded = await this.uploadImageToStorage(file);
+                const fileUploaded = await this.uploadImageToStorage(file, userId);
                 const url = fileUploaded.url;
                 const fileName = fileUploaded.name;
                 console.log(url);
@@ -65,11 +65,11 @@ export class StorageService {
         }
     }
 
-    private async uploadImageToStorage(file): Promise<any> {
+    private async uploadImageToStorage(file, userId): Promise<any> {
         if (!file) { throw { message: 'No image file', code: 'no_image' }; }
         let namee = (file.name || file.originalname);
         namee = namee.replace(" ", "_")
-        const newFileName = `${auth.loggedId}_${Date.now()}_${namee}`;
+        const newFileName = `${userId}_${Date.now()}_${namee}`;
         const fileUpload = await bucket.file(newFileName);
         const blobStream = await fileUpload.createWriteStream({ metadata: { contentType: file.mimetype } });
 

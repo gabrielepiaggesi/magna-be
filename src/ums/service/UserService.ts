@@ -2,6 +2,7 @@ import { Response } from "express";
 import { Logger } from "../../framework/services/Logger";
 import { auth } from "../../framework/integrations/middleware";
 import { Media } from "../../media/models/Media";
+import jwt from "jsonwebtoken";
 import { MediaService } from "../../media/services/MediaService";
 import { UserRepository } from "../repository/UserRepository";
 import { BlackList } from "../model/BlackList";
@@ -9,6 +10,7 @@ import { BlackListRepository } from "../repository/BlackListRepository";
 import { UserStatus } from "./classes/UserStatus";
 import { BlackListReason } from "./classes/BlackListReason";
 import { UserSubStatus } from "./classes/UserSubStatus";
+import { jwtConfig } from "../../../environment/dev/jwt";
 
 const LOG = new Logger("UserService.class");
 const userRepository = new UserRepository();
@@ -28,9 +30,9 @@ export class UserService {
         return res.status(200).send(userFound);
     }
 
-    public async getLoggedUser(res: Response) {
+    public async getLoggedUser(res: Response, req) {
         const connection = await db.connection();
-        const loggedId = auth.loggedId;
+        const loggedId = auth.getLoggedUserId(req);
         const user = await userRepository.findById(loggedId, connection);
         delete user.password;
         LOG.debug("getLoggedUser", user.id);
@@ -69,8 +71,8 @@ export class UserService {
         }
     }
 
-    public async updateProfileImage(res: Response, file) {
-        const loggedId = auth.loggedId;
+    public async updateProfileImage(res: Response, req, file) {
+        const loggedId = auth.getLoggedUserId(req);
         if (file && file.size && (file.size > (1 * 1024 * 1024))) { // > 1MB
             return res.status(500).send("Immagine troppo pesante, cambiala");
         } 
@@ -96,8 +98,9 @@ export class UserService {
         }
     }
 
-    public async blackListPublisher(res: Response, obj) {
-        const loggedId = auth.loggedId;
+    public async blackListPublisher(res: Response, req) {
+        const loggedId = auth.getLoggedUserId(req);
+        const obj = req.body;
         console.log("new ad", obj);
         const connection = await db.connection();
 

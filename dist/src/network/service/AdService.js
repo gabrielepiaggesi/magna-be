@@ -38,12 +38,12 @@ class AdService {
             return res.status(200).send(ads);
         });
     }
-    getLimitedFeed(res, page = 0) {
+    getLimitedFeed(res, req, page = 0) {
         return __awaiter(this, void 0, void 0, function* () {
             if (page > 0)
                 return res.status(500).send("Registrati per vedere altri annunci!");
             const connection = yield db.connection();
-            const ads = yield adRepository.findAdsForFeed(middleware_1.auth.loggedId, page, connection);
+            const ads = yield adRepository.findAdsForFeed(middleware_1.auth.getLoggedUserId(req), page, connection);
             yield connection.release();
             return res.status(200).send(ads);
         });
@@ -66,18 +66,19 @@ class AdService {
             return res.status(200).send(post);
         });
     }
-    getMyAds(res, page = 0) {
+    getMyAds(res, req, page = 0) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const posts = yield adRepository.findAdsByUserId(middleware_1.auth.loggedId, page || 0, connection);
+            const posts = yield adRepository.findAdsByUserId(middleware_1.auth.getLoggedUserId(req), page || 0, connection);
             yield connection.release();
             LOG.debug("getMyPosts", posts.length);
             return res.status(200).send(posts);
         });
     }
-    publishAd(res, obj) {
+    publishAd(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
-            const loggedId = middleware_1.auth.loggedId;
+            const loggedId = middleware_1.auth.getLoggedUserId(req);
+            const obj = req.body;
             console.log("new ad", obj);
             const connection = yield db.connection();
             yield connection.newTransaction();
@@ -102,9 +103,9 @@ class AdService {
             }
         });
     }
-    deleteAd(res, adId) {
+    deleteAd(res, req, adId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const loggedId = middleware_1.auth.loggedId;
+            const loggedId = middleware_1.auth.getLoggedUserId(req);
             const connection = yield db.connection();
             yield connection.newTransaction();
             try {
@@ -125,9 +126,9 @@ class AdService {
             }
         });
     }
-    pushAd(res, adId) {
+    pushAd(res, req, adId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const loggedId = middleware_1.auth.loggedId;
+            const loggedId = middleware_1.auth.getLoggedUserId(req);
             const connection = yield db.connection();
             yield connection.newTransaction();
             try {

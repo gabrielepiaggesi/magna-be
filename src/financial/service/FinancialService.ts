@@ -23,9 +23,10 @@ const db = require("../../connection");
 
 export class FinancialService {
 
-    public async payUserSubScription(res: Response, obj: SubScriptionReq) {
+    public async payUserSubScription(res: Response, req) {
+        const obj: SubScriptionReq = req.body
         LOG.debug("payUserSubScription", obj);
-        const userLogged = auth.loggedId;
+        const userLogged = auth.getLoggedUserId(req);
         const connection = await db.connection();
         await connection.newTransaction();
         try {
@@ -48,9 +49,9 @@ export class FinancialService {
         }
     }
 
-    public async getUserSubScription(res, planId) {
+    public async getUserSubScription(res, req, planId) {
         LOG.debug("getUserSubScription");
-        const userLogged = auth.loggedId;
+        const userLogged = auth.getLoggedUserId(req);
 
         const connection = await db.connection();
         let userSub: SubScription = await subScriptionRepository.findCurrentSubForUser(userLogged, planId, connection);
@@ -59,18 +60,18 @@ export class FinancialService {
         return res.status(200).send(userSub);
     }
 
-    public async getUserTransactions(res) {
+    public async getUserTransactions(res, req) {
         LOG.debug("getUserTransactions");
-        const userLogged = auth.loggedId;
+        const userLogged = auth.getLoggedUserId(req);
         const connection = await db.connection();
         let userTras: Transaction[] = await transactionRepository.findByUser(userLogged, connection);
         await connection.release();
         return res.status(200).send(userTras);
     }
 
-    public async getUserCards(res) {
+    public async getUserCards(res, req) {
         LOG.debug("getUserCards");
-        const userLogged = auth.loggedId;
+        const userLogged = auth.getLoggedUserId(req);
         const connection = await db.connection();
         let userTras: Card[] = await cardRepository.findByUserId(userLogged, connection);
         await connection.release();

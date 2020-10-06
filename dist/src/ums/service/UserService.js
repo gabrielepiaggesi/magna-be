@@ -35,10 +35,10 @@ class UserService {
             return res.status(200).send(userFound);
         });
     }
-    getLoggedUser(res) {
+    getLoggedUser(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const loggedId = middleware_1.auth.loggedId;
+            const loggedId = middleware_1.auth.getLoggedUserId(req);
             const user = yield userRepository.findById(loggedId, connection);
             delete user.password;
             LOG.debug("getLoggedUser", user.id);
@@ -81,9 +81,9 @@ class UserService {
             }
         });
     }
-    updateProfileImage(res, file) {
+    updateProfileImage(res, req, file) {
         return __awaiter(this, void 0, void 0, function* () {
-            const loggedId = middleware_1.auth.loggedId;
+            const loggedId = middleware_1.auth.getLoggedUserId(req);
             if (file && file.size && (file.size > (1 * 1024 * 1024))) { // > 1MB
                 return res.status(500).send("Immagine troppo pesante, cambiala");
             }
@@ -109,9 +109,10 @@ class UserService {
             }
         });
     }
-    blackListPublisher(res, obj) {
+    blackListPublisher(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
-            const loggedId = middleware_1.auth.loggedId;
+            const loggedId = middleware_1.auth.getLoggedUserId(req);
+            const obj = req.body;
             console.log("new ad", obj);
             const connection = yield db.connection();
             const statusNotIn = [

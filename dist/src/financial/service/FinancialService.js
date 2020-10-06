@@ -25,10 +25,11 @@ const transactionRepository = new TransactionRepository_1.TransactionRepository(
 const cardRepository = new CardRepository_1.CardRepository();
 const db = require("../../connection");
 class FinancialService {
-    payUserSubScription(res, obj) {
+    payUserSubScription(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
+            const obj = req.body;
             LOG.debug("payUserSubScription", obj);
-            const userLogged = middleware_1.auth.loggedId;
+            const userLogged = middleware_1.auth.getLoggedUserId(req);
             const connection = yield db.connection();
             yield connection.newTransaction();
             try {
@@ -51,10 +52,10 @@ class FinancialService {
             }
         });
     }
-    getUserSubScription(res, planId) {
+    getUserSubScription(res, req, planId) {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.debug("getUserSubScription");
-            const userLogged = middleware_1.auth.loggedId;
+            const userLogged = middleware_1.auth.getLoggedUserId(req);
             const connection = yield db.connection();
             let userSub = yield subScriptionRepository.findCurrentSubForUser(userLogged, planId, connection);
             yield connection.release();
@@ -62,20 +63,20 @@ class FinancialService {
             return res.status(200).send(userSub);
         });
     }
-    getUserTransactions(res) {
+    getUserTransactions(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.debug("getUserTransactions");
-            const userLogged = middleware_1.auth.loggedId;
+            const userLogged = middleware_1.auth.getLoggedUserId(req);
             const connection = yield db.connection();
             let userTras = yield transactionRepository.findByUser(userLogged, connection);
             yield connection.release();
             return res.status(200).send(userTras);
         });
     }
-    getUserCards(res) {
+    getUserCards(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.debug("getUserCards");
-            const userLogged = middleware_1.auth.loggedId;
+            const userLogged = middleware_1.auth.getLoggedUserId(req);
             const connection = yield db.connection();
             let userTras = yield cardRepository.findByUserId(userLogged, connection);
             yield connection.release();

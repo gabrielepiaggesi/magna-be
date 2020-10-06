@@ -9,10 +9,10 @@ const financialService = new FinancialService();
 const webHookService = new WebHookService();
 
 // routes
-financialRoutes.get("/subscription/:planId", auth.isUser, async (req, res) => await financialService.getUserSubScription(res, req.params.planId));
-financialRoutes.get("/transactions", auth.isUser, async (req, res) => await financialService.getUserTransactions(res));
-financialRoutes.get("/cards", auth.isUser, async (req, res) => await financialService.getUserCards(res));
-financialRoutes.post("/pay", auth.isUser, async (req, res) => await financialService.payUserSubScription(res, req.body));
+financialRoutes.get("/subscription/:planId", auth.isUser, async (req, res) => await financialService.getUserSubScription(res, req, req.params.planId));
+financialRoutes.get("/transactions", auth.isUser, async (req, res) => await financialService.getUserTransactions(res, req));
+financialRoutes.get("/cards", auth.isUser, async (req, res) => await financialService.getUserCards(res, req));
+financialRoutes.post("/pay", auth.isUser, async (req, res) => await financialService.payUserSubScription(res, req));
 
 // webhook
 financialRoutes.post("/webhook/subscription", async (req, res) => await webHookService.updateSubScriptionWH(res, req.body));

@@ -13,7 +13,6 @@ const storage_1 = require("@google-cloud/storage");
 const Logger_1 = require("../../framework/services/Logger");
 const MediaRepository_1 = require("../repositories/MediaRepository");
 const Media_1 = require("../models/Media");
-const middleware_1 = require("../../framework/integrations/middleware");
 const LOG = new Logger_1.Logger("UploadService.class");
 const mediaRepository = new MediaRepository_1.MediaRepository();
 const db = require("../../database");
@@ -44,7 +43,7 @@ class StorageService {
             let file = obj.file; //.file because on fe the input name is file
             if (file) {
                 try {
-                    const fileUploaded = yield this.uploadImageToStorage(file);
+                    const fileUploaded = yield this.uploadImageToStorage(file, userId);
                     const url = fileUploaded.url;
                     const fileName = fileUploaded.name;
                     console.log(url);
@@ -75,14 +74,14 @@ class StorageService {
             }
         });
     }
-    uploadImageToStorage(file) {
+    uploadImageToStorage(file, userId) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!file) {
                 throw { message: 'No image file', code: 'no_image' };
             }
             let namee = (file.name || file.originalname);
             namee = namee.replace(" ", "_");
-            const newFileName = `${middleware_1.auth.loggedId}_${Date.now()}_${namee}`;
+            const newFileName = `${userId}_${Date.now()}_${namee}`;
             const fileUpload = yield bucket.file(newFileName);
             const blobStream = yield fileUpload.createWriteStream({ metadata: { contentType: file.mimetype } });
             yield blobStream.on('error', (error) => {

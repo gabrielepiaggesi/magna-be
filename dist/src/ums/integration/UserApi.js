@@ -33,10 +33,10 @@ const multerConfig = {
 // services
 const userService = new UserService_1.UserService();
 // routes
-userRoutes.get("/me", middleware_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield userService.getLoggedUser(res); }));
+userRoutes.get("/me", middleware_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield userService.getLoggedUser(res, req); }));
 userRoutes.get("/:userId", (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield userService.getUser(res, parseInt(req.params.userId, 10)); }));
 userRoutes.get("/total/users", (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield userService.getTotalUsers(res); }));
 userRoutes.post("/me", middleware_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield userService.updateAccountDetails(res, req.body); }));
-userRoutes.post("/profileImage", middleware_1.auth.isUser, multer_1.default(multerConfig).single('file'), (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield userService.updateProfileImage(res, req.file); }));
+userRoutes.post("/profileImage", middleware_1.auth.isUser, multer_1.default(multerConfig).single('file'), (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield userService.updateProfileImage(res, req, req.file); }));
 exports.default = userRoutes;
 //# sourceMappingURL=UserApi.js.map

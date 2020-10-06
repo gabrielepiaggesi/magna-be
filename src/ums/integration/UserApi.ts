@@ -15,11 +15,11 @@ const multerConfig = {
 const userService = new UserService();
 
 // routes
-userRoutes.get("/me", auth.isUser, async (req, res) => await userService.getLoggedUser(res));
+userRoutes.get("/me", auth.isUser, async (req, res) => await userService.getLoggedUser(res, req));
 userRoutes.get("/:userId", async (req, res) => await userService.getUser(res, parseInt(req.params.userId, 10)));
 userRoutes.get("/total/users", async (req, res) => await userService.getTotalUsers(res));
 
 userRoutes.post("/me", auth.isUser, async (req, res) => await userService.updateAccountDetails(res, req.body));
-userRoutes.post("/profileImage", auth.isUser, multer(multerConfig).single('file'), async (req, res) => await userService.updateProfileImage(res, req.file));
+userRoutes.post("/profileImage", auth.isUser, multer(multerConfig).single('file'), async (req, res) => await userService.updateProfileImage(res, req, req.file));
 
 export default userRoutes;

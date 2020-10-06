@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const passport_1 = __importDefault(require("passport"));
 const passport_jwt_1 = __importDefault(require("passport-jwt"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const jwt_1 = require("../../../../environment/dev/jwt");
 const UserRepository_1 = require("../../../ums/repository/UserRepository");
 const ExtractJwt = passport_jwt_1.default.ExtractJwt;
@@ -41,10 +42,17 @@ class AuthMiddleWare {
         passport_1.default.use(this.strategy);
     }
     init() {
+        passport_1.default.session();
         return passport_1.default.initialize();
     }
     setLoggedId(id) {
         this.loggedId = id;
+    }
+    getLoggedUserId(req) {
+        var authorization = req.headers.authorization.split(' ')[1], decoded;
+        decoded = jsonwebtoken_1.default.verify(authorization, jwt_1.jwtConfig.secretOrKey);
+        console.log('user logged', decoded.id);
+        return decoded.id;
     }
 }
 exports.AuthMiddleWare = AuthMiddleWare;

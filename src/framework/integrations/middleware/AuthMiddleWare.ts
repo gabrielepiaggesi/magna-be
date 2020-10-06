@@ -1,5 +1,6 @@
 import passport from "passport";
 import passportJWT from "passport-jwt";
+import jwt from "jsonwebtoken";
 import { jwtConfig } from "../../../../environment/dev/jwt";
 import { UserRepository } from "../../../ums/repository/UserRepository";
 const ExtractJwt = passportJWT.ExtractJwt;
@@ -31,10 +32,19 @@ export class AuthMiddleWare {
   }
 
   public init() {
+    passport.session();
     return passport.initialize();
   }
 
   public setLoggedId(id) {
     this.loggedId = id;
+  }
+
+  public getLoggedUserId(req) {
+    var authorization = req.headers.authorization.split(' ')[1],
+        decoded;
+        decoded = jwt.verify(authorization, jwtConfig.secretOrKey);
+    console.log('user logged', decoded.id);
+    return decoded.id;
   }
 }
