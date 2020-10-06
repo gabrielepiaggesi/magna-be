@@ -30,6 +30,7 @@ class AdService {
                 const ad = ads[i];
                 ad.user_telegram = (ad.user_telegram) ? true : false;
                 ad.user_whatsapp = (ad.user_whatsapp) ? true : false;
+                ad.user_email = (ad.user_email) ? true : false;
                 ad.ad_feed_date = new Date(ad.ad_feed_date).toISOString().substring(0, 19);
                 ad.ad_created_at = new Date(ad.ad_created_at).toISOString().substring(0, 19);
                 ads[i] = ad;

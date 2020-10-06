@@ -31,7 +31,8 @@ class AdRepository extends Repository_1.Repository {
             user.image_url as user_image,
             user.age as user_age,
             user.whatsapp as user_whatsapp,
-            user.telegram as user_telegram 
+            user.telegram as user_telegram,
+            user.email as user_email  
             from ${this.table} ad  
             inner join users user on user.id = ad.user_id and user.deleted_at is null and user.status = 'ACTIVE' and user.age between ${fromAge} and ${toAge} 
             where ad.deleted_at is null ${addPage} 
@@ -52,7 +53,8 @@ class AdRepository extends Repository_1.Repository {
             user.image_url as user_image,
             user.age as user_age,
             user.whatsapp as user_whatsapp,
-            user.telegram as user_telegram 
+            user.telegram as user_telegram, 
+            user.email as user_email  
             from ${this.table} ad  
             inner join users user on user.id = ad.user_id and user.deleted_at is null and user.status = 'ACTIVE' 
             where ad.deleted_at is null and ad.id = ${adId} 
@@ -73,7 +75,8 @@ class AdRepository extends Repository_1.Repository {
             user.image_url as user_image,
             user.age as user_age,
             user.whatsapp as user_whatsapp,
-            user.telegram as user_telegram 
+            user.telegram as user_telegram, 
+            user.email as user_email  
             from ${this.table} ad  
             inner join users user on user.id = ad.user_id and user.deleted_at is null and user.status = 'ACTIVE'  
             where ad.deleted_at is null ${addPage} 
