@@ -71,8 +71,9 @@ export class UserService {
         }
     }
 
-    public async updateProfileImage(res: Response, req, file) {
+    public async updateProfileImage(res: Response, req) {
         const loggedId = auth.getLoggedUserId(req);
+        const file = req.file;
         if (file && file.size && (file.size > (1 * 1024 * 1024))) { // > 1MB
             return res.status(500).send("Immagine troppo pesante, cambiala");
         } 
