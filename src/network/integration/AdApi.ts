@@ -15,7 +15,7 @@ networkRoutes.get("/my/:lastPostId", auth.isUser, async (req, res) => await adsS
 networkRoutes.get("/:postId", auth.isUser, async (req, res) => await adsService.getAd(res, parseInt(req.params.postId, 10)));
 networkRoutes.post("/delete/:postId", auth.isUser, async (req, res) => await adsService.deleteAd(res, req, parseInt(req.params.postId, 10)));
 networkRoutes.post("/push/:postId", auth.isUser, async (req, res) => await adsService.pushAd(res, req, parseInt(req.params.postId, 10)));
-networkRoutes.post("/feed", auth.isUser, async (req, res) => await adsService.publishAd(res, req.body));
-networkRoutes.post("/report", auth.isUser, async (req, res) => await userService.blackListPublisher(res, req.body));
+networkRoutes.post("/feed", auth.isUser, async (req, res) => await adsService.publishAd(res, req));
+networkRoutes.post("/report", auth.isUser, async (req, res) => await userService.blackListPublisher(res, req));
 
 export default networkRoutes;
