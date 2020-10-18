@@ -32,11 +32,13 @@ class AdRepository extends Repository_1.Repository {
             user.age as user_age,
             user.whatsapp as user_whatsapp,
             user.telegram as user_telegram,
-            user.email as user_email  
+            user.email as user_email, 
+            (case when (user.whatsapp is not null or user.telegram is not null) then 1 else 0 end) as has_contact,
+            (case when (user.image_url is not null) then 1 else 0 end) as has_image 
             from ${this.table} ad  
             inner join users user on user.id = ad.user_id and user.deleted_at is null and user.status = 'ACTIVE' and user.age between ${fromAge} and ${toAge} 
             where ad.deleted_at is null ${addPage} 
-            order by ad.feed_date desc 
+            order by has_image desc, has_contact desc, ad.feed_date desc  
             limit 9`).then((results) => results);
         });
     }
