@@ -38,7 +38,7 @@ class AdRepository extends Repository_1.Repository {
             from ${this.table} ad  
             inner join users user on user.id = ad.user_id and user.deleted_at is null and user.status = 'ACTIVE' and user.age between ${fromAge} and ${toAge} 
             where ad.deleted_at is null ${addPage} 
-            order by has_contact desc, has_image desc, ad.feed_date desc  
+            order by has_image desc, has_contact desc, ad.feed_date desc  
             limit 9`).then((results) => results);
         });
     }
