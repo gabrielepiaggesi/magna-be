@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const Logger_1 = require("../../utils/Logger");
 const stripe_1 = __importDefault(require("stripe"));
-const stripe = new stripe_1.default('sk_test_51HeNJiJIcmyVzZxQvazo0whBRQ4Eil3QL5EiFQ2mAxslgaCAfCNoV7uBGr7iWTVwERaKYV2ycbaxwMJYP6SXOuAb000qwOal2N', null);
+const stripe = new stripe_1.default('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', null);
 const LOG = new Logger_1.Logger("StripeService.class");
 class StripeService {
     // https://stripe.com/docs/billing/subscriptions/payment

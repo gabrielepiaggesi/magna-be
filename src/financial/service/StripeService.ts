@@ -4,7 +4,7 @@ import Stripe from 'stripe';
 import { StripePaymentMethodReq } from "./classes/StripePaymentMethodReq";
 import { StripeSubScriptionReq } from "./classes/StripeSubScriptionReq";
 import { SubScription } from "../model/SubScription";
-const stripe = new Stripe('sk_test_51HeNJiJIcmyVzZxQvazo0whBRQ4Eil3QL5EiFQ2mAxslgaCAfCNoV7uBGr7iWTVwERaKYV2ycbaxwMJYP6SXOuAb000qwOal2N', null);
+const stripe = new Stripe('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', null);
 const LOG = new Logger("StripeService.class");
 
 export class StripeService {

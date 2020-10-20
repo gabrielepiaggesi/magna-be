@@ -73,10 +73,11 @@ class WalletService {
                 LOG.info('new subscription', userSubInserted.insertId);
             }
             user.status = (userSub.status == PaymentStatus_1.PaymentStatus.SUCCESS) ? UserStatus_1.UserStatus.ACTIVE : UserStatus_1.UserStatus.SUSPENDED;
-            const userUpdated = yield userRepository.update(user, conn);
             if (sub.status == 'canceled') {
                 EmailSender_1.EmailSender.sendSubCanceled({ email: user.email });
+                user.status = UserStatus_1.UserStatus.SUSPENDED;
             }
+            const userUpdated = yield userRepository.update(user, conn);
             return userSub;
         });
     }

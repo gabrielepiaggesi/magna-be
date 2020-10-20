@@ -71,11 +71,11 @@ export class WalletService {
         }
 
         user.status = (userSub.status == PaymentStatus.SUCCESS) ? UserStatus.ACTIVE : UserStatus.SUSPENDED;
-        const userUpdated = await userRepository.update(user, conn);
-
         if (sub.status == 'canceled') {
             EmailSender.sendSubCanceled({ email: user.email });
+            user.status = UserStatus.SUSPENDED;
         }
+        const userUpdated = await userRepository.update(user, conn);
         return userSub;
     }
 
