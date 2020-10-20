@@ -69,7 +69,7 @@ export class EmailSender {
                 sender: { email: 'pridepartyweb@gmail.com', name: 'PrideParty' },
                 to: [{ email: email }],
                 replyTo: { email: 'pridepartyweb@gmail.com' },
-                params: params,
+                params: { default: 'ciao', ...params },
                 templateId: templateId
             },
             json: true
