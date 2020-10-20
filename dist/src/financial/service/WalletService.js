@@ -101,7 +101,7 @@ class WalletService {
             else {
                 const traInserted = yield transactionRepository.save(tra, conn);
                 tra.id = traInserted.insertId;
-                EmailSender_1.EmailSender.sendNewRenewMessage({ email: user.email, params: { paymentValue: (pi.amount / 100), subscription_id: tra.stripe_sub_id } });
+                EmailSender_1.EmailSender.sendNewRenewMessage({ email: user.email, params: { paymentValue: (pi.amount / 100), subscription_id: tra.stripe_sub_id, invoice_pdf_url: tra.invoice_pdf_url } });
                 LOG.info('new transaction', traInserted.insertId);
             }
             return tra;
