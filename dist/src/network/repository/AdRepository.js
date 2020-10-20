@@ -36,7 +36,7 @@ class AdRepository extends Repository_1.Repository {
             (case when (user.whatsapp is not null or user.telegram is not null) then 1 else 0 end) as has_contact,
             (case when (user.image_url is not null) then 1 else 0 end) as has_image 
             from ${this.table} ad  
-            inner join users user on user.id = ad.user_id and user.deleted_at is null and user.status = 'ACTIVE' and user.age between ${fromAge} and ${toAge} 
+            inner join users user on user.id = ad.user_id and user.deleted_at is null and user.age between ${fromAge} and ${toAge} 
             where ad.deleted_at is null ${addPage} 
             order by ad.feed_date desc  
             limit 9`).then((results) => results);
@@ -58,7 +58,7 @@ class AdRepository extends Repository_1.Repository {
             user.telegram as user_telegram, 
             user.email as user_email  
             from ${this.table} ad  
-            inner join users user on user.id = ad.user_id and user.deleted_at is null and user.status = 'ACTIVE' 
+            inner join users user on user.id = ad.user_id and user.deleted_at is null  
             where ad.deleted_at is null and ad.id = ${adId} 
             limit 1`).then((results) => results[0]);
         });
@@ -80,7 +80,7 @@ class AdRepository extends Repository_1.Repository {
             user.telegram as user_telegram, 
             user.email as user_email  
             from ${this.table} ad  
-            inner join users user on user.id = ad.user_id and user.deleted_at is null and user.status = 'ACTIVE'  
+            inner join users user on user.id = ad.user_id and user.deleted_at is null   
             where ad.deleted_at is null ${addPage} 
             and ad.user_id = ${userId} 
             order by ad.feed_date desc 
