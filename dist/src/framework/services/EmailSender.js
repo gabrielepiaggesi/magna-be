@@ -59,7 +59,7 @@ class EmailSender {
             return new Promise(resolve => setTimeout(resolve, ms));
         });
     }
-    static send(templateId, email, params = null) {
+    static send(templateId, email, params = {}) {
         const options = {
             method: 'POST',
             url: 'https://api.sendinblue.com/v3/smtp/email',
