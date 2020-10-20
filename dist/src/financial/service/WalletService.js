@@ -35,13 +35,14 @@ class WalletService {
         return __awaiter(this, void 0, void 0, function* () {
             let userStripe = yield stripeRepository.findByCustomerId(sub.customer.toString(), conn);
             let userPlan = yield planRepository.findByStripePlanId(sub.plan.id, conn);
+            const user = yield userRepository.findById(userStripe.user_id, conn);
             let inv = yield stripeService.getStripeInvoice(sub.latest_invoice['id']);
             let pi = yield stripeService.getStripePaymentIntent(sub.latest_invoice['payment_intent']['id']);
             inv = inv || null;
             pi = pi || null;
             if (userStripe) {
-                const userSubUpdated = yield this.updateUserSubScription(userStripe.user_id, userPlan.id, sub, inv, pi, conn);
-                yield this.updateUserTransaction(userStripe.user_id, userPlan.id, sub, inv, pi, conn);
+                const userSubUpdated = yield this.updateUserSubScription(user, userPlan.id, sub, inv, pi, conn);
+                yield this.updateUserTransaction(user, userPlan.id, sub, inv, pi, conn);
                 return userSubUpdated;
             }
             else {
@@ -50,13 +51,13 @@ class WalletService {
             }
         });
     }
-    updateUserSubScription(userId, planId, sub, inv, pi, conn) {
+    updateUserSubScription(user, planId, sub, inv, pi, conn) {
         return __awaiter(this, void 0, void 0, function* () {
             const now = new Date(Date.now());
-            let userSub = yield subScriptionRepository.findByUserIdAndPlanId(userId, planId, conn);
+            let userSub = yield subScriptionRepository.findByUserIdAndPlanId(user.id, planId, conn);
             userSub = userSub || new SubScription_1.SubScription();
             userSub.subscription_id = sub.id;
-            userSub.user_id = userId;
+            userSub.user_id = user.id;
             userSub.plan_id = planId;
             userSub.status = (pi.status == 'succeeded') ? PaymentStatus_1.PaymentStatus.SUCCESS : PaymentStatus_1.PaymentStatus.FAILED;
             userSub.resume_status = sub.status + '.' + inv.status + '.' + pi.status;
@@ -71,18 +72,16 @@ class WalletService {
                 userSub.id = userSubInserted.insertId;
                 LOG.info('new subscription', userSubInserted.insertId);
             }
-            const user = yield userRepository.findById(userId, conn);
             user.status = (userSub.status == PaymentStatus_1.PaymentStatus.SUCCESS) ? UserStatus_1.UserStatus.ACTIVE : UserStatus_1.UserStatus.SUSPENDED;
             const userUpdated = yield userRepository.update(user, conn);
-            EmailSender_1.EmailSender.sendNewRenewMessage({ email: user.email, params: { paymentValue: (pi.amount / 100) } });
             return userSub;
         });
     }
-    updateUserTransaction(userId, planId, sub, inv, pi, conn) {
+    updateUserTransaction(user, planId, sub, inv, pi, conn) {
         return __awaiter(this, void 0, void 0, function* () {
             let tra = yield transactionRepository.findByPaymentIntentId(pi.id, conn);
             tra = tra || new Transaction_1.Transaction();
-            tra.user_id = userId;
+            tra.user_id = user.id;
             tra.stripe_sub_id = sub.id || null;
             tra.stripe_payment_id = pi.id || null;
             tra.stripe_invoice_id = inv.id || null;
@@ -102,6 +101,7 @@ class WalletService {
             else {
                 const traInserted = yield transactionRepository.save(tra, conn);
                 tra.id = traInserted.insertId;
+                EmailSender_1.EmailSender.sendNewRenewMessage({ email: user.email, params: { paymentValue: (pi.amount / 100), subscription_id: tra.stripe_sub_id } });
                 LOG.info('new transaction', traInserted.insertId);
             }
             return tra;

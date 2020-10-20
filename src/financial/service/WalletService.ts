@@ -15,6 +15,7 @@ import { OperationSign } from "./classes/OperationSign";
 import { UserRepository } from "../../ums/repository/UserRepository";
 import { UserStatus } from "../../ums/service/classes/UserStatus";
 import { EmailSender } from "../../framework/services/EmailSender";
+import { User } from "../../ums/model/User";
 
 const LOG = new Logger("WalletService.class");
 const userRepository = new UserRepository();
@@ -30,15 +31,16 @@ export class WalletService {
     public async updateUserWallet(sub: Stripe.Subscription, conn): Promise<SubScription> {
         let userStripe: UserStripe = await stripeRepository.findByCustomerId(sub.customer.toString(), conn);
         let userPlan: Plan = await planRepository.findByStripePlanId(sub.plan.id, conn);
-        
+        const user = await userRepository.findById(userStripe.user_id, conn);
+
         let inv = await stripeService.getStripeInvoice(sub.latest_invoice['id']);
         let pi = await stripeService.getStripePaymentIntent(sub.latest_invoice['payment_intent']['id']);
         inv = inv || null;
         pi = pi || null;
         
         if (userStripe) {
-            const userSubUpdated = await this.updateUserSubScription(userStripe.user_id, userPlan.id, sub, inv, pi, conn);
-            await this.updateUserTransaction(userStripe.user_id, userPlan.id, sub, inv, pi, conn);
+            const userSubUpdated = await this.updateUserSubScription(user, userPlan.id, sub, inv, pi, conn);
+            await this.updateUserTransaction(user, userPlan.id, sub, inv, pi, conn);
             return userSubUpdated;
         } else {
             LOG.error('no stripe user found on db!', sub.customer.toString());
@@ -46,13 +48,13 @@ export class WalletService {
         }
     }
 
-    private async updateUserSubScription(userId, planId, sub: Stripe.Subscription, inv: Stripe.Invoice, pi: Stripe.PaymentIntent, conn) {
+    private async updateUserSubScription(user: User, planId, sub: Stripe.Subscription, inv: Stripe.Invoice, pi: Stripe.PaymentIntent, conn) {
         const now = new Date(Date.now());
-        let userSub: SubScription = await subScriptionRepository.findByUserIdAndPlanId(userId, planId, conn);
+        let userSub: SubScription = await subScriptionRepository.findByUserIdAndPlanId(user.id, planId, conn);
         userSub = userSub || new SubScription();
         
         userSub.subscription_id = sub.id;
-        userSub.user_id = userId;
+        userSub.user_id = user.id;
         userSub.plan_id = planId;
         userSub.status = (pi.status == 'succeeded') ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
         userSub.resume_status = sub.status + '.' + inv.status + '.' + pi.status;
@@ -68,18 +70,16 @@ export class WalletService {
             LOG.info('new subscription', userSubInserted.insertId);
         }
 
-        const user = await userRepository.findById(userId, conn);
         user.status = (userSub.status == PaymentStatus.SUCCESS) ? UserStatus.ACTIVE : UserStatus.SUSPENDED;
         const userUpdated = await userRepository.update(user, conn);
-        EmailSender.sendNewRenewMessage({ email: user.email, params: { paymentValue: (pi.amount / 100) } });
         return userSub;
     }
 
-    private async updateUserTransaction(userId, planId, sub: Stripe.Subscription, inv: Stripe.Invoice, pi: Stripe.PaymentIntent, conn) {
+    private async updateUserTransaction(user: User, planId, sub: Stripe.Subscription, inv: Stripe.Invoice, pi: Stripe.PaymentIntent, conn) {
         let tra: Transaction = await transactionRepository.findByPaymentIntentId(pi.id, conn);
         tra = tra || new Transaction();
         
-        tra.user_id = userId;
+        tra.user_id = user.id;
         tra.stripe_sub_id = sub.id || null;
         tra.stripe_payment_id = pi.id || null;
         tra.stripe_invoice_id = inv.id || null;
@@ -99,6 +99,7 @@ export class WalletService {
         } else {
             const traInserted = await transactionRepository.save(tra, conn);
             tra.id = traInserted.insertId;
+            EmailSender.sendNewRenewMessage({ email: user.email, params: { paymentValue: (pi.amount / 100), subscription_id: tra.stripe_sub_id } });
             LOG.info('new transaction', traInserted.insertId);
         }
 
