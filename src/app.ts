@@ -22,14 +22,6 @@ initJobs(app);
 app.use(cors());
 app.use(bodyParser.json());
 app.use(api);
-app.use(function(req, res, next) {
-  var authorization = req.headers.authorization.split(' ')[1],
-  decoded;
-  decoded = jwt.verify(authorization, jwtConfig.secretOrKey);
-  var userId = decoded.id;
-  res.locals.user = userId;
-  next();
-});
 
 // start server
 app.listen(port, () => {
