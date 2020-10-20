@@ -25,6 +25,7 @@ financialRoutes.get("/subscription/:planId", middleware_1.auth.isUser, (req, res
 financialRoutes.get("/transactions", middleware_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield financialService.getUserTransactions(res, req); }));
 financialRoutes.get("/cards", middleware_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield financialService.getUserCards(res, req); }));
 financialRoutes.post("/pay", middleware_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield financialService.payUserSubScription(res, req); }));
+financialRoutes.post("/subscription/cancel/:subId", (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield financialService.cancelSubScription(res, req.params.subId); }));
 // webhook
 financialRoutes.post("/webhook/subscription", (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield webHookService.updateSubScriptionWH(res, req.body); }));
 exports.default = financialRoutes;

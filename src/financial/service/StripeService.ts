@@ -4,7 +4,7 @@ import Stripe from 'stripe';
 import { StripePaymentMethodReq } from "./classes/StripePaymentMethodReq";
 import { StripeSubScriptionReq } from "./classes/StripeSubScriptionReq";
 import { SubScription } from "../model/SubScription";
-const stripe = new Stripe('sk_live_ioUFLIotmLBaQze8ilrLkW8300aZmXx7ZH', null);
+const stripe = new Stripe('sk_test_51HeNJiJIcmyVzZxQvazo0whBRQ4Eil3QL5EiFQ2mAxslgaCAfCNoV7uBGr7iWTVwERaKYV2ycbaxwMJYP6SXOuAb000qwOal2N', null);
 const LOG = new Logger("StripeService.class");
 
 export class StripeService {
@@ -76,6 +76,10 @@ export class StripeService {
 
     public async getStripeSubscription(subId: string) {
         return await stripe.subscriptions.retrieve(subId, {expand: ["latest_invoice.payment_intent"]}).then(sub => sub);
+    }
+
+    public async cancelStripeSubscription(subId: string) {
+        return await stripe.subscriptions.del(subId).then(sub => sub);
     }
 
     public async getStripeInvoice(invId: string) {

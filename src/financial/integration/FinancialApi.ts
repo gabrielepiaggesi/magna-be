@@ -13,6 +13,7 @@ financialRoutes.get("/subscription/:planId", auth.isUser, async (req, res) => aw
 financialRoutes.get("/transactions", auth.isUser, async (req, res) => await financialService.getUserTransactions(res, req));
 financialRoutes.get("/cards", auth.isUser, async (req, res) => await financialService.getUserCards(res, req));
 financialRoutes.post("/pay", auth.isUser, async (req, res) => await financialService.payUserSubScription(res, req));
+financialRoutes.post("/subscription/cancel/:subId", async (req, res) => await financialService.cancelSubScription(res, req.params.subId));
 
 // webhook
 financialRoutes.post("/webhook/subscription", async (req, res) => await webHookService.updateSubScriptionWH(res, req.body));

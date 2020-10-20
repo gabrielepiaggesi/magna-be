@@ -24,6 +24,10 @@ export class EmailSender {
         this.send(4, emailDto.email, emailDto.params);
     }
 
+    public static sendSubCanceled(emailDto) {
+        this.send(5, emailDto.email);
+    }
+
     public static async sendRetentionEmail() {
         const fromDayAgo = 4;
         const toDayAgo = 3;

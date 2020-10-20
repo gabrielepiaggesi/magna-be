@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const Logger_1 = require("../../utils/Logger");
 const stripe_1 = __importDefault(require("stripe"));
-const stripe = new stripe_1.default('sk_live_ioUFLIotmLBaQze8ilrLkW8300aZmXx7ZH', null);
+const stripe = new stripe_1.default('sk_test_51HeNJiJIcmyVzZxQvazo0whBRQ4Eil3QL5EiFQ2mAxslgaCAfCNoV7uBGr7iWTVwERaKYV2ycbaxwMJYP6SXOuAb000qwOal2N', null);
 const LOG = new Logger_1.Logger("StripeService.class");
 class StripeService {
     // https://stripe.com/docs/billing/subscriptions/payment
@@ -96,6 +96,11 @@ class StripeService {
     getStripeSubscription(subId) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield stripe.subscriptions.retrieve(subId, { expand: ["latest_invoice.payment_intent"] }).then(sub => sub);
+        });
+    }
+    cancelStripeSubscription(subId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield stripe.subscriptions.del(subId).then(sub => sub);
         });
     }
     getStripeInvoice(invId) {

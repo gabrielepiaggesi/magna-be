@@ -72,6 +72,10 @@ export class WalletService {
 
         user.status = (userSub.status == PaymentStatus.SUCCESS) ? UserStatus.ACTIVE : UserStatus.SUSPENDED;
         const userUpdated = await userRepository.update(user, conn);
+
+        if (sub.status == 'canceled') {
+            EmailSender.sendSubCanceled({ email: user.email });
+        }
         return userSub;
     }
 
@@ -99,7 +103,7 @@ export class WalletService {
         } else {
             const traInserted = await transactionRepository.save(tra, conn);
             tra.id = traInserted.insertId;
-            EmailSender.sendNewRenewMessage({ email: user.email, params: { paymentValue: (pi.amount / 100), subscription_id: tra.stripe_sub_id, invoice_pdf_url: tra.invoice_pdf_url } });
+            EmailSender.sendNewRenewMessage({ email: user.email, params: { paymentValue: (pi.amount / 100).toFixed(2), subscription_id: tra.stripe_sub_id, invoice_pdf_url: tra.invoice_pdf_url } });
             LOG.info('new transaction', traInserted.insertId);
         }
 

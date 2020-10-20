@@ -74,6 +74,9 @@ class WalletService {
             }
             user.status = (userSub.status == PaymentStatus_1.PaymentStatus.SUCCESS) ? UserStatus_1.UserStatus.ACTIVE : UserStatus_1.UserStatus.SUSPENDED;
             const userUpdated = yield userRepository.update(user, conn);
+            if (sub.status == 'canceled') {
+                EmailSender_1.EmailSender.sendSubCanceled({ email: user.email });
+            }
             return userSub;
         });
     }
@@ -101,7 +104,7 @@ class WalletService {
             else {
                 const traInserted = yield transactionRepository.save(tra, conn);
                 tra.id = traInserted.insertId;
-                EmailSender_1.EmailSender.sendNewRenewMessage({ email: user.email, params: { paymentValue: (pi.amount / 100), subscription_id: tra.stripe_sub_id, invoice_pdf_url: tra.invoice_pdf_url } });
+                EmailSender_1.EmailSender.sendNewRenewMessage({ email: user.email, params: { paymentValue: (pi.amount / 100).toFixed(2), subscription_id: tra.stripe_sub_id, invoice_pdf_url: tra.invoice_pdf_url } });
                 LOG.info('new transaction', traInserted.insertId);
             }
             return tra;

@@ -81,7 +81,7 @@ class AuthService {
                         const tinyint = (user.hasAccepted) ? 1 : 0;
                         const newUser = new User_1.User();
                         newUser.email = user.email;
-                        newUser.status = UserStatus_1.UserStatus.ACTIVE;
+                        newUser.status = UserStatus_1.UserStatus.NEW;
                         newUser.password = hash;
                         newUser.age = user.age;
                         newUser.accept_terms_and_conditions = tinyint;

@@ -28,6 +28,9 @@ class EmailSender {
     static sendNewRenewMessage(emailDto) {
         this.send(4, emailDto.email, emailDto.params);
     }
+    static sendSubCanceled(emailDto) {
+        this.send(5, emailDto.email);
+    }
     static sendRetentionEmail() {
         return __awaiter(this, void 0, void 0, function* () {
             const fromDayAgo = 4;

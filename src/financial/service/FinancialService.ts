@@ -12,6 +12,7 @@ import { Card } from "../model/Card";
 import { UserRepository } from "../../ums/repository/UserRepository";
 import { auth } from "../../framework/integrations/middleware";
 import { User } from "../../ums/model/User";
+import { StripeService } from "./StripeService";
 
 const LOG = new Logger("FinancialService.class");
 const userRepository = new UserRepository();
@@ -19,9 +20,23 @@ const paymentService = new PaymentService();
 const subScriptionRepository = new SubScriptionRepository();
 const transactionRepository = new TransactionRepository();
 const cardRepository = new CardRepository();
+const stripeService = new StripeService();
 const db = require("../../connection");
 
 export class FinancialService {
+
+    public async cancelSubScription(res: Response, subId) {
+        try {
+            const sub = await stripeService.cancelStripeSubscription(subId);
+            return res.status(200).send(sub);
+        } catch (e) {
+            LOG.error("cancel subscription error", e);
+            let msg = (e.message) ? e.message : null;
+            let error_code = (e.code) ? e.code : null;
+            let decline_code = (e.decline_code) ? e.decline_code : null;
+            return res.status(500).send({msg, error_code, decline_code});
+        }
+    }
 
     public async payUserSubScription(res: Response, req) {
         const obj: SubScriptionReq = req.body
