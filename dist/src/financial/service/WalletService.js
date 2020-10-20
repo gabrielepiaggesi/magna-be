@@ -21,6 +21,7 @@ const TransactionRepository_1 = require("../repository/TransactionRepository");
 const OperationSign_1 = require("./classes/OperationSign");
 const UserRepository_1 = require("../../ums/repository/UserRepository");
 const UserStatus_1 = require("../../ums/service/classes/UserStatus");
+const EmailSender_1 = require("../../framework/services/EmailSender");
 const LOG = new Logger_1.Logger("WalletService.class");
 const userRepository = new UserRepository_1.UserRepository();
 const subScriptionRepository = new SubScriptionRepository_1.SubScriptionRepository();
@@ -73,6 +74,7 @@ class WalletService {
             const user = yield userRepository.findById(userId, conn);
             user.status = (userSub.status == PaymentStatus_1.PaymentStatus.SUCCESS) ? UserStatus_1.UserStatus.ACTIVE : UserStatus_1.UserStatus.SUSPENDED;
             const userUpdated = yield userRepository.update(user, conn);
+            EmailSender_1.EmailSender.sendNewRenewMessage({ email: user.email, params: { paymentValue: (pi.amount / 100) } });
             return userSub;
         });
     }

@@ -9,6 +9,7 @@ import { auth } from "../../framework/integrations/middleware";
 import { UserRepository } from "../repository/UserRepository";
 import { User } from "../model/User";
 import { UserStatus } from "./classes/UserStatus";
+import { EmailSender } from "../../framework/services/EmailSender";
 
 const LOG = new Logger("AuthService.class");
 const userRepository = new UserRepository();
@@ -91,6 +92,7 @@ export class AuthService {
                     await connection.release();
                     const payload = { id: userId, type: 'PridePartyUser42' };
                     const token = jwt.sign(payload, jwtConfig.secretOrKey);
+                    EmailSender.sendWelcomeMessage({ email: user.email });
                     return res.status(200).json({ msg: "ok", token });
                 } catch (e) {
                     await connection.rollback();

@@ -2,6 +2,7 @@ import { Logger } from "../../utils/Logger";
 import Stripe from "stripe";
 import { WalletService } from "./WalletService";
 import { StripeService } from "./StripeService";
+import { EmailSender } from "../../framework/services/EmailSender";
 
 const LOG = new Logger("WebHookService.class");
 const walletService = new WalletService();

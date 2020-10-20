@@ -11,12 +11,15 @@ const express_1 = __importDefault(require("express"));
 const api_1 = __importDefault(require("./framework/integrations/api"));
 const middleware_1 = require("./framework/integrations/middleware");
 const jwt_1 = require("../environment/dev/jwt");
+const cron_1 = require("./cron");
 // initialize
 const app = express_1.default();
 const port = process.env.PORT || 3000;
 // db.connect();
 middleware_1.initMiddlewares(app);
 // startConnection();
+// init all crons/jobs
+cron_1.initJobs(app);
 app.use(cors_1.default());
 app.use(body_parser_1.default.json());
 app.use(api_1.default);

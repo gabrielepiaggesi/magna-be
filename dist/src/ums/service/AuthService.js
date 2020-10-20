@@ -20,6 +20,7 @@ const middleware_1 = require("../../framework/integrations/middleware");
 const UserRepository_1 = require("../repository/UserRepository");
 const User_1 = require("../model/User");
 const UserStatus_1 = require("./classes/UserStatus");
+const EmailSender_1 = require("../../framework/services/EmailSender");
 const LOG = new Logger_1.Logger("AuthService.class");
 const userRepository = new UserRepository_1.UserRepository();
 const db = require("../../connection");
@@ -97,6 +98,7 @@ class AuthService {
                         yield connection.release();
                         const payload = { id: userId, type: 'PridePartyUser42' };
                         const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
+                        EmailSender_1.EmailSender.sendWelcomeMessage({ email: user.email });
                         return res.status(200).json({ msg: "ok", token });
                     }
                     catch (e) {
