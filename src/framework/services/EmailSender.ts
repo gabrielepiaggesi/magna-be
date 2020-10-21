@@ -32,12 +32,8 @@ export class EmailSender {
         const fromDayAgo = 4;
         const toDayAgo = 3;
 
-        const today = new Date(Date.now());
-        const fromDate = (new Date(today.setDate(today.getDate() - fromDayAgo))).toISOString().substring(0, 19).replace("T", " ");
-        const toDate = (new Date(today.setDate(today.getDate() - toDayAgo))).toISOString().substring(0, 19).replace("T", " ");
-
         const connection = await db.connection();
-        const users = await genRepository.findUsersToCall(fromDate, toDate, connection);
+        const users = await genRepository.findUsersToCall(fromDayAgo, toDayAgo, connection);
         await connection.release();
         LOG.debug("retention email users size", users.length);
 

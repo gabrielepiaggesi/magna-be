@@ -35,11 +35,8 @@ class EmailSender {
         return __awaiter(this, void 0, void 0, function* () {
             const fromDayAgo = 4;
             const toDayAgo = 3;
-            const today = new Date(Date.now());
-            const fromDate = (new Date(today.setDate(today.getDate() - fromDayAgo))).toISOString().substring(0, 19).replace("T", " ");
-            const toDate = (new Date(today.setDate(today.getDate() - toDayAgo))).toISOString().substring(0, 19).replace("T", " ");
             const connection = yield db.connection();
-            const users = yield genRepository.findUsersToCall(fromDate, toDate, connection);
+            const users = yield genRepository.findUsersToCall(fromDayAgo, toDayAgo, connection);
             yield connection.release();
             LOG.debug("retention email users size", users.length);
             for (let i = 0; i < users.length; i++) {

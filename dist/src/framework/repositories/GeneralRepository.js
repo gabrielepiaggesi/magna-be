@@ -54,7 +54,7 @@ class GeneralRepository extends Repository_1.Repository {
             const c = conn || (yield db.connection());
             const q = `select u.id, u.email 
         from users u 
-        where u.created_at between '${date1}' and '${date2}' 
+        where u.created_at between (CURRENT_DATE - interval ${date1} day) and (CURRENT_DATE - interval ${date2} day)  
         and u.deleted_at is null`;
             return yield c.query(query || q).then((results) => results);
         });

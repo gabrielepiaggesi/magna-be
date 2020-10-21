@@ -18,14 +18,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const Cron = __importStar(require("cron"));
 const Logger_1 = require("../utils/Logger");
-const EmailSender_1 = require("../framework/services/EmailSender");
 const CronJob = Cron.CronJob;
 const LOG = new Logger_1.Logger("CRON");
 exports.initJobs = (app) => {
-    var retentionEmailJob = new CronJob('* 17 * * *', function () {
+    var retentionEmailJob = new CronJob('* * 18 * * *', function () {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.info('retentionEmailJob started');
-            yield EmailSender_1.EmailSender.sendRetentionEmail();
+            // await EmailSender.sendRetentionEmail();
             LOG.info('retentionEmailJob completed');
         });
     }, null, true, 'Europe/Rome');
