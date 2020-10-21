@@ -21,7 +21,7 @@ const Logger_1 = require("../utils/Logger");
 const CronJob = Cron.CronJob;
 const LOG = new Logger_1.Logger("CRON");
 exports.initJobs = (app) => {
-    var retentionEmailJob = new CronJob('* 5 18 * * *', function () {
+    var retentionEmailJob = new CronJob('0 10 18 * * *', function () {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.info('retentionEmailJob started');
             // await EmailSender.sendRetentionEmail();
