@@ -7,7 +7,7 @@ const LOG = new Logger("CRON");
 
 export const initJobs = (app) => {
     var retentionEmailJob = 
-    new CronJob('* * 18 * * *', async function() {
+    new CronJob('* 5 18 * * *', async function() {
         LOG.info('retentionEmailJob started');
         // await EmailSender.sendRetentionEmail();
         LOG.info('retentionEmailJob completed');
