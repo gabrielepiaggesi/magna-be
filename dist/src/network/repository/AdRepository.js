@@ -16,7 +16,7 @@ class AdRepository extends Repository_1.Repository {
         super(...arguments);
         this.table = "ads";
     }
-    findAdsForFeed(lastPostId = 0, fromAge = 18, toAge = 65, conn = null, query = null) {
+    findAdsForFeed(lastPostId = 0, fromAge = 18, toAge = 65, cat = 1, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn || (yield db.connection());
             const addPage = (lastPostId != 0) ? ` and ad.id < ${lastPostId} ` : ` `;
@@ -38,6 +38,7 @@ class AdRepository extends Repository_1.Repository {
             from ${this.table} ad  
             inner join users user on user.id = ad.user_id and user.image_url is not null and user.deleted_at is null and user.age between ${fromAge} and ${toAge} 
             where ad.deleted_at is null ${addPage} 
+            and ad.category_id = ${cat} 
             order by ad.feed_date desc  
             limit 9`).then((results) => results);
         });

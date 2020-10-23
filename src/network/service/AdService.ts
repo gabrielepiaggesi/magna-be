@@ -15,7 +15,7 @@ export class AdService {
     public async getFeed(res: Response, page: number = 0, queryParams) {
         console.log('queryParams', queryParams);
         const connection = await db.connection();
-        const ads = await adRepository.findAdsForFeed(page, parseInt(queryParams.from, 10) || 18, parseInt(queryParams.to, 10) || 65, connection);
+        const ads = await adRepository.findAdsForFeed(page, parseInt(queryParams.from, 10) || 18, parseInt(queryParams.to, 10) || 65, parseInt(queryParams.cat, 10) || 1, connection);
         await connection.release();
         for (let i = 0; i < ads.length; i++) {
             const ad = ads[i];
@@ -75,7 +75,7 @@ export class AdService {
             let ad = new Ad();
             ad.user_id = loggedId;
             if (obj.bio) ad.bio = obj.bio;
-            ad.category_id = 1;
+            ad.category_id = obj.category_id || 1;
             ad.location = AdLocation[obj.location] || null;
             ad.purpose = AdPurpose[obj.purpose] || null;
             ad.feed_date = new Date(Date.now()).toISOString().substring(0, 19).replace("T", " ");

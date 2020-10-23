@@ -24,7 +24,7 @@ class AdService {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('queryParams', queryParams);
             const connection = yield db.connection();
-            const ads = yield adRepository.findAdsForFeed(page, parseInt(queryParams.from, 10) || 18, parseInt(queryParams.to, 10) || 65, connection);
+            const ads = yield adRepository.findAdsForFeed(page, parseInt(queryParams.from, 10) || 18, parseInt(queryParams.to, 10) || 65, parseInt(queryParams.cat, 10) || 1, connection);
             yield connection.release();
             for (let i = 0; i < ads.length; i++) {
                 const ad = ads[i];

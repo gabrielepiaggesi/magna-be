@@ -5,7 +5,7 @@ const db = require("../../connection");
 export class AdRepository extends Repository<Ad> {
     public table = "ads";
 
-    public async findAdsForFeed(lastPostId = 0, fromAge = 18, toAge = 65, conn = null, query = null) {
+    public async findAdsForFeed(lastPostId = 0, fromAge = 18, toAge = 65, cat = 1, conn = null, query = null) {
         const c = conn || await db.connection();
         const addPage = (lastPostId != 0) ? ` and ad.id < ${lastPostId} ` : ` `;
         console.log(fromAge, toAge);
@@ -26,6 +26,7 @@ export class AdRepository extends Repository<Ad> {
             from ${this.table} ad  
             inner join users user on user.id = ad.user_id and user.image_url is not null and user.deleted_at is null and user.age between ${fromAge} and ${toAge} 
             where ad.deleted_at is null ${addPage} 
+            and ad.category_id = ${cat} 
             order by ad.feed_date desc  
             limit 9`
         ).then((results) => results);
