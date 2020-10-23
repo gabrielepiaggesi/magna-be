@@ -41,6 +41,7 @@ export class AdRepository extends Repository<Ad> {
             ad.feed_date as ad_feed_date,
             ad.bio as ad_bio,
             ad.created_at as ad_created_at,
+            ad.category_id as ad_category,
             user.id as user_id,
             user.image_url as user_image,
             user.age as user_age,

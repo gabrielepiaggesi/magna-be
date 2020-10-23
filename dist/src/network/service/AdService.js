@@ -90,7 +90,7 @@ class AdService {
                 ad.user_id = loggedId;
                 if (obj.bio)
                     ad.bio = obj.bio;
-                ad.category_id = 1;
+                ad.category_id = obj.category_id || 1;
                 ad.location = AdLocation_1.AdLocation[obj.location] || null;
                 ad.purpose = AdPurpose_1.AdPurpose[obj.purpose] || null;
                 ad.feed_date = new Date(Date.now()).toISOString().substring(0, 19).replace("T", " ");
