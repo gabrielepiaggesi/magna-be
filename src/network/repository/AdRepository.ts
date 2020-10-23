@@ -24,7 +24,7 @@ export class AdRepository extends Repository<Ad> {
             (case when (user.whatsapp is not null or user.telegram is not null) then 1 else 0 end) as has_contact,
             (case when (user.image_url is not null) then 1 else 0 end) as has_image 
             from ${this.table} ad  
-            inner join users user on user.id = ad.user_id and user.deleted_at is null and user.age between ${fromAge} and ${toAge} 
+            inner join users user on user.id = ad.user_id and user.image_url is not null and user.deleted_at is null and user.age between ${fromAge} and ${toAge} 
             where ad.deleted_at is null ${addPage} 
             order by ad.feed_date desc  
             limit 9`
@@ -38,6 +38,7 @@ export class AdRepository extends Repository<Ad> {
             ad.purpose as ad_purpose,
             ad.location as ad_location,
             ad.feed_date as ad_feed_date,
+            ad.bio as ad_bio,
             ad.created_at as ad_created_at,
             user.id as user_id,
             user.image_url as user_image,

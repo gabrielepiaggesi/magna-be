@@ -65,12 +65,16 @@ export class AdService {
     public async publishAd(res: Response, req) {
         const loggedId = auth.getLoggedUserId(req);
         const obj = req.body
+        if (obj.bio && obj.bio.length > 255) {
+            return res.status(500).send({ message: "Descrizione troppo lunga" });
+        }
         console.log("new ad", obj);
         const connection = await db.connection();
         await connection.newTransaction();
         try {
             let ad = new Ad();
             ad.user_id = loggedId;
+            if (obj.bio) ad.bio = obj.bio;
             ad.category_id = 1;
             ad.location = AdLocation[obj.location] || null;
             ad.purpose = AdPurpose[obj.purpose] || null;

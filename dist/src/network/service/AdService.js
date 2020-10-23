@@ -79,12 +79,17 @@ class AdService {
         return __awaiter(this, void 0, void 0, function* () {
             const loggedId = middleware_1.auth.getLoggedUserId(req);
             const obj = req.body;
+            if (obj.bio && obj.bio.length > 255) {
+                return res.status(500).send({ message: "Descrizione troppo lunga" });
+            }
             console.log("new ad", obj);
             const connection = yield db.connection();
             yield connection.newTransaction();
             try {
                 let ad = new Ad_1.Ad();
                 ad.user_id = loggedId;
+                if (obj.bio)
+                    ad.bio = obj.bio;
                 ad.category_id = 1;
                 ad.location = AdLocation_1.AdLocation[obj.location] || null;
                 ad.purpose = AdPurpose_1.AdPurpose[obj.purpose] || null;

@@ -8,6 +8,7 @@ export class Ad extends Table {
     public purpose: AdPurpose;
     public location: AdLocation;
     public feed_date: string;
+    public bio: string;
 
     constructor() { super(); }
 }
