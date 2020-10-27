@@ -77,14 +77,14 @@ class EmailSender {
             },
             json: true
         };
-        request(options, (error, response, body) => {
-            if (error) {
-                LOG.error(error);
-                LOG.error(response);
-            }
-            LOG.debug(options.body);
-            LOG.debug(body);
-        });
+        // request(options, (error, response, body) => {
+        //     if (error) {
+        //         LOG.error(error);
+        //         LOG.error(response);
+        //     }
+        //     LOG.debug(options.body);
+        //     LOG.debug(body);
+        // });
     }
 }
 exports.EmailSender = EmailSender;
