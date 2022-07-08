@@ -37,6 +37,7 @@ class QueryBuilder {
             whereIn += (i === 0) ? value : ", " + value;
             i++;
         });
+        console.log('WHERE IN', whereIn);
         return whereIn;
     }
 }

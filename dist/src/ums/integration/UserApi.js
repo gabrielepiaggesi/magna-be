@@ -20,7 +20,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const middleware_1 = require("../../framework/integrations/middleware");
+const __1 = require("../..");
 const multer_1 = __importStar(require("multer"));
 const UserService_1 = require("../service/UserService");
 const userRoutes = express_1.default.Router();
@@ -33,10 +33,10 @@ const multerConfig = {
 // services
 const userService = new UserService_1.UserService();
 // routes
-userRoutes.get("/me", middleware_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield userService.getLoggedUser(res, req); }));
+userRoutes.get("/me", __1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield userService.getLoggedUser(res, req); }));
 userRoutes.get("/:userId", (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield userService.getUser(res, parseInt(req.params.userId, 10)); }));
 userRoutes.get("/total/users", (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield userService.getTotalUsers(res); }));
-userRoutes.post("/me", middleware_1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield userService.updateAccountDetails(res, req.body); }));
-userRoutes.post("/profileImage", middleware_1.auth.isUser, multer_1.default(multerConfig).single('file'), (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield userService.updateProfileImage(res, req); }));
+userRoutes.post("/me", __1.auth.isUser, (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield userService.updateAccountDetails(res, req.body); }));
+userRoutes.post("/profileImage", __1.auth.isUser, multer_1.default(multerConfig).single('file'), (req, res) => __awaiter(void 0, void 0, void 0, function* () { return yield userService.updateProfileImage(res, req); }));
 exports.default = userRoutes;
 //# sourceMappingURL=UserApi.js.map

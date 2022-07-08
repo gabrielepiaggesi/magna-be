@@ -3,9 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const mysql_1 = __importDefault(require("mysql"));
+const mysql2_1 = __importDefault(require("mysql2"));
 const dev_1 = require("../environment/dev/dev");
-const pool = mysql_1.default.createPool(dev_1.dev);
+const Logger_1 = require("./framework/services/Logger");
+const LOG = new Logger_1.Logger("DB");
+const pool = mysql2_1.default.createPool(dev_1.dev);
 const connection = () => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, connection) => {
@@ -49,15 +51,9 @@ const connection = () => {
             };
             const rollback = () => {
                 return new Promise((resolve, reject) => {
-                    connection.rollback((err) => {
-                        if (err) {
-                            console.log("Rollback Error: ", err);
-                            reject(false);
-                            throw err;
-                        }
-                        else {
-                            resolve(true);
-                        }
+                    connection.rollback(() => {
+                        console.log("Rollback!");
+                        resolve(true);
                     });
                 });
             };
@@ -65,7 +61,7 @@ const connection = () => {
                 return new Promise((resolve, reject) => {
                     if (err)
                         reject(err);
-                    console.log("MySQL pool released: threadId " + connection.threadId);
+                    console.log("MySQL connection released to the pool: threadId " + connection.threadId + " ready for reuse");
                     resolve(connection.release());
                 });
             };
@@ -74,4 +70,23 @@ const connection = () => {
     });
 };
 module.exports = { pool, connection };
+const sql = 'SELECT 1;';
+const attemptConnection = () => pool.getConnection((err, connection) => {
+    if (err) {
+        LOG.error('error connecting. retrying in 1 sec');
+        setTimeout(attemptConnection, 1000);
+    }
+    else {
+        connection.query(sql, (errQuery, results) => {
+            connection.release();
+            if (errQuery) {
+                LOG.error('Error querying database!');
+            }
+            else {
+                LOG.info('DATABASE READY');
+            }
+        });
+    }
+});
+attemptConnection();
 //# sourceMappingURL=connection.js.map

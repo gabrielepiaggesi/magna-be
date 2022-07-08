@@ -1,16 +1,18 @@
 // imports
 import bodyParser from "body-parser";
 import cors from "cors";
-import jwt from "jsonwebtoken";
 import express from "express";
-import api from "./framework/integrations/api";
-import { initMiddlewares } from "./framework/integrations/middleware";
-import { jwtConfig } from "../environment/dev/jwt";
+import api from "./api";
+import { initMiddlewares } from ".";
 import { initJobs } from "./cron";
+
+process.on('uncaughtException', function (err) {
+  console.log('Caught exception: ', err);
+});
 
 // initialize
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8000;
 
 // db.connect();
 initMiddlewares(app);

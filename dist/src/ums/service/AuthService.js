@@ -16,101 +16,82 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const jwt_1 = require("../../../environment/dev/jwt");
 const Logger_1 = require("../../framework/services/Logger");
-const middleware_1 = require("../../framework/integrations/middleware");
+const __1 = require("../..");
 const UserRepository_1 = require("../repository/UserRepository");
 const User_1 = require("../model/User");
-const UserStatus_1 = require("./classes/UserStatus");
-const EmailSender_1 = require("../../framework/services/EmailSender");
+const UserStatus_1 = require("../type/UserStatus");
+const Preconditions_1 = require("../../utils/Preconditions");
+const IndroError_1 = require("../../utils/IndroError");
+const Helpers_1 = require("../../utils/Helpers");
 const LOG = new Logger_1.Logger("AuthService.class");
 const userRepository = new UserRepository_1.UserRepository();
 const db = require("../../connection");
 class AuthService {
-    login(res, user) {
+    login(userDTO) {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.debug("login...");
-            const { email, password } = user;
-            if (email && password) {
-                // tslint:disable-next-line:no-shadowed-variable
-                const connection = yield db.connection();
-                const user = yield userRepository.findByEmail(email, connection);
-                if (!user) {
-                    return res.status(401).json({ message: "Error" });
-                }
-                else {
-                    yield bcrypt_1.default.compare(password, user.password, (err, right) => __awaiter(this, void 0, void 0, function* () {
-                        if (right) {
-                            LOG.debug("right password");
-                            // from now on we'll identify the user by the id and the id is the
-                            // only personalized value that goes into our token
-                            const payload = { id: user.id, type: 'PridePartyUser42' };
-                            const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
-                            middleware_1.auth.setLoggedId(user.id);
-                            yield connection.release();
-                            return res.status(200).json({ msg: "ok", token });
-                        }
-                        else {
-                            yield connection.release();
-                            return res.status(401).json({ msg: "Email or Password incorrect" });
-                        }
-                    }));
-                }
-            }
-            else {
-                return res.status(401).json({ message: "Error" });
-            }
+            const { email, password } = userDTO;
+            yield Preconditions_1.Precondition.checkIfTrue((!!email && !!password), "Email or Password incorrect");
+            const connection = yield db.connection();
+            const user = yield userRepository.findByEmail(email, connection);
+            yield Preconditions_1.Precondition.checkIfTrue(!!user, "Email or Password incorrect", connection);
+            yield connection.release();
+            const passwordIsRight = yield bcrypt_1.default.compare(password, user.password);
+            if (!passwordIsRight)
+                throw new IndroError_1.IndroError("Email or Password incorrect", 401);
+            const payload = { id: user.id, type: 'IndroUser122828?' };
+            const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
+            __1.auth.setLoggedId(user.id);
+            return { msg: "ok", token, user };
         });
     }
-    signup(res, user) {
+    signup(user) {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.debug("signup...", user);
+            const userAge = Helpers_1.getDatesDiffIn(user.birthdate, Date.now(), 'years');
+            yield Preconditions_1.Precondition.checkIfFalse((!userAge || userAge < 18 || userAge > 100), "Età Invalida! Sei troppo giovane, non puoi iscriverti");
             const connection = yield db.connection();
-            const userWithThisUserName = yield userRepository.findByEmail(user.email, connection);
-            if (userWithThisUserName || !user.email || !user.hasAccepted) {
-                return res.status(500).json({ msg: "General Error", code: 'Auth.Error' });
+            const userWithThisEmail = yield userRepository.findByEmail(user.email, connection);
+            yield Preconditions_1.Precondition.checkIfFalse((!!userWithThisEmail || !user.email || !user.hasAccepted), "General Error", connection);
+            const passwordHashed = yield bcrypt_1.default.hash(user.password, 10);
+            user.password = passwordHashed;
+            if (!user.password) {
+                yield connection.release();
+                throw new IndroError_1.IndroError("Cannot Create Password", 500);
             }
-            if (!user.age || user.age < 18 || user.age > 100) {
-                return res.status(500).json({ msg: "Età Invalida! Sei troppo giovane, non puoi iscriverti", code: 'Auth.Age' });
+            const newUser = yield this.saveNewUser(user, connection);
+            const payload = { id: newUser.id, type: 'IndroUser122828?' };
+            const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
+            return { msg: "ok", token };
+        });
+    }
+    saveNewUser(dto, connection) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield connection.newTransaction();
+            try {
+                const newUser = new User_1.User();
+                newUser.email = dto.email;
+                newUser.status = UserStatus_1.UserStatus.NEW;
+                newUser.password = dto.password;
+                newUser.name = dto.name;
+                newUser.lastname = dto.lastname;
+                newUser.birthdate = dto.birthdate;
+                newUser.age = Helpers_1.getDatesDiffIn(dto.birthdate, Date.now(), 'years');
+                newUser.accept_terms_and_condition = (dto.hasAccepted) ? 1 : 0;
+                const userInserted = yield userRepository.save(newUser, connection);
+                newUser.id = userInserted.insertId;
+                LOG.debug("NEW USER ", newUser.id);
+                __1.auth.setLoggedId(newUser.id);
+                yield connection.commit();
+                yield connection.release();
+                return newUser;
             }
-            yield bcrypt_1.default.hash(user.password, 10, (err, hash) => __awaiter(this, void 0, void 0, function* () {
-                if (err) {
-                    return res.status(500).json({ msg: "Cannot Create Password", code: 'Auth.Password' });
-                }
-                else if (hash) {
-                    yield connection.newTransaction();
-                    try {
-                        const tinyint = (user.hasAccepted) ? 1 : 0;
-                        const newUser = new User_1.User();
-                        newUser.email = user.email;
-                        newUser.status = UserStatus_1.UserStatus.NEW;
-                        newUser.password = hash;
-                        newUser.age = user.age;
-                        newUser.accept_terms_and_conditions = tinyint;
-                        newUser.accept_privacy_policy = tinyint;
-                        newUser.accept_DCMA_policy = tinyint;
-                        newUser.accept_acceptable_use_policy = tinyint;
-                        newUser.accept_refund_policy = tinyint;
-                        newUser.equal_or_older_than_18yo = tinyint;
-                        const userInserted = yield userRepository.save(newUser, connection);
-                        LOG.debug("newUserId ", userInserted.insertId);
-                        const userId = userInserted.insertId;
-                        middleware_1.auth.setLoggedId(userId);
-                        yield connection.commit();
-                        yield connection.release();
-                        const payload = { id: userId, type: 'PridePartyUser42' };
-                        const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
-                        EmailSender_1.EmailSender.sendWelcomeMessage({ email: user.email });
-                        return res.status(200).json({ msg: "ok", token });
-                    }
-                    catch (e) {
-                        yield connection.rollback();
-                        yield connection.release();
-                        return res.status(500).json({ msg: "Cannot Create User", code: 'Auth.User' });
-                    }
-                }
-                else {
-                    return res.status(500).json({ msg: "Cannot Create Password", code: 'Auth.Password' });
-                }
-            }));
+            catch (e) {
+                LOG.error(e);
+                yield connection.rollback();
+                yield connection.release();
+                throw new IndroError_1.IndroError("Cannot Create User", 500, null, e);
+            }
         });
     }
 }

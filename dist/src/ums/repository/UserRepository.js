@@ -14,37 +14,48 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const Repository_1 = require("../../framework/repositories/Repository");
 const db = require("../../connection");
-const mysql_1 = __importDefault(require("mysql"));
+const mysql2_1 = __importDefault(require("mysql2"));
 class UserRepository extends Repository_1.Repository {
     constructor() {
         super(...arguments);
         this.table = "users";
     }
-    // ${mysql.escape(stripeId)}
+    // ${mysql2.escape(stripeId)}
+    whereUserIdIn(userIds, conn = null, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!userIds.length)
+                return [];
+            const c = conn;
+            return c.query(query ||
+                `select * 
+            from ${this.table} 
+            where id in (?) order by id asc`, [userIds]).then((results) => results);
+        });
+    }
     findByUserName(username, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            const c = conn || (yield db.connection());
+            const c = conn;
             // tslint:disable-next-line:max-line-length
-            return c.query(query || `select * from ${this.table} where username = ${mysql_1.default.escape(username)} limit 1`).then((results) => results[0]);
+            return c.query(query || `select * from ${this.table} where username = ${mysql2_1.default.escape(username)} limit 1`).then((results) => results[0]);
         });
     }
     findByEmailAndPassword(email, password, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            const c = conn || (yield db.connection());
+            const c = conn;
             // tslint:disable-next-line:max-line-length
-            return c.query(query || `select * from ${this.table} where email = ${mysql_1.default.escape(email)} and password = ${mysql_1.default.escape(password)} limit 1`).then((results) => results[0]);
+            return c.query(query || `select * from ${this.table} where email = ${mysql2_1.default.escape(email)} and password = ${mysql2_1.default.escape(password)} limit 1`).then((results) => results[0]);
         });
     }
     findByEmail(email, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            const c = conn || (yield db.connection());
+            const c = conn;
             // tslint:disable-next-line:max-line-length
-            return c.query(query || `select * from ${this.table} where email = ${mysql_1.default.escape(email)} limit 1`).then((results) => results[0]);
+            return c.query(query || `select * from ${this.table} where email = ${mysql2_1.default.escape(email)} limit 1`).then((results) => results[0]);
         });
     }
     findTotalUsers(conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            const c = conn || (yield db.connection());
+            const c = conn;
             const q = `select count(*) as count from preorders`;
             return yield c.query(query || q).then((results) => results[0]);
         });

@@ -16,14 +16,37 @@ class Repository {
         this.queryBuilder = new QueryBuilder_1.QueryBuilder();
         this.table = "";
     }
-    save(model, conn = null) {
+    save(model, conn) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;
             const insert = this.queryBuilder.save(model, this.table);
             return yield c.query(insert);
         });
     }
-    update(model, conn = null) {
+    saveMultiple(keys, values, conn) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            const insert = `INSERT INTO ${this.table} (${keys.join(',')}) VALUES ?`;
+            // var keys = [
+            //     ['demian', 'demian@gmail.com', 1],
+            //     ['john', 'john@gmail.com', 2],
+            //     ['mark', 'mark@gmail.com', 3],
+            //     ['pete', 'pete@gmail.com', 4]
+            // ];
+            // var values = [
+            //     ['demian', 'demian@gmail.com', 1],
+            //     ['john', 'john@gmail.com', 2],
+            //     ['mark', 'mark@gmail.com', 3],
+            //     ['pete', 'pete@gmail.com', 4]
+            // ];
+            // conn.query(sql, [values], function(err) {
+            //     if (err) throw err;
+            //     conn.end();
+            // });
+            return yield c.query(insert, [values]);
+        });
+    }
+    update(model, conn) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;
             // tslint:disable-next-line:no-string-literal
@@ -32,7 +55,7 @@ class Repository {
             return yield c.query(update);
         });
     }
-    delete(model, conn = null) {
+    delete(model, conn) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;
             // tslint:disable-next-line:no-string-literal
@@ -42,13 +65,19 @@ class Repository {
             return yield c.query(d);
         });
     }
-    findAll(query = null, conn = null) {
+    findAll(query = null, conn) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;
             return yield c.query(query || `select * from ${this.table} limit 1000`);
         });
     }
-    findById(id, conn = null, query = null) {
+    findAllActive(query = null, conn) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            return yield c.query(query || `select * from ${this.table} where deleted_at is null limit 1000`);
+        });
+    }
+    findById(id, conn, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;
             // tslint:disable-next-line:max-line-length

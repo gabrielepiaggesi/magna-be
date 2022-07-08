@@ -1,5 +1,5 @@
 import express from "express";
-import { auth } from "../../framework/integrations/middleware";
+import { auth } from "../..";
 import multer, { memoryStorage } from 'multer';
 import { UserService } from "../service/UserService";
 const userRoutes = express.Router();

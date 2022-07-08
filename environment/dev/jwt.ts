@@ -1,3 +1,3 @@
 export const jwtConfig = {
-    secretOrKey: "gabrypi",
+    secretOrKey: "IndroUser122828?",
 };

@@ -7,14 +7,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const body_parser_1 = __importDefault(require("body-parser"));
 const cors_1 = __importDefault(require("cors"));
 const express_1 = __importDefault(require("express"));
-const api_1 = __importDefault(require("./framework/integrations/api"));
-const middleware_1 = require("./framework/integrations/middleware");
+const api_1 = __importDefault(require("./api"));
+const _1 = require(".");
 const cron_1 = require("./cron");
+process.on('uncaughtException', function (err) {
+    console.log('Caught exception: ', err);
+});
 // initialize
 const app = express_1.default();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8000;
 // db.connect();
-middleware_1.initMiddlewares(app);
+_1.initMiddlewares(app);
 // startConnection();
 // init all crons/jobs
 cron_1.initJobs(app);

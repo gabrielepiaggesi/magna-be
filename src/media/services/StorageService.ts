@@ -2,7 +2,7 @@ import { Storage, GetSignedUrlConfig } from '@google-cloud/storage';
 import { Logger } from '../../framework/services/Logger';
 import { MediaRepository } from '../repositories/MediaRepository';
 import { Media } from '../models/Media';
-import { auth } from '../../framework/integrations/middleware';
+import { auth } from '../..';
 
 const LOG = new Logger("UploadService.class");
 const mediaRepository = new MediaRepository();

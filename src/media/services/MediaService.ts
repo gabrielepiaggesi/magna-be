@@ -1,6 +1,6 @@
 import { Logger } from '../../framework/services/Logger';
 import { StorageService } from './StorageService';
-import { auth } from '../../framework/integrations/middleware';
+import { auth } from '../..';
 
 const LOG = new Logger("MediaService.class");
 const uploadService = new StorageService();
