@@ -8,9 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const QueryBuilder_1 = require("../../utils/QueryBuilder");
 const db = require("../../connection");
+const mysql2_1 = __importDefault(require("mysql2"));
 class Repository {
     constructor() {
         this.queryBuilder = new QueryBuilder_1.QueryBuilder();
@@ -63,6 +67,20 @@ class Repository {
             model['deleted_at'] = new Date(Date.now()).toISOString().substring(0, 19).replace("T", " ");
             const d = this.queryBuilder.update(model, id, this.table);
             return yield c.query(d);
+        });
+    }
+    deleteById(modelId, conn) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            const d = `update ${this.table} set deleted_at = ${mysql2_1.default.escape(new Date(Date.now()).toISOString().substring(0, 19).replace("T", " "))} where id = ${modelId}`;
+            return yield c.query(d);
+        });
+    }
+    deleteWhereIdIn(modelIds, conn) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            const d = `update ${this.table} set deleted_at = ${mysql2_1.default.escape(new Date(Date.now()).toISOString().substring(0, 19).replace("T", " "))} where id in (?)`;
+            return yield c.query(d, [modelIds]);
         });
     }
     findAll(query = null, conn) {

@@ -20,6 +20,9 @@ import { TestOptionRepository } from "../repository/TestOptionRepository";
 import { TestRepository } from "../repository/TestRepository";
 import { TestTextRepository } from "../repository/TestTextRepository";
 import { UserTestRepository } from "../repository/UserTestRepository";
+import { UserQuizRepository } from "../repository/UserQuizRepository";
+import { MediaService } from "../../media/services/MediaService";
+import { Media } from "../../media/models/Media";
 
 const LOG = new Logger("QuizService.class");
 const db = require("../../connection");
@@ -31,8 +34,10 @@ const testTextRepository = new TestTextRepository();
 const testImageRepository = new TestImageRepository();
 const companyQuizRepository = new CompanyQuizRepository();
 const userTestRepository = new UserTestRepository();
+const userQuizRepository = new UserQuizRepository();
+const mediaService = new MediaService();
 
-export type NewTestDTO = { test: TestDTO, options: TestOptionDTO[], texts: TestTextDTO[], files: TestImageDTO[] };
+export type NewTestDTO = { test: TestDTO, options: TestOptionDTO[], texts: TestTextDTO[], file: TestImageDTO };
 
 export class QuizService implements QuizApi {
 
@@ -49,7 +54,7 @@ export class QuizService implements QuizApi {
 
     public async updateQuiz(dto: QuizDTO, jQuizId: number) {
         const connection = await db.connection();
-        await connection.newTransaction(); // update jobn offer quiz!
+        await connection.newTransaction();
         const quiz = await this.updateOrCreateQuiz(dto, dto.quiz_id, null, connection);
         const jobOfferQuiz = await this.updateOrCreateJobOfferQuiz(dto, quiz.id, jQuizId, connection);
         await connection.commit();
@@ -57,28 +62,33 @@ export class QuizService implements QuizApi {
         return {quiz, jobOfferQuiz};
     }
 
-    public async createTest(dto: NewTestDTO) {
+    public async createTest(dto: NewTestDTO, loggedUserId: number) {
+        console.log(dto);
         const connection = await db.connection();
         await connection.newTransaction();
         const test = await this.updateOrCreateTest(dto.test, null, connection);
         const options = dto.options.length ? await this.saveTestOptions(dto.options, test.id, connection) : [];
         const texts = dto.texts.length ? await this.saveTestTexts(dto.texts, test.id, connection): [];
-        const files = dto.files.length ? this.uploadTestImages(dto.files, test.id) : [];
-        const images = files.length ? await this.saveTestImages(files, test.id, connection) : [];
+        const image = dto.file ? await this.saveTestImages(dto.file, test.id, loggedUserId, connection) : null;
         await connection.commit();
         await connection.release();
-        return { test, options, texts, images };
+
+        await this.resetQuizTestsPoints(test.quiz_id);
+        return { test, options, texts, image };
     }
 
-    public async updateTest(dto: TestDTO, testId: number) {
+    public async updateTest(dto: {test: TestDTO, file: any}, testId: number, loggedUserId: number) {
+        console.log(dto);
+        
         const connection = await db.connection();
+        const oldTest = await testRepository.findById(testId, connection);
         await connection.newTransaction();
-        const test = await this.updateOrCreateTest(dto, testId, connection);
-        if (dto.new_right_option != dto.old_right_option &&
-            dto.new_right_option > 0 && dto.old_right_option > 0) {
+        const test = await this.updateOrCreateTest(dto.test, testId, connection);
+        if (dto.test.new_right_option != dto.test.old_right_option &&
+            dto.test.new_right_option > 0 && dto.test.old_right_option > 0) {
 
-                const oldRightOption = await testOptionRepository.findById(dto.old_right_option, connection);
-                const newRightOption = await testOptionRepository.findById(dto.new_right_option, connection);
+                const oldRightOption = await testOptionRepository.findById(dto.test.old_right_option, connection);
+                const newRightOption = await testOptionRepository.findById(dto.test.new_right_option, connection);
 
                 const oldDto = {...oldRightOption};
                 delete oldDto.is_correct;
@@ -97,7 +107,29 @@ export class QuizService implements QuizApi {
             }
         await connection.commit();
         await connection.release();
+        if (oldTest.points != test.points) await this.resetQuizTestsPoints(test.quiz_id);
+
+        if (dto.file && dto.file !== 'cancel') {
+            const img = await this.createNewTestImage(dto.file, testId, loggedUserId);
+            test['image_url'] = img.image_url;
+        }
+        if (dto.file && dto.file === 'cancel') {
+            await this.removeTestImage(testId);
+        }
         return test;
+    }
+
+    public async resetQuizTestsPoints(quizId: number) {
+        const connection = await db.connection();
+        let quiz = await quizRepository.findById(quizId, connection);
+        const quizTests = await testRepository.findByQuizId(quizId, connection);
+        const totalScore = quizTests.filter(qT => qT.type === 'MULTIPLE').reduce((acc, elem) => acc + elem.points, 0);
+
+        await connection.newTransaction();
+        quiz = await this.updateOrCreateQuiz({ ...quiz, tests_points: totalScore, tests_amount: quizTests.length }, quiz.id, null, connection);
+        await connection.commit();
+        await connection.release();
+        return quiz;
     }
 
     public async editTestOption(dto: TestOptionDTO, optionId: number) {
@@ -136,11 +168,36 @@ export class QuizService implements QuizApi {
         return text;
     }
 
-    public async createNewTestImage(dto: TestImageDTO, testId: number) {
+    public async removeTest(testId: number, quizId: number) {
         const connection = await db.connection();
         await connection.newTransaction();
-        const image  = this.transformTestImageToUploadImage(dto, testId);
-        const img = await this.saveNewTestImage(image, testId, connection);
+        const test = await this.deleteTest(testId, connection);
+        await connection.commit();
+        await connection.release();
+        await this.resetQuizTestsPoints(quizId);
+        return test;
+    }
+
+    public async removeQuiz(quizId: number) {
+        const connection = await db.connection();
+        await connection.newTransaction();
+        const quiz = await this.deleteQuiz(quizId, connection);
+        await connection.commit();
+        await connection.release();
+        return quiz;
+    }
+
+    public async createNewTestImage(newFile: File, testId: number, loggedUserId: number) {
+        console.log(newFile);
+        
+        const connection = await db.connection();
+        const images = await testImageRepository.findByTestId(testId, connection);
+        await connection.newTransaction();
+
+        if (images.length) {
+            const img = await this.deleteTestImage(images[0].id, connection);
+        }
+        const img = await this.saveNewTestImage(newFile, testId, loggedUserId, connection);
         await connection.commit();
         await connection.release();
         return img;
@@ -164,10 +221,15 @@ export class QuizService implements QuizApi {
         return img;
     }
 
-    public async removeTestImage(imageId: number) {
+    public async removeTestImage(testId: number) {
         const connection = await db.connection();
+        const images = await testImageRepository.findByTestId(testId, connection);
+        if (!images.length) {
+            await connection.release();
+            return;
+        }
         await connection.newTransaction();
-        const img = await this.deleteTestImage(imageId, connection);
+        const img = await this.deleteTestImage(images[0].id, connection);
         await connection.commit();
         await connection.release();
         return img;
@@ -184,35 +246,50 @@ export class QuizService implements QuizApi {
         return { test, options, texts, images, uTest };
     }
 
-    public async getQuiz(quizId: number) {
+    public async getQuiz(quizId: number, loggedUserId: number) {
         const connection = await db.connection();
         const jQuiz = await jobOfferQuizRepository.findById(quizId, connection);
         const quiz = await quizRepository.findById(jQuiz.quiz_id, connection);
+        const uQuiz = await userQuizRepository.findByQuizIdAndJobOfferIdAndUserId(jQuiz.quiz_id, jQuiz.job_offer_id, loggedUserId, connection);
         const tests = await testRepository.findByQuizId(quizId, connection);
+        const testsIds = tests.map(t => t.id);
+        const opts = testsIds.length ? await testOptionRepository.findByTestIdsIn(testsIds, connection) : [];
+        const texts = testsIds.length ? await testTextRepository.findByTestIdsIn(testsIds, connection) : [];
+        const imgs = testsIds.length ? await testImageRepository.findByTestIdsIn(testsIds, connection) : [];
         await connection.release();
-        return { jQuiz, quiz, tests };
+        
+        const newTests = tests.map(test => {
+            return {
+                ...test,
+                options: [...opts].filter(opt => opt.test_id == test.id),
+                texts: [...texts].filter(opt => opt.test_id == test.id),
+                images: [...imgs].filter(opt => opt.test_id == test.id)
+            }
+        });
+        return { jQuiz, quiz, uQuiz, tests: newTests };
     }
 
-    public async getJobOfferQuizs(jobOfferId: number) {
+    public async getJobOfferQuizs(jobOfferId: number, loggedUserId: number) {
         const connection = await db.connection();
         const quizs = await jobOfferQuizRepository.findByJobOfferId(jobOfferId, connection);
+        const uQuizs = await userQuizRepository.findByJobOfferIdAndUserId(jobOfferId, loggedUserId, connection);
         await connection.release();
-        return quizs;
+        return {quizs, uQuizs};
     }
 
     private async updateOrCreateQuiz(dto: QuizDTO, quizId = null, loggedUserId: number, connection) {
         try {
             const quiz = quizId ? await quizRepository.findById(quizId, connection) : new Quiz();
             quiz.author_user_id = quizId ? quiz.author_user_id : loggedUserId;
-            quiz.minutes = dto.minutes || quiz.minutes;
-            quiz.check_camera = dto.check_camera >= 0 ? dto.check_camera : quiz.check_camera;;
-            quiz.check_mic = dto.check_mic >= 0 ? dto.check_mic : quiz.check_mic;
+            quiz.minutes = +dto.minutes || quiz.minutes;
+            quiz.check_camera = +dto.check_camera >= 0 ? dto.check_camera : quiz.check_camera;;
+            quiz.check_mic = +dto.check_mic >= 0 ? dto.check_mic : quiz.check_mic;
             quiz.topic = dto.topic || quiz.topic;
             quiz.category = dto.category || quiz.category;
-            quiz.difficulty_level = dto.difficulty_level || quiz.difficulty_level;
-            quiz.public = dto.public >= 0 ? dto.public : quiz.public;
-            quiz.tests_amount = dto.tests_amount >= 0 ? dto.tests_amount : quiz.tests_amount;
-            quiz.tests_points = dto.tests_points >= 0 ? dto.tests_points : quiz.tests_points;
+            quiz.difficulty_level = +dto.difficulty_level || quiz.difficulty_level;
+            quiz.public = +dto.public >= 0 ? (dto.public === 0 ? 1 : 0) : quiz.public;
+            quiz.tests_amount = +dto.tests_amount >= 0 ? dto.tests_amount : quiz.tests_amount;
+            quiz.tests_points = +dto.tests_points >= 0 ? dto.tests_points : quiz.tests_points;
 
             const coInserted = quizId ? await quizRepository.update(quiz, connection) : await quizRepository.save(quiz, connection);
             quiz.id = quizId ? quiz.id : coInserted.insertId;
@@ -298,22 +375,11 @@ export class QuizService implements QuizApi {
         }
     }
 
-    private uploadTestImages(files: TestImageDTO[], testId: number): TestImageUploadedDTO[] {
-        return files.map(this.transformTestImageToUploadImage); // TODO REAL UPLOAD
-    }
-
-    private transformTestImageToUploadImage(file: TestImageDTO, testId: number): TestImageUploadedDTO {
-        return {
-            image_url: '',
-            position_order: file.position_order,
-            media_id: 0
-        } as TestImageUploadedDTO;
-    }
-
-    private async saveTestImages(options: TestImageUploadedDTO[], testId: number, connection) {
+    private async saveTestImages(file: TestImageDTO, testId: number, loggedId: number, connection) {
         try {
+            let media: Media = await mediaService.uploadFile({ file, user_id: loggedId }, connection);
             const keys = ['test_id', 'media_id', 'image_url', 'position_order'];
-            const values = options.map(option => [testId, option.media_id, option.image_url, option.position_order]);
+            const values = [file].map(option => [testId, media.id, media.url, (option.position_order || 0)]);
 
             const otionsInserted = await testImageRepository.saveMultiple(keys, values, connection);
             return otionsInserted;
@@ -383,12 +449,38 @@ export class QuizService implements QuizApi {
         }
     }
 
-    private async saveNewTestImage(dto: TestImageUploadedDTO, testId: number, connection) {
+    private async deleteTest(testId: number, connection) {
         try {
+            const test = await testRepository.deleteById(testId, connection);
+            return test;
+        } catch (e) {
+            LOG.error(e);
+            await connection.rollback();
+            await connection.release();
+            throw new IndroError("Cannot Delete Test", 500, null, e);
+        }
+    }
+
+    private async deleteQuiz(quizId: number, connection) {
+        try {
+            const q = await quizRepository.deleteById(quizId, connection);
+            return q;
+        } catch (e) {
+            LOG.error(e);
+            await connection.rollback();
+            await connection.release();
+            throw new IndroError("Cannot Delete Quiz", 500, null, e);
+        }
+    }
+
+    private async saveNewTestImage(file: File, testId: number, loggedId: number, connection) {
+        try {
+            let media: Media = await mediaService.uploadFile({ file, user_id: loggedId }, connection);
             const img = new TestImage();
-            img.media_id = dto.media_id;
-            img.image_url = dto.image_url;
-            img.position_order = dto.position_order;
+            img.media_id = media.id;
+            img.image_url = media.url;
+            img.position_order = 0;
+            img.test_id = testId;
             await testImageRepository.save(img, connection);
             return img;
         } catch (e) {

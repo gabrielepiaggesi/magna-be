@@ -20,7 +20,15 @@ import { UserApplicationApi } from "../integration/UserApplicationApi";
 import { UserDataDTO } from "../type/UserDataDTO";
 import { UserQuizDTO } from "../type/UserQuizDTO";
 import { UserSkillDTO } from "../type/UserSkillDTO";
-import { UserTestDTO } from "../type/UserTestDTO";
+import { SaveUserTestDTO, UserTestDTO } from "../type/UserTestDTO";
+import { JobOfferRepository } from "../repository/JobOfferRepository";
+import { JobOfferUserData } from "../model/JobOfferUserData";
+import { MediaService } from "../../media/services/MediaService";
+import { Media } from "../../media/models/Media";
+import { UserDataOption } from "../model/UserDataOption";
+import { UserImageDTO } from "../type/UserImageDTO";
+import { UserTestImage } from "../model/UserTestImage";
+import { UserTestImageRepository } from "../repository/UserTestImageRepository";
 
 const LOG = new Logger("UserApplicationService.class");
 const db = require("../../connection");
@@ -34,18 +42,71 @@ const userTestRepository = new UserTestRepository();
 const testRepository = new TestRepository();
 const testOptionRepository = new TestOptionRepository();
 const quizRepository = new QuizRepository();
+const jobOfferRepository = new JobOfferRepository();
+const mediaService = new MediaService();
+const userTestImageRepository = new UserTestImageRepository();
 
 export type NewUserAppDTO = { uApp: UserAppDTO, uData: UserDataDTO[], uSkills: UserSkillDTO[] };
 
 export class UserApplicationService implements UserApplicationApi {
 
-    public async createUserApplication(dto: NewUserAppDTO, loggedUserId: number) {
+    public async createUserApplication(dto: NewUserAppDTO, files: File[], loggedUserId: number) {
         const connection = await db.connection();
+        await connection.newTransaction();
+        const job = await jobOfferRepository.findById(dto.uApp.job_offer_id, connection);
+        dto.uApp.company_id = dto.uApp.company_id || job.company_id;
         const uApp = await this.saveUserApplication(dto.uApp, loggedUserId, connection);
+        dto.uData = dto.uData && dto.uData.length ? dto.uData : [];
+
+        console.log(files);
+
+        if (files.length) {
+            const options = await userDataOptionRepository.findAllActive(null, connection);
+            for (const file of files) {
+                const opt = options.find(opt => opt.option_key === file['fieldname']);
+                if (opt) {
+                    const optionData: UserDataDTO = await this.uploadFileOption(uApp, file, opt, connection);
+                    dto.uData.push(optionData);
+                    console.log(optionData);
+                }
+            }
+        }
+
         const uData = await this.saveUserData(dto.uData, loggedUserId, connection);
         const uSkills = await this.saveUserSkills(dto.uSkills, loggedUserId, connection);
+        await connection.commit();
         await connection.release();
         return { uApp, uData, uSkills };
+    }
+
+    public async uploadUserTestImage(dto: UserImageDTO, loggedUserId: number) {
+        const connection = await db.connection();
+        await connection.newTransaction();
+        try {
+            let media: Media = await mediaService.uploadFile({ file: dto.file, user_id: loggedUserId }, connection);
+            const uImg = new UserTestImage();
+            uImg.job_offer_id = dto.job_offer_id;
+            uImg.user_id = loggedUserId;
+            uImg.image_url = media.url;
+            uImg.media_id = media.id;
+            const imgInsert = await userTestImageRepository.save(uImg, connection);
+            uImg.id = imgInsert.insertId;
+            await connection.commit();
+            await connection.release();
+            return uImg;
+        } catch (e) {
+            LOG.error(e);
+            await connection.rollback();
+            await connection.release();
+            throw new IndroError("Cannot Save Test Image", 500, null, e);
+        }
+    }
+
+    public async getUserTestsImages(userId: number, jobOfferId: number) {
+        const connection = await db.connection();
+        const images = await userTestImageRepository.findByUserIdAndJobOfferId(userId, jobOfferId, connection);
+        await connection.release();
+        return images;
     }
 
     public async getUserApplication(userId: number, jobOfferId: number) {
@@ -71,6 +132,31 @@ export class UserApplicationService implements UserApplicationApi {
         const uQuiz = await this.updateOrCreateUserTest(dto, null, loggedUserId, connection);
         await connection.release();
         return uQuiz;
+    }
+
+    public async createUserTests(dto: { jobOfferId: number, quizId: number, tests: SaveUserTestDTO[]}, loggedUserId: number) {
+        const connection = await db.connection();
+        let userQuiz = await userQuizRepository.findByQuizIdAndJobOfferIdAndUserId(dto.quizId, dto.jobOfferId, loggedUserId, connection);
+        const options = await testOptionRepository.findByIdsIn(dto.tests.filter(opt => !!opt.option_id).map(opt => opt.option_id), connection);
+
+        await connection.newTransaction();
+        const userTestDTOS = dto.tests.map(test => {
+            const uTest: UserTestDTO = {
+                answer: test.answer,
+                media_id: test.media_id,
+                option_id: test.option_id,
+                score: test.option_id ? options.find(opt => opt.id === test.option_id).points : 0,
+                test_id: test.test_id,
+                user_id: loggedUserId,
+                user_quiz_id: userQuiz.id
+            };
+            return uTest;
+        });
+        const uTests = await this.saveUserTests(userTestDTOS, connection);
+        await connection.commit();
+        await connection.release();
+        userQuiz = await this.confirmAndSendUserQuiz(userQuiz.id, loggedUserId);
+        return { userQuiz, uTests };
     }
 
     public async updateUserTest(dto: UserTestDTO, userTestId: number, loggedUserId: number) {
@@ -101,8 +187,24 @@ export class UserApplicationService implements UserApplicationApi {
         return uQuiz;
     }
 
+    private async uploadFileOption(uApp: UserApplication, file: File, opt: UserDataOption, connection) {
+        try {
+            let media: Media = await mediaService.uploadFile({ file, user_id: uApp.user_id }, connection);
+            return {
+                job_offer_id: uApp.job_offer_id,
+                user_data_option_id: opt.id,
+                string_value: media.url,
+                media_id: media.id
+            } as UserDataDTO;
+        } catch (e) {
+            LOG.error(e);
+            await connection.rollback();
+            await connection.release();
+            throw new IndroError("Cannot Save uploadFileOption", 500, null, e);
+        }
+    }
+
     private async saveUserApplication(dto: UserAppDTO, loggedUserId: number, connection) {
-        await connection.newTransaction();
         try {
             const uApp = new UserApplication();
             uApp.company_id = dto.company_id;
@@ -111,7 +213,6 @@ export class UserApplicationService implements UserApplicationApi {
             uApp.status = "NEW";
             uApp.note = dto.note;
             await userApplicationRepository.save(uApp, connection);
-            await connection.commit();
             return uApp;
         } catch (e) {
             LOG.error(e);
@@ -122,13 +223,11 @@ export class UserApplicationService implements UserApplicationApi {
     }
 
     private async saveUserData(uData: UserDataDTO[], loggedUserId: number, connection) {
-        await connection.newTransaction();
         try {
-            const keys = ['user_id', 'job_offer_id', 'user_data_option_id', 'number_value', 'string_value'];
-            const values = uData.map(data => [loggedUserId, data.job_offer_id, data.user_data_option_id, data.number_value, data.string_value]);
+            const keys = ['user_id', 'job_offer_id', 'user_data_option_id', 'number_value', 'string_value', 'media_id'];
+            const values = uData.map(data => [loggedUserId, data.job_offer_id, data.user_data_option_id, data.number_value, data.string_value, data.media_id]);
 
             const otionsInserted = await userDataRepository.saveMultiple(keys, values, connection);
-            await connection.commit();
             return otionsInserted;
         } catch (e) {
             LOG.error(e);
@@ -138,14 +237,27 @@ export class UserApplicationService implements UserApplicationApi {
         }
     }
 
+    private async saveUserTests(uData: UserTestDTO[], connection) {
+        try {
+            const keys = ['user_id', 'test_id', 'user_quiz_id', 'option_id', 'answer', 'score', 'media_id'];
+            const values = uData.map(data => [data.user_id, data.test_id, data.user_quiz_id, data.option_id, data.answer, data.score, data.media_id]);
+
+            const otionsInserted = await userTestRepository.saveMultiple(keys, values, connection);
+            return otionsInserted;
+        } catch (e) {
+            LOG.error(e);
+            await connection.rollback();
+            await connection.release();
+            throw new IndroError("Cannot Create saveUserTests", 500, null, e);
+        }
+    }
+
     private async saveUserSkills(uSkills: UserSkillDTO[], loggedUserId: number, connection) {
-        await connection.newTransaction();
         try {
             const keys = ['user_id', 'job_offer_skill_id', 'job_offer_id', 'confidence_level', 'years'];
             const values = uSkills.map(data => [loggedUserId, data.job_offer_skill_id, data.job_offer_id, data.confidence_level, data.years]);
 
             const otionsInserted = await userSkillRepository.saveMultiple(keys, values, connection);
-            await connection.commit();
             return otionsInserted;
         } catch (e) {
             LOG.error(e);

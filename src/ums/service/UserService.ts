@@ -75,7 +75,7 @@ export class UserService {
         LOG.debug("file 1", file.name);
         try {
             let user = await userRepository.findById(loggedId, connection);
-            let media: Media = await mediaService.uploadProfileMedia({ file, user_id: loggedId }, connection);
+            let media: Media = await mediaService.uploadFile({ file, user_id: loggedId }, connection);
             user.image_url = media.url;
             const id = await userRepository.update(user, connection);
             await connection.commit();

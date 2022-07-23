@@ -85,7 +85,7 @@ class UserService {
             LOG.debug("file 1", file.name);
             try {
                 let user = yield userRepository.findById(loggedId, connection);
-                let media = yield mediaService.uploadProfileMedia({ file, user_id: loggedId }, connection);
+                let media = yield mediaService.uploadFile({ file, user_id: loggedId }, connection);
                 user.image_url = media.url;
                 const id = yield userRepository.update(user, connection);
                 yield connection.commit();

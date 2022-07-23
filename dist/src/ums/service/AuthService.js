@@ -62,7 +62,7 @@ class AuthService {
             const newUser = yield this.saveNewUser(user, connection);
             const payload = { id: newUser.id, type: 'IndroUser122828?' };
             const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
-            return { msg: "ok", token };
+            return { msg: "ok", token, user: newUser };
         });
     }
     saveNewUser(dto, connection) {

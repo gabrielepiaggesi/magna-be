@@ -19,8 +19,15 @@ const __1 = require("../..");
 const Logger_1 = require("../../framework/services/Logger");
 const QuizService_1 = require("../service/QuizService");
 const Decorator_1 = require("../../utils/Decorator");
+const multer_1 = require("multer");
 const LOG = new Logger_1.Logger("QuizController.class");
 const quizService = new QuizService_1.QuizService();
+const multerConfig = {
+    storage: multer_1.memoryStorage(),
+    limits: {
+        fileSize: 3 * 1024 * 1024 // no larger than 1mb, you can change as needed.
+    }
+};
 class QuizController {
     createQuiz(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -50,7 +57,9 @@ class QuizController {
     createTest(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const response = yield quizService.createTest(req.body);
+                const body = JSON.parse(req.body.data);
+                const loggedUserId = __1.auth.getLoggedUserId(req);
+                const response = yield quizService.createTest(Object.assign(Object.assign({}, body), { file: req.file || null }), loggedUserId);
                 return res.status(200).json(response);
             }
             catch (e) {
@@ -62,7 +71,9 @@ class QuizController {
     updateTest(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const response = yield quizService.updateTest(req.body, parseInt(req.params.testId, 10));
+                const body = JSON.parse(req.body.data);
+                const loggedUserId = __1.auth.getLoggedUserId(req);
+                const response = yield quizService.updateTest({ test: Object.assign({}, body), file: req.file || body.file || null }, parseInt(req.params.testId, 10), loggedUserId);
                 return res.status(200).json(response);
             }
             catch (e) {
@@ -122,7 +133,8 @@ class QuizController {
     createNewTestImage(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const response = yield quizService.createNewTestImage(req.body, parseInt(req.params.testId, 10));
+                const loggedUserId = __1.auth.getLoggedUserId(req);
+                const response = yield quizService.createNewTestImage(Object.assign(Object.assign({}, req.body), { newFile: req.file }), parseInt(req.params.testId, 10), loggedUserId);
                 return res.status(200).json(response);
             }
             catch (e) {
@@ -159,7 +171,8 @@ class QuizController {
     getQuiz(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const response = yield quizService.getQuiz(parseInt(req.params.quizId, 10));
+                const loggedUserId = __1.auth.getLoggedUserId(req);
+                const response = yield quizService.getQuiz(parseInt(req.params.quizId, 10), loggedUserId);
                 return res.status(200).json(response);
             }
             catch (e) {
@@ -171,7 +184,8 @@ class QuizController {
     getJobOfferQuizs(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const response = yield quizService.getJobOfferQuizs(parseInt(req.params.jobOfferId, 10));
+                const loggedUserId = __1.auth.getLoggedUserId(req);
+                const response = yield quizService.getJobOfferQuizs(parseInt(req.params.jobOfferId, 10), loggedUserId);
                 return res.status(200).json(response);
             }
             catch (e) {
@@ -189,6 +203,30 @@ class QuizController {
             catch (e) {
                 LOG.debug(e);
                 return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Quiz.createNewTestOption' }));
+            }
+        });
+    }
+    removeTest(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield quizService.removeTest(parseInt(req.params.testId, 10), parseInt(req.params.quizId, 10));
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Quiz.removeTest' }));
+            }
+        });
+    }
+    removeQuiz(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield quizService.removeQuiz(parseInt(req.params.quizId, 10));
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Quiz.removeQuiz' }));
             }
         });
     }
@@ -215,11 +253,13 @@ __decorate([
 ], QuizController.prototype, "updateQuiz", null);
 __decorate([
     Decorator_1.Post(),
-    Decorator_1.Path("/createTest")
+    Decorator_1.Path("/createTest"),
+    Decorator_1.Multer({ multerConfig, path: 'file' })
 ], QuizController.prototype, "createTest", null);
 __decorate([
     Decorator_1.Post(),
-    Decorator_1.Path("/updateTest/:testId")
+    Decorator_1.Path("/updateTest/:testId"),
+    Decorator_1.Multer({ multerConfig, path: 'file' })
 ], QuizController.prototype, "updateTest", null);
 __decorate([
     Decorator_1.Post(),
@@ -261,6 +301,14 @@ __decorate([
     Decorator_1.Post(),
     Decorator_1.Path("/createNewTestOption/:testId")
 ], QuizController.prototype, "createNewTestOption", null);
+__decorate([
+    Decorator_1.Post(),
+    Decorator_1.Path("/removeTest/:testId/:quizId")
+], QuizController.prototype, "removeTest", null);
+__decorate([
+    Decorator_1.Post(),
+    Decorator_1.Path("/removeQuiz/:quizId")
+], QuizController.prototype, "removeQuiz", null);
 __decorate([
     Decorator_1.Post(),
     Decorator_1.Path("/createNewTestText/:testId")

@@ -28,7 +28,7 @@ class JobOfferQuizRepository extends Repository_1.Repository {
             return c.query(query ||
                 `select *, q.id as q_id, jq.id as jq_id from ${this.table} jq 
             join quizs q on q.id  = jq.quiz_id and q.deleted_at is null 
-            where jq.job_offer_id = ${mysql2_1.default.escape(jobOfferId)}
+            where jq.job_offer_id = ${mysql2_1.default.escape(jobOfferId)} 
             and jq.deleted_at is null`)
                 .then((results) => results);
         });

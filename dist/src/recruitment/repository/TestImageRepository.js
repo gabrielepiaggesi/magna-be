@@ -26,7 +26,16 @@ class TestImageRepository extends Repository_1.Repository {
             const c = conn;
             // tslint:disable-next-line:max-line-length
             return c.query(query ||
-                `select * from ${this.table} where test_id = ${mysql2_1.default.escape(testId)} and deleted_at is null`)
+                `select * from ${this.table} where test_id = ${mysql2_1.default.escape(testId)} and deleted_at is null order by id desc`)
+                .then((results) => results);
+        });
+    }
+    findByTestIdsIn(testIds, conn, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            // tslint:disable-next-line:max-line-length
+            return c.query(query ||
+                `select * from ${this.table} where test_id in (?) and deleted_at is null`, [testIds])
                 .then((results) => results);
         });
     }

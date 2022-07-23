@@ -1,1 +1,1 @@
-{"version":3,"file":"UserDataOption.js","sourceRoot":"","sources":["../../../../src/recruitment/model/UserDataOption.ts"],"names":[],"mappings":";;AAAA,wDAAqD;AAErD,MAAa,cAAe,SAAQ,aAAK;IAIrC,oCAAoC;IACpC,gBAAgB,KAAK,EAAE,CAAC,CAAC,CAAC;CAC7B;AAND,wCAMC"}
+{"version":3,"file":"UserDataOption.js","sourceRoot":"","sources":["../../../../src/recruitment/model/UserDataOption.ts"],"names":[],"mappings":";;AAAA,wDAAqD;AAErD,MAAa,cAAe,SAAQ,aAAK;IAKrC,oCAAoC;IACpC,gBAAgB,KAAK,EAAE,CAAC,CAAC,CAAC;CAC7B;AAPD,wCAOC"}

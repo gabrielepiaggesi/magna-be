@@ -96,10 +96,34 @@ class JobOfferController {
             }
         });
     }
+    getUserData(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield jobOfferService.getUserData(parseInt(req.params.userId, 10), parseInt(req.params.jobOfferId, 10));
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'JobOffer.getUserData' }));
+            }
+        });
+    }
     getJobOffer(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const response = yield jobOfferService.getJobOffer(parseInt(req.params.jobOfferId, 10));
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'JobOffer.GetJobOffer' }));
+            }
+        });
+    }
+    getJobOfferFromLink(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield jobOfferService.getJobOfferFromLink(req.params.linkUUID.toString());
                 return res.status(200).json(response);
             }
             catch (e) {
@@ -219,8 +243,16 @@ __decorate([
 ], JobOfferController.prototype, "getJobOffers", null);
 __decorate([
     Decorator_1.Get(),
+    Decorator_1.Path("/getUserData/:userId/:jobOfferId")
+], JobOfferController.prototype, "getUserData", null);
+__decorate([
+    Decorator_1.Get(),
     Decorator_1.Path("/getJobOffer/:jobOfferId")
 ], JobOfferController.prototype, "getJobOffer", null);
+__decorate([
+    Decorator_1.Get(),
+    Decorator_1.Path("/getJobOfferFromLink/:linkUUID")
+], JobOfferController.prototype, "getJobOfferFromLink", null);
 __decorate([
     Decorator_1.Get(),
     Decorator_1.Path("/getJobOfferSkills/:jobOfferId")

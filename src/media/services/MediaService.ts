@@ -7,14 +7,13 @@ const uploadService = new StorageService();
 
 export class MediaService {
 
-    public async uploadProfileMedia(req: any, conn) {
-        if (!conn) { throw "Connection error!" }
-        LOG.debug("uploadProfileMedia", req.file);
+    public async uploadFile(dto: { file: any, user_id: number }, conn) {
+        if (!conn) { throw "Connection error!" };
         try {
             const obj = {
-                file: req.file,
-                user_id: req.user_id,
-                type: 'profile'
+                file: dto.file,
+                user_id: dto.user_id,
+                type: (dto.file.mimetype || dto.file.mimeType || dto.file.type) || 'unknown'
             };
             const url = await uploadService.uploadMedia(obj, conn);
             return url;

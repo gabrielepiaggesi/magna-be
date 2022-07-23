@@ -24,6 +24,8 @@ const TestOptionRepository_1 = require("../repository/TestOptionRepository");
 const TestRepository_1 = require("../repository/TestRepository");
 const TestTextRepository_1 = require("../repository/TestTextRepository");
 const UserTestRepository_1 = require("../repository/UserTestRepository");
+const UserQuizRepository_1 = require("../repository/UserQuizRepository");
+const MediaService_1 = require("../../media/services/MediaService");
 const LOG = new Logger_1.Logger("QuizService.class");
 const db = require("../../connection");
 const quizRepository = new QuizRepository_1.QuizRepository();
@@ -34,6 +36,8 @@ const testTextRepository = new TestTextRepository_1.TestTextRepository();
 const testImageRepository = new TestImageRepository_1.TestImageRepository();
 const companyQuizRepository = new CompanyQuizRepository_1.CompanyQuizRepository();
 const userTestRepository = new UserTestRepository_1.UserTestRepository();
+const userQuizRepository = new UserQuizRepository_1.UserQuizRepository();
+const mediaService = new MediaService_1.MediaService();
 class QuizService {
     createQuiz(dto, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -50,7 +54,7 @@ class QuizService {
     updateQuiz(dto, jQuizId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            yield connection.newTransaction(); // update jobn offer quiz!
+            yield connection.newTransaction();
             const quiz = yield this.updateOrCreateQuiz(dto, dto.quiz_id, null, connection);
             const jobOfferQuiz = yield this.updateOrCreateJobOfferQuiz(dto, quiz.id, jQuizId, connection);
             yield connection.commit();
@@ -58,29 +62,32 @@ class QuizService {
             return { quiz, jobOfferQuiz };
         });
     }
-    createTest(dto) {
+    createTest(dto, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log(dto);
             const connection = yield db.connection();
             yield connection.newTransaction();
             const test = yield this.updateOrCreateTest(dto.test, null, connection);
             const options = dto.options.length ? yield this.saveTestOptions(dto.options, test.id, connection) : [];
             const texts = dto.texts.length ? yield this.saveTestTexts(dto.texts, test.id, connection) : [];
-            const files = dto.files.length ? this.uploadTestImages(dto.files, test.id) : [];
-            const images = files.length ? yield this.saveTestImages(files, test.id, connection) : [];
+            const image = dto.file ? yield this.saveTestImages(dto.file, test.id, loggedUserId, connection) : null;
             yield connection.commit();
             yield connection.release();
-            return { test, options, texts, images };
+            yield this.resetQuizTestsPoints(test.quiz_id);
+            return { test, options, texts, image };
         });
     }
-    updateTest(dto, testId) {
+    updateTest(dto, testId, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log(dto);
             const connection = yield db.connection();
+            const oldTest = yield testRepository.findById(testId, connection);
             yield connection.newTransaction();
-            const test = yield this.updateOrCreateTest(dto, testId, connection);
-            if (dto.new_right_option != dto.old_right_option &&
-                dto.new_right_option > 0 && dto.old_right_option > 0) {
-                const oldRightOption = yield testOptionRepository.findById(dto.old_right_option, connection);
-                const newRightOption = yield testOptionRepository.findById(dto.new_right_option, connection);
+            const test = yield this.updateOrCreateTest(dto.test, testId, connection);
+            if (dto.test.new_right_option != dto.test.old_right_option &&
+                dto.test.new_right_option > 0 && dto.test.old_right_option > 0) {
+                const oldRightOption = yield testOptionRepository.findById(dto.test.old_right_option, connection);
+                const newRightOption = yield testOptionRepository.findById(dto.test.new_right_option, connection);
                 const oldDto = Object.assign({}, oldRightOption);
                 delete oldDto.is_correct;
                 delete oldDto.points;
@@ -96,7 +103,29 @@ class QuizService {
             }
             yield connection.commit();
             yield connection.release();
+            if (oldTest.points != test.points)
+                yield this.resetQuizTestsPoints(test.quiz_id);
+            if (dto.file && dto.file !== 'cancel') {
+                const img = yield this.createNewTestImage(dto.file, testId, loggedUserId);
+                test['image_url'] = img.image_url;
+            }
+            if (dto.file && dto.file === 'cancel') {
+                yield this.removeTestImage(testId);
+            }
             return test;
+        });
+    }
+    resetQuizTestsPoints(quizId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            let quiz = yield quizRepository.findById(quizId, connection);
+            const quizTests = yield testRepository.findByQuizId(quizId, connection);
+            const totalScore = quizTests.filter(qT => qT.type === 'MULTIPLE').reduce((acc, elem) => acc + elem.points, 0);
+            yield connection.newTransaction();
+            quiz = yield this.updateOrCreateQuiz(Object.assign(Object.assign({}, quiz), { tests_points: totalScore, tests_amount: quizTests.length }), quiz.id, null, connection);
+            yield connection.commit();
+            yield connection.release();
+            return quiz;
         });
     }
     editTestOption(dto, optionId) {
@@ -139,12 +168,37 @@ class QuizService {
             return text;
         });
     }
-    createNewTestImage(dto, testId) {
+    removeTest(testId, quizId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
             yield connection.newTransaction();
-            const image = this.transformTestImageToUploadImage(dto, testId);
-            const img = yield this.saveNewTestImage(image, testId, connection);
+            const test = yield this.deleteTest(testId, connection);
+            yield connection.commit();
+            yield connection.release();
+            yield this.resetQuizTestsPoints(quizId);
+            return test;
+        });
+    }
+    removeQuiz(quizId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            yield connection.newTransaction();
+            const quiz = yield this.deleteQuiz(quizId, connection);
+            yield connection.commit();
+            yield connection.release();
+            return quiz;
+        });
+    }
+    createNewTestImage(newFile, testId, loggedUserId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log(newFile);
+            const connection = yield db.connection();
+            const images = yield testImageRepository.findByTestId(testId, connection);
+            yield connection.newTransaction();
+            if (images.length) {
+                const img = yield this.deleteTestImage(images[0].id, connection);
+            }
+            const img = yield this.saveNewTestImage(newFile, testId, loggedUserId, connection);
             yield connection.commit();
             yield connection.release();
             return img;
@@ -170,11 +224,16 @@ class QuizService {
             return img;
         });
     }
-    removeTestImage(imageId) {
+    removeTestImage(testId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
+            const images = yield testImageRepository.findByTestId(testId, connection);
+            if (!images.length) {
+                yield connection.release();
+                return;
+            }
             yield connection.newTransaction();
-            const img = yield this.deleteTestImage(imageId, connection);
+            const img = yield this.deleteTestImage(images[0].id, connection);
             yield connection.commit();
             yield connection.release();
             return img;
@@ -192,22 +251,31 @@ class QuizService {
             return { test, options, texts, images, uTest };
         });
     }
-    getQuiz(quizId) {
+    getQuiz(quizId, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
             const jQuiz = yield jobOfferQuizRepository.findById(quizId, connection);
             const quiz = yield quizRepository.findById(jQuiz.quiz_id, connection);
+            const uQuiz = yield userQuizRepository.findByQuizIdAndJobOfferIdAndUserId(jQuiz.quiz_id, jQuiz.job_offer_id, loggedUserId, connection);
             const tests = yield testRepository.findByQuizId(quizId, connection);
+            const testsIds = tests.map(t => t.id);
+            const opts = testsIds.length ? yield testOptionRepository.findByTestIdsIn(testsIds, connection) : [];
+            const texts = testsIds.length ? yield testTextRepository.findByTestIdsIn(testsIds, connection) : [];
+            const imgs = testsIds.length ? yield testImageRepository.findByTestIdsIn(testsIds, connection) : [];
             yield connection.release();
-            return { jQuiz, quiz, tests };
+            const newTests = tests.map(test => {
+                return Object.assign(Object.assign({}, test), { options: [...opts].filter(opt => opt.test_id == test.id), texts: [...texts].filter(opt => opt.test_id == test.id), images: [...imgs].filter(opt => opt.test_id == test.id) });
+            });
+            return { jQuiz, quiz, uQuiz, tests: newTests };
         });
     }
-    getJobOfferQuizs(jobOfferId) {
+    getJobOfferQuizs(jobOfferId, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
             const quizs = yield jobOfferQuizRepository.findByJobOfferId(jobOfferId, connection);
+            const uQuizs = yield userQuizRepository.findByJobOfferIdAndUserId(jobOfferId, loggedUserId, connection);
             yield connection.release();
-            return quizs;
+            return { quizs, uQuizs };
         });
     }
     updateOrCreateQuiz(dto, quizId = null, loggedUserId, connection) {
@@ -215,16 +283,16 @@ class QuizService {
             try {
                 const quiz = quizId ? yield quizRepository.findById(quizId, connection) : new Quiz_1.Quiz();
                 quiz.author_user_id = quizId ? quiz.author_user_id : loggedUserId;
-                quiz.minutes = dto.minutes || quiz.minutes;
-                quiz.check_camera = dto.check_camera >= 0 ? dto.check_camera : quiz.check_camera;
+                quiz.minutes = +dto.minutes || quiz.minutes;
+                quiz.check_camera = +dto.check_camera >= 0 ? dto.check_camera : quiz.check_camera;
                 ;
-                quiz.check_mic = dto.check_mic >= 0 ? dto.check_mic : quiz.check_mic;
+                quiz.check_mic = +dto.check_mic >= 0 ? dto.check_mic : quiz.check_mic;
                 quiz.topic = dto.topic || quiz.topic;
                 quiz.category = dto.category || quiz.category;
-                quiz.difficulty_level = dto.difficulty_level || quiz.difficulty_level;
-                quiz.public = dto.public >= 0 ? dto.public : quiz.public;
-                quiz.tests_amount = dto.tests_amount >= 0 ? dto.tests_amount : quiz.tests_amount;
-                quiz.tests_points = dto.tests_points >= 0 ? dto.tests_points : quiz.tests_points;
+                quiz.difficulty_level = +dto.difficulty_level || quiz.difficulty_level;
+                quiz.public = +dto.public >= 0 ? (dto.public === 0 ? 1 : 0) : quiz.public;
+                quiz.tests_amount = +dto.tests_amount >= 0 ? dto.tests_amount : quiz.tests_amount;
+                quiz.tests_points = +dto.tests_points >= 0 ? dto.tests_points : quiz.tests_points;
                 const coInserted = quizId ? yield quizRepository.update(quiz, connection) : yield quizRepository.save(quiz, connection);
                 quiz.id = quizId ? quiz.id : coInserted.insertId;
                 !quizId && LOG.info("NEW QUIZ", quiz.id);
@@ -314,21 +382,12 @@ class QuizService {
             }
         });
     }
-    uploadTestImages(files, testId) {
-        return files.map(this.transformTestImageToUploadImage); // TODO REAL UPLOAD
-    }
-    transformTestImageToUploadImage(file, testId) {
-        return {
-            image_url: '',
-            position_order: file.position_order,
-            media_id: 0
-        };
-    }
-    saveTestImages(options, testId, connection) {
+    saveTestImages(file, testId, loggedId, connection) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                let media = yield mediaService.uploadFile({ file, user_id: loggedId }, connection);
                 const keys = ['test_id', 'media_id', 'image_url', 'position_order'];
-                const values = options.map(option => [testId, option.media_id, option.image_url, option.position_order]);
+                const values = [file].map(option => [testId, media.id, media.url, (option.position_order || 0)]);
                 const otionsInserted = yield testImageRepository.saveMultiple(keys, values, connection);
                 return otionsInserted;
             }
@@ -406,13 +465,43 @@ class QuizService {
             }
         });
     }
-    saveNewTestImage(dto, testId, connection) {
+    deleteTest(testId, connection) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                const test = yield testRepository.deleteById(testId, connection);
+                return test;
+            }
+            catch (e) {
+                LOG.error(e);
+                yield connection.rollback();
+                yield connection.release();
+                throw new IndroError_1.IndroError("Cannot Delete Test", 500, null, e);
+            }
+        });
+    }
+    deleteQuiz(quizId, connection) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const q = yield quizRepository.deleteById(quizId, connection);
+                return q;
+            }
+            catch (e) {
+                LOG.error(e);
+                yield connection.rollback();
+                yield connection.release();
+                throw new IndroError_1.IndroError("Cannot Delete Quiz", 500, null, e);
+            }
+        });
+    }
+    saveNewTestImage(file, testId, loggedId, connection) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let media = yield mediaService.uploadFile({ file, user_id: loggedId }, connection);
                 const img = new TestImage_1.TestImage();
-                img.media_id = dto.media_id;
-                img.image_url = dto.image_url;
-                img.position_order = dto.position_order;
+                img.media_id = media.id;
+                img.image_url = media.url;
+                img.position_order = 0;
+                img.test_id = testId;
                 yield testImageRepository.save(img, connection);
                 return img;
             }

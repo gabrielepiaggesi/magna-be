@@ -3,10 +3,18 @@ import { Logger } from "../../framework/services/Logger";
 import { QuizService } from "../service/QuizService";
 import { Response } from "express";
 import { QuizApi } from "../integration/QuizApi";
-import { Get, Path, Post } from "../../utils/Decorator";
+import { Get, Multer, Path, Post } from "../../utils/Decorator";
+import { memoryStorage } from "multer";
 
 const LOG = new Logger("QuizController.class");
 const quizService = new QuizService();
+
+const multerConfig = {
+    storage: memoryStorage(),
+    limits: {
+      fileSize: 3 * 1024 * 1024 // no larger than 1mb, you can change as needed.
+    }
+};
 
 export class QuizController implements QuizApi {
 
@@ -37,9 +45,12 @@ export class QuizController implements QuizApi {
 
     @Post()
     @Path("/createTest")
+    @Multer({ multerConfig, path: 'file' })
     public async createTest(res: Response, req) {
         try {
-            const response = await quizService.createTest(req.body);
+            const body = JSON.parse(req.body.data);
+            const loggedUserId = auth.getLoggedUserId(req);
+            const response = await quizService.createTest({...body, file: req.file || null}, loggedUserId);
             return res.status(200).json(response);
         } catch(e) {
             LOG.debug(e);
@@ -49,9 +60,12 @@ export class QuizController implements QuizApi {
 
     @Post()
     @Path("/updateTest/:testId")
+    @Multer({ multerConfig, path: 'file' })
     public async updateTest(res: Response, req) {
         try {
-            const response = await quizService.updateTest(req.body, parseInt(req.params.testId, 10));
+            const body = JSON.parse(req.body.data);
+            const loggedUserId = auth.getLoggedUserId(req);
+            const response = await quizService.updateTest({ test: {...body}, file: req.file || body.file || null}, parseInt(req.params.testId, 10), loggedUserId);
             return res.status(200).json(response);
         } catch(e) {
             LOG.debug(e);
@@ -111,7 +125,8 @@ export class QuizController implements QuizApi {
     @Path("/createNewTestImage/:testId")
     public async createNewTestImage(res: Response, req) {
         try {
-            const response = await quizService.createNewTestImage(req.body, parseInt(req.params.testId, 10));
+            const loggedUserId = auth.getLoggedUserId(req);
+            const response = await quizService.createNewTestImage({...req.body, newFile: req.file}, parseInt(req.params.testId, 10), loggedUserId);
             return res.status(200).json(response);
         } catch(e) {
             LOG.debug(e);
@@ -148,7 +163,8 @@ export class QuizController implements QuizApi {
     @Path("/getQuiz/:quizId")
     public async getQuiz(res: Response, req) {
         try {
-            const response = await quizService.getQuiz(parseInt(req.params.quizId, 10));
+            const loggedUserId = auth.getLoggedUserId(req);
+            const response = await quizService.getQuiz(parseInt(req.params.quizId, 10), loggedUserId);
             return res.status(200).json(response);
         } catch(e) {
             LOG.debug(e);
@@ -160,7 +176,8 @@ export class QuizController implements QuizApi {
     @Path("/getJobOfferQuizs/:jobOfferId")
     public async getJobOfferQuizs(res: Response, req) {
         try {
-            const response = await quizService.getJobOfferQuizs(parseInt(req.params.jobOfferId, 10));
+            const loggedUserId = auth.getLoggedUserId(req);
+            const response = await quizService.getJobOfferQuizs(parseInt(req.params.jobOfferId, 10), loggedUserId);
             return res.status(200).json(response);
         } catch(e) {
             LOG.debug(e);
@@ -177,6 +194,30 @@ export class QuizController implements QuizApi {
         } catch(e) {
             LOG.debug(e);
             return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Quiz.createNewTestOption'});
+        }
+    }
+
+    @Post()
+    @Path("/removeTest/:testId/:quizId")
+    public async removeTest(res: Response, req) {
+        try {
+            const response = await quizService.removeTest(parseInt(req.params.testId, 10), parseInt(req.params.quizId, 10));
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Quiz.removeTest'});
+        }
+    }
+
+    @Post()
+    @Path("/removeQuiz/:quizId")
+    public async removeQuiz(res: Response, req) {
+        try {
+            const response = await quizService.removeQuiz(parseInt(req.params.quizId, 10));
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Quiz.removeQuiz'});
         }
     }
 

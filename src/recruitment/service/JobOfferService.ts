@@ -13,7 +13,16 @@ import { UserRepository } from "../../ums/repository/UserRepository";
 import { UserQuizRepository } from "../repository/UserQuizRepository";
 import { JobOfferApi } from "../integration/JobOfferApi";
 import { JobOfferSkill } from "../model/JobOfferSkill";
+import { JobOfferQuizRepository } from "../repository/JobOfferQuizRepository";
+import { UserDataRepository } from "../repository/UserDataRepository";
+import { UserSkillRepository } from "../repository/UserSkillRepository";
+import { skipPartiallyEmittedExpressions } from "typescript";
+import { UserDataOption } from "../model/UserDataOption";
+import { ConfidenceLevel } from "../type/ConfidenceLevel";
+import { JobOfferLink } from "../model/JobOfferLink";
+import { JobOfferLinkRepository } from "../repository/JobOfferLinkRepository";
 
+const shortid = require('shortid');
 const LOG = new Logger("JobOfferService.class");
 const db = require("../../connection");
 const jobOfferRepository = new JobOfferRepository();
@@ -23,6 +32,10 @@ const jobOfferUserDataRepository = new JobOfferUserDataRepository();
 const userApplicationRepository = new UserApplicationRepository();
 const userRepository = new UserRepository();
 const userQuizRepository = new UserQuizRepository();
+const jobOfferQuizRepository = new JobOfferQuizRepository();
+const userDataRepository = new UserDataRepository();
+const userSkillRepository = new UserSkillRepository();
+const jobOfferLinkRepository = new JobOfferLinkRepository();
 
 type NewJobOffer = { jobOffer: JobOfferDTO, skills: JobOfferSkillDTO[] };
 
@@ -33,9 +46,10 @@ export class JobOfferService implements JobOfferApi {
         await connection.newTransaction();
         const newJobOffer = await this.updateOrCreateJobOffer(jODTO.jobOffer, null, loggedUserId, connection);
         const skillsSaved = await this.saveJobOfferSkills(jODTO.skills, newJobOffer.id, connection);
+        const link = await this.saveNewJobOfferLink(newJobOffer.id, newJobOffer.company_id, connection);
         await connection.commit();
         await connection.release();
-        return { newJobOffer, skillsSaved };
+        return { newJobOffer, skillsSaved, link };
     }
 
     public async updateJobOffer(jODTO: JobOfferDTO, jobOfferId: number) {
@@ -80,8 +94,17 @@ export class JobOfferService implements JobOfferApi {
         const connection = await db.connection();
         const jOffer = await jobOfferRepository.findById(jobOfferId, connection);
         const skills = await jobOfferSkillRepository.findByJobOfferId(jobOfferId, connection);
+        const link = await jobOfferLinkRepository.findByJobOfferId(jOffer.id, connection);
         await connection.release();
-        return {jOffer, skills};
+        return {jOffer, skills, link};
+    }
+
+    public async getJobOfferFromLink(linkUUID: string) {
+        const connection = await db.connection();
+        const link = await jobOfferLinkRepository.findByUUID(linkUUID, connection);
+        const jOffer = await jobOfferRepository.findById(link.job_offer_id, connection);
+        await connection.release();
+        return jOffer;
     }
 
     public async getJobOfferSkills(jobOfferId: number) {
@@ -126,23 +149,88 @@ export class JobOfferService implements JobOfferApi {
         return data;
     }
 
+    public async getUserData(userId: number, jobOfferId: number) {
+        const connection = await db.connection();
+        const options = await userDataOptionRepository.findAllActive(null, connection);
+        let userData = await userDataRepository.findByUserIdAndJobOfferId(userId, jobOfferId, connection);
+        console.log(userData);
+        const candidateData = userData.map(uO => {
+            const opt = options.find(opt => opt.id === uO.user_data_option_id);
+            return {
+                ...uO,
+                option_key: opt.option_key,
+                type: opt.type
+            }
+        })
+        await connection.release();
+        return candidateData;
+    }
+
     public async getJobOfferUserApplicationsList(jobOfferId: number) {
         const connection = await db.connection();
-        // all order by user_id asc
-        const applications = await userApplicationRepository.findByJobOfferId(jobOfferId, connection);
-        const userIds = applications.map(a => a.user_id);
-        const users = await userRepository.whereUserIdIn(userIds, connection);
-        const usersQuizs = await userQuizRepository.whereUserIdInAndJobOfferId(userIds, jobOfferId, connection);
+        const uApps = await userApplicationRepository.findByJobOfferId(jobOfferId, connection);
+        if (!uApps || !uApps.length) {
+            await connection.release();
+            return { columns: [], usersResults: [] };
+        }
+        
+        const opts: UserDataOption[] = await userDataOptionRepository.findAllActive(null, connection);
+        let jobOfferUserData = await jobOfferUserDataRepository.findByJobOfferId(jobOfferId, connection);
+        const jobOfferSkills = await jobOfferSkillRepository.findByJobOfferId(jobOfferId, connection);
+        const jobOfferQuizs = await jobOfferQuizRepository.findByJobOfferId(jobOfferId, connection);
+
+        const userIds = uApps.map(app => app.user_id);
+        const quizIds = jobOfferQuizs.map(jQ => jQ.quiz_id);
+        
+        const userData = await userDataRepository.findByUserIdInAndJobOfferId(userIds, jobOfferId, connection);
+        const userSkills = await userSkillRepository.findByUserIdInAndJobOfferId(userIds, jobOfferId, connection);
+        const userQuizs = await userQuizRepository.whereUserIdInAndQuizIdInAndJobOfferId(userIds, quizIds, jobOfferId, connection);
         await connection.release();
-        const results = applications.map((app, idx) => {
-            return {
-                userId: app.user_id,
-                application: app,
-                user: users[idx],
-                userQuizs: usersQuizs.filter(q => q.user_id === app.user_id)
-            };
-        })
-        return results;
+
+        jobOfferUserData = jobOfferUserData.filter(jO => !!opts.find(opt => opt.id === jO.option_id).relevant);
+        const jobOfferUserDataColumns = jobOfferUserData.map(jO => {
+            const opt = opts.find(opt => opt.id === jO.option_id);
+            let position = 0;
+            if (opt.option_key === 'name') position = 2;
+            if (opt.option_key === 'lastname') position = 1;
+            let jOC = { key: opt.option_key, label: null, type: 'options', position };
+            return jOC;
+        }).sort((a, b) => b.position - a.position);
+        const jobOfferSkillsColumns = jobOfferSkills.sort((a, b) => b.required - a.required).map(jS => ({ key: 'skill_'+jS.id, label: jS.text, type: 'skills' }));
+        const jobOfferQuizsColumns = jobOfferQuizs.sort((a, b) => b.required - a.required).map(jQ => ({ key: 'quiz_'+jQ.quiz_id, label: jQ.topic, type: 'quizs' }));
+        const otherColumns = [{ key: 'requiredScore', label: 'Tests Score', type: 'general' }, { key: 'bonusScore', label: 'Bonus Tests Score', type: 'general' }];
+        const columns = [...jobOfferUserDataColumns,'space', ...jobOfferSkillsColumns, 'space', ...jobOfferQuizsColumns, 'space', ...otherColumns];
+        const usersResults = uApps.map(app => {
+            let userResult = { userId: app.user_id };
+            
+            jobOfferUserData.forEach(jO => {
+                const option = opts.find(opt => opt.id === jO.option_id);
+                const userDataOpt = userData.find(uO => uO.user_id === app.user_id && uO.user_data_option_id === jO.option_id);
+                if (userDataOpt) {
+                    if (option.type === 'BOOLEAN') userResult[option.option_key] = userDataOpt.number_value ? 'YES' : 'NO';
+                    if (option.type !== 'BOOLEAN') userResult[option.option_key] = userDataOpt.string_value || +userDataOpt.number_value || null;
+                }
+            });
+            jobOfferSkills.forEach(jS => {
+                const userSkill = userSkills.find(uS => uS.user_id === app.user_id && uS.job_offer_skill_id === jS.id);
+                if (userSkill) {
+                    userResult['skill_'+jS.id] = ConfidenceLevel[(userSkill.confidence_level || 3)] + ' - ' + (userSkill.years || 1) + ' anni';
+                }
+                // userResult['years_skill_'+jS.id] = userSkill.years || 0;
+            });
+            userResult['requiredScore'] = 0;
+            userResult['bonusScore'] = 0;
+            jobOfferQuizs.forEach(jQ => {
+                const userQuiz = userQuizs.find(uQ => uQ.user_id === app.user_id && uQ.quiz_id === jQ.quiz_id);
+                if (userQuiz) {
+                    userResult['quiz_'+jQ.id] = userQuiz.score + ' - ' + (userQuiz.rate * 100).toFixed(0) + '%';
+                    if (jQ.required)  userResult['requiredScore'] = userResult['requiredScore'] + userQuiz.score;
+                    if (!jQ.required)  userResult['bonusScore'] = userResult['bonusScore'] + userQuiz.score;
+                }
+            });
+            return userResult;
+        });
+        return { columns, usersResults };
     }
 
     private async updateOrCreateJobOffer(jODTO: JobOfferDTO, jobOfferId = null, loggedUserId: number, connection) {
@@ -265,6 +353,23 @@ export class JobOfferService implements JobOfferApi {
             await connection.rollback();
             await connection.release();
             throw new IndroError("Cannot Add JobOffer UserData", 500, null, e);
+        }
+    }
+
+    private async saveNewJobOfferLink(jobOfferId: number, companyId: number,connection) {
+        try {
+            const jLink = new JobOfferLink();
+            jLink.job_offer_id = jobOfferId;
+            jLink.company_id = companyId;
+            jLink.uuid = shortid.generate();
+            const linkInserted = await jobOfferLinkRepository.save(jLink, connection);
+            jLink.id = linkInserted.insertId;
+            return jLink;
+        } catch (e) {
+            LOG.error(e);
+            await connection.rollback();
+            await connection.release();
+            throw new IndroError("Cannot Add JobOffer Link", 500, null, e);
         }
     }
 

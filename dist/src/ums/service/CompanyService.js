@@ -58,7 +58,6 @@ class CompanyService {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
             const companies = yield userCompanyRepository.findUserCompanies(loggedUserId, connection); // TODO JOIN! with company
-            LOG.debug(companies);
             yield connection.release();
             return companies;
         });

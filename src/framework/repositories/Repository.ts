@@ -52,6 +52,18 @@ export class Repository<T> {
         return await c.query(d);
     }
 
+    public async deleteById(modelId: number, conn) {
+        const c = conn;
+        const d = `update ${this.table} set deleted_at = ${mysql2.escape(new Date(Date.now()).toISOString().substring(0, 19).replace("T", " "))} where id = ${modelId}`;
+        return await c.query(d);
+    }
+
+    public async deleteWhereIdIn(modelIds: number[], conn) {
+        const c = conn;
+        const d = `update ${this.table} set deleted_at = ${mysql2.escape(new Date(Date.now()).toISOString().substring(0, 19).replace("T", " "))} where id in (?)`;
+        return await c.query(d, [modelIds]);
+    }
+
     public async findAll(query = null, conn) {
         const c = conn;
         return await c.query(query || `select * from ${this.table} limit 1000`);

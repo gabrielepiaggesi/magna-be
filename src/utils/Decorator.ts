@@ -20,3 +20,10 @@ export function Path(path: string) {
     };
     return decorator;
 }
+
+export function Multer(config: {multerConfig: any, path?: string, type?: 'single' | 'multiple'}) {
+    const decorator: MethodDecorator = (target, propertyKey, description) => {
+        Reflect.defineMetadata('MULTER', config, target, propertyKey);
+    };
+    return decorator;
+}

@@ -283,6 +283,19 @@ CREATE TABLE IF NOT EXISTS media (
     deleted_at TIMESTAMP DEFAULT NULL
 )  ENGINE=INNODB;
 
+CREATE TABLE IF NOT EXISTS medias (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    url VARCHAR(2550) NOT NULL,
+    type VARCHAR(255) NOT NULL,
+    private_url VARCHAR(2550) NOT NULL,
+    provider VARCHAR(255) NOT NULL,
+    provider_path VARCHAR(255) DEFAULT NULL,
+    user_id BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP DEFAULT NULL
+)  ENGINE=INNODB;
+
 alter table users add image_id BIGINT DEFAULT NULL;
 alter table companies add image_id BIGINT DEFAULT NULL;
 alter table tests_images add image_id BIGINT DEFAULT NULL;
@@ -335,6 +348,48 @@ ADD UNIQUE INDEX option_key_idx (option_key, type);
 
 
 DELETE n1 FROM users_data_options n1, users_data_options n2 WHERE n1.id > n2.id AND n1.option_key = n2.option_key;
+
+ALTER TABLE users MODIFY COLUMN name VARCHAR(255) DEFAULT NULL;
+ALTER TABLE users MODIFY COLUMN lastname VARCHAR(255) DEFAULT NULL;
+ALTER TABLE users MODIFY COLUMN birthdate DATE DEFAULT NULL;
+
+ALTER TABLE users_quizs CHANGE user_quiz_id quiz_id BIGINT NOT NULL;
+
+ALTER TABLE users_tests CHANGE quiz_id user_quiz_id BIGINT NOT NULL;
+
+alter table users_data_options add relevant BIGINT DEFAULT 0;
+
+
+ALTER TABLE users_quizs MODIFY COLUMN rate DOUBLE(16,4) DEFAULT NULL;
+
+alter table medias add name VARCHAR(255) DEFAULT NULL;
+alter table medias add size BIGINT DEFAULT NULL;
+
+
+CREATE TABLE IF NOT EXISTS job_offers_links (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    uuid VARCHAR(255) NOT NULL,
+    job_offer_id BIGINT NOT NULL,
+    company_id BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP DEFAULT NULL
+)  ENGINE=INNODB;
+
+alter table users_data add media_id BIGINT DEFAULT NULL;
+
+
+CREATE TABLE IF NOT EXISTS users_tests_images (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    image_url VARCHAR(255) NOT NULL,
+    job_offer_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    media_id BIGINT NOT NULL,
+    test_id BIGINT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP DEFAULT NULL
+)  ENGINE=INNODB;
 
 
 

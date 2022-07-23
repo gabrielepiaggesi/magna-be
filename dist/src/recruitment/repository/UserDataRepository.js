@@ -30,6 +30,15 @@ class UserDataRepository extends Repository_1.Repository {
                 .then((results) => results);
         });
     }
+    findByUserIdInAndJobOfferId(userIds, jobOfferId, conn, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            // tslint:disable-next-line:max-line-length
+            return c.query(query ||
+                `select * from ${this.table} where user_id in (?) and job_offer_id = ${mysql2_1.default.escape(jobOfferId)} and deleted_at is null`, [userIds])
+                .then((results) => results);
+        });
+    }
 }
 exports.UserDataRepository = UserDataRepository;
 //# sourceMappingURL=UserDataRepository.js.map

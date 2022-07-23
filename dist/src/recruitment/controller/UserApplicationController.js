@@ -19,19 +19,43 @@ const __1 = require("../..");
 const Logger_1 = require("../../framework/services/Logger");
 const UserApplicationService_1 = require("../service/UserApplicationService");
 const Decorator_1 = require("../../utils/Decorator");
+const multer_1 = require("multer");
 const LOG = new Logger_1.Logger("UserApplicationController.class");
 const userApplicationService = new UserApplicationService_1.UserApplicationService();
+const multerConfig = {
+    storage: multer_1.memoryStorage(),
+    limits: {
+        fileSize: 3 * 1024 * 1024 // no larger than 1mb, you can change as needed.
+    }
+};
 class UserApplicationController {
     createUserApplication(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                const body = JSON.parse(req.body.data);
+                const files = req.files;
                 const loggedUserId = __1.auth.getLoggedUserId(req);
-                const response = yield userApplicationService.createUserApplication(req.body, loggedUserId);
+                const response = yield userApplicationService.createUserApplication(body, files, loggedUserId);
                 return res.status(200).json(response);
             }
             catch (e) {
                 LOG.debug(e);
                 return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'UserApplication.CreateUserApplication' }));
+            }
+        });
+    }
+    uploadUserTestImage(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const body = JSON.parse(req.body.data);
+                const file = req.file;
+                const loggedUserId = __1.auth.getLoggedUserId(req);
+                const response = yield userApplicationService.uploadUserTestImage(Object.assign(Object.assign({}, body), { file }), loggedUserId);
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'UserApplication.UploadUserTestImage' }));
             }
         });
     }
@@ -44,6 +68,18 @@ class UserApplicationController {
             catch (e) {
                 LOG.debug(e);
                 return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'UserApplication.GetUserApplication' }));
+            }
+        });
+    }
+    getUserTestsImages(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield userApplicationService.getUserTestsImages(parseInt(req.params.userId, 10), parseInt(req.params.jobOfferId, 10));
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'UserApplication.getUserTestsImages' }));
             }
         });
     }
@@ -70,6 +106,19 @@ class UserApplicationController {
             catch (e) {
                 LOG.debug(e);
                 return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'UserApplication.CreateUserTest' }));
+            }
+        });
+    }
+    createUserTests(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const loggedUserId = __1.auth.getLoggedUserId(req);
+                const response = yield userApplicationService.createUserTests(req.body, loggedUserId);
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'UserApplication.CreateUserTests' }));
             }
         });
     }
@@ -115,12 +164,22 @@ class UserApplicationController {
 }
 __decorate([
     Decorator_1.Post(),
-    Decorator_1.Path("/createUserApplication")
+    Decorator_1.Path("/createUserApplication"),
+    Decorator_1.Multer({ multerConfig, type: 'multiple' })
 ], UserApplicationController.prototype, "createUserApplication", null);
+__decorate([
+    Decorator_1.Post(),
+    Decorator_1.Path("/uploadUserTestImage"),
+    Decorator_1.Multer({ multerConfig, type: 'single', path: 'file' })
+], UserApplicationController.prototype, "uploadUserTestImage", null);
 __decorate([
     Decorator_1.Get(),
     Decorator_1.Path("/getUserApplication/:userId/:jobOfferId")
 ], UserApplicationController.prototype, "getUserApplication", null);
+__decorate([
+    Decorator_1.Get(),
+    Decorator_1.Path("/getUserTestsImages/:userId/:jobOfferId")
+], UserApplicationController.prototype, "getUserTestsImages", null);
 __decorate([
     Decorator_1.Post(),
     Decorator_1.Path("/createUserQuiz")
@@ -129,6 +188,10 @@ __decorate([
     Decorator_1.Post(),
     Decorator_1.Path("/createUserTest")
 ], UserApplicationController.prototype, "createUserTest", null);
+__decorate([
+    Decorator_1.Post(),
+    Decorator_1.Path("/createUserTests")
+], UserApplicationController.prototype, "createUserTests", null);
 __decorate([
     Decorator_1.Post(),
     Decorator_1.Path("/updateUserTest/:userTestId")

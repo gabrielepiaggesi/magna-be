@@ -85,10 +85,34 @@ export class JobOfferController implements JobOfferApi {
     }
 
     @Get()
+    @Path("/getUserData/:userId/:jobOfferId")
+    public async getUserData(res: Response, req) {
+        try {
+            const response = await jobOfferService.getUserData(parseInt(req.params.userId, 10), parseInt(req.params.jobOfferId, 10));
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'JobOffer.getUserData'});
+        }
+    }
+
+    @Get()
     @Path("/getJobOffer/:jobOfferId")
     public async getJobOffer(res: Response, req) {
         try {
             const response = await jobOfferService.getJobOffer(parseInt(req.params.jobOfferId, 10));
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'JobOffer.GetJobOffer'});
+        }
+    }
+
+    @Get()
+    @Path("/getJobOfferFromLink/:linkUUID")
+    public async getJobOfferFromLink(res: Response, req) {
+        try {
+            const response = await jobOfferService.getJobOfferFromLink(req.params.linkUUID.toString());
             return res.status(200).json(response);
         } catch(e) {
             LOG.debug(e);

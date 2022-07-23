@@ -52,7 +52,6 @@ export class CompanyService {
     public async getUserCompanies(loggedUserId: number) {
         const connection = await db.connection();
         const companies = await userCompanyRepository.findUserCompanies(loggedUserId, connection); // TODO JOIN! with company
-        LOG.debug(companies);
         await connection.release();
         return companies;
     }

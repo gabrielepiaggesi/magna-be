@@ -13,7 +13,7 @@ const storage_1 = require("@google-cloud/storage");
 const Logger_1 = require("../../framework/services/Logger");
 const MediaRepository_1 = require("../repositories/MediaRepository");
 const Media_1 = require("../models/Media");
-const LOG = new Logger_1.Logger("UploadService.class");
+const LOG = new Logger_1.Logger("StorageService.class");
 const mediaRepository = new MediaRepository_1.MediaRepository();
 const db = require("../../database");
 const storage = new storage_1.Storage({ projectId: "thismybio", keyFilename: "./src/media/services/firebaseKey.json" });
@@ -25,6 +25,7 @@ class StorageService {
     // https://gist.github.com/stardustxx/58748550699228174b805aaadfc98a35#file-app-js
     // https://cloud.google.com/storage/docs/access-control/signed-urls
     // https://cloud.google.com/storage/docs/access-control/signing-urls-with-helpers#storage-signed-url-object-nodejs
+    // https://console.cloud.google.com/storage/browser/thismybio.appspot.com;tab=objects?forceOnBucketsSortingFiltering=false&project=thismybio&prefix=&forceOnObjectsSortingFiltering=false
     getMediaSignedUrl(fileName) {
         return __awaiter(this, void 0, void 0, function* () {
             const options = {
@@ -79,6 +80,7 @@ class StorageService {
             if (!file) {
                 throw { message: 'No image file', code: 'no_image' };
             }
+            console.log((file.name || file.originalname));
             let namee = (file.name || file.originalname);
             namee = namee.replace(" ", "_");
             const newFileName = `${userId}_${Date.now()}_${namee}`;

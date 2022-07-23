@@ -53,7 +53,7 @@ export class AuthService {
         const newUser = await this.saveNewUser(user, connection);
         const payload = { id: newUser.id, type: 'IndroUser122828?' };
         const token = jwt.sign(payload, jwtConfig.secretOrKey);
-        return { msg: "ok", token };
+        return { msg: "ok", token, user: newUser };
     }
 
     private async saveNewUser(dto: SignupDTO, connection) {

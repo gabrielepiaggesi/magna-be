@@ -10,10 +10,10 @@ export type QuizDTO = {
     tests_amount: number;
     tests_points: number;
 
-    job_offer_id: number;
-    job_offer_quiz_id: number;
-    position_order: number;
-    company_id: number;
-    required: boolean;
-    quiz_id: number;
+    job_offer_id?: number;
+    job_offer_quiz_id?: number;
+    position_order?: number;
+    company_id?: number;
+    required?: boolean;
+    quiz_id?: number;
 };

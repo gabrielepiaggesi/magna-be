@@ -22,4 +22,11 @@ function Path(path) {
     return decorator;
 }
 exports.Path = Path;
+function Multer(config) {
+    const decorator = (target, propertyKey, description) => {
+        Reflect.defineMetadata('MULTER', config, target, propertyKey);
+    };
+    return decorator;
+}
+exports.Multer = Multer;
 //# sourceMappingURL=Decorator.js.map

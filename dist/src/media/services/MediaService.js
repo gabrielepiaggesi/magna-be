@@ -14,17 +14,17 @@ const StorageService_1 = require("./StorageService");
 const LOG = new Logger_1.Logger("MediaService.class");
 const uploadService = new StorageService_1.StorageService();
 class MediaService {
-    uploadProfileMedia(req, conn) {
+    uploadFile(dto, conn) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!conn) {
                 throw "Connection error!";
             }
-            LOG.debug("uploadProfileMedia", req.file);
+            ;
             try {
                 const obj = {
-                    file: req.file,
-                    user_id: req.user_id,
-                    type: 'profile'
+                    file: dto.file,
+                    user_id: dto.user_id,
+                    type: (dto.file.mimetype || dto.file.mimeType || dto.file.type) || 'unknown'
                 };
                 const url = yield uploadService.uploadMedia(obj, conn);
                 return url;

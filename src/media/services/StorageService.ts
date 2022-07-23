@@ -4,7 +4,7 @@ import { MediaRepository } from '../repositories/MediaRepository';
 import { Media } from '../models/Media';
 import { auth } from '../..';
 
-const LOG = new Logger("UploadService.class");
+const LOG = new Logger("StorageService.class");
 const mediaRepository = new MediaRepository();
 const db = require("../../database");
 const storage = new Storage({ projectId: "thismybio", keyFilename: "./src/media/services/firebaseKey.json"});
@@ -18,6 +18,7 @@ export class StorageService {
 
     // https://cloud.google.com/storage/docs/access-control/signed-urls
     // https://cloud.google.com/storage/docs/access-control/signing-urls-with-helpers#storage-signed-url-object-nodejs
+    // https://console.cloud.google.com/storage/browser/thismybio.appspot.com;tab=objects?forceOnBucketsSortingFiltering=false&project=thismybio&prefix=&forceOnObjectsSortingFiltering=false
     public async getMediaSignedUrl(fileName): Promise<string> {
         const options: GetSignedUrlConfig = {
             version: 'v4',
@@ -67,8 +68,9 @@ export class StorageService {
 
     private async uploadImageToStorage(file, userId): Promise<any> {
         if (!file) { throw { message: 'No image file', code: 'no_image' }; }
+        console.log((file.name || file.originalname));
         let namee = (file.name || file.originalname);
-        namee = namee.replace(" ", "_")
+        namee = namee.replace(" ", "_");
         const newFileName = `${userId}_${Date.now()}_${namee}`;
         const fileUpload = await bucket.file(newFileName);
         const blobStream = await fileUpload.createWriteStream({ metadata: { contentType: file.mimetype } });

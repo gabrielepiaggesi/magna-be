@@ -30,6 +30,15 @@ class TestTextRepository extends Repository_1.Repository {
                 .then((results) => results);
         });
     }
+    findByTestIdsIn(testIds, conn, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            // tslint:disable-next-line:max-line-length
+            return c.query(query ||
+                `select * from ${this.table} where test_id in (?) and deleted_at is null`, [testIds])
+                .then((results) => results);
+        });
+    }
 }
 exports.TestTextRepository = TestTextRepository;
 //# sourceMappingURL=TestTextRepository.js.map

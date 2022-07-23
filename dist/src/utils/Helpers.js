@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
+const multer_1 = __importDefault(require("multer"));
 var moment = require('moment');
 function getDatesDiffIn(dateBefore, dateAfter, time) {
     const date1 = new Date(dateBefore);
@@ -29,8 +30,13 @@ function routeFromController(object) {
     functionKeys.filter(key => key !== 'constructor' && Reflect.getMetadata('METHOD', targetController, key) && Reflect.getMetadata('PATH', targetController, key)).forEach(fn => {
         const method = Reflect.getMetadata('METHOD', targetController, fn);
         const path = Reflect.getMetadata('PATH', targetController, fn);
+        const multerConfig = Reflect.getMetadata('MULTER', targetController, fn) || null;
         if (method === "POST")
-            route.post(path, (req, res) => __awaiter(this, void 0, void 0, function* () { return yield object[fn](res, req); }));
+            multerConfig ?
+                route.post(path, (!multerConfig.type || multerConfig.type === 'single') ?
+                    multer_1.default(multerConfig.config).single(multerConfig.path || 'file') :
+                    multer_1.default(multerConfig.config).any(), (req, res) => __awaiter(this, void 0, void 0, function* () { return yield object[fn](res, req); })) :
+                route.post(path, (req, res) => __awaiter(this, void 0, void 0, function* () { return yield object[fn](res, req); }));
         if (method === "GET")
             route.get(path, (req, res) => __awaiter(this, void 0, void 0, function* () { return yield object[fn](res, req); }));
         if (method === "PUT")
