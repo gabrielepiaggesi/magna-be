@@ -13,9 +13,6 @@
   "license": "ISC",
   "devDependencies": {
     "@types/express": "^4.17.1",
-    "my-sql": "^1.2.15",
-    "mysql": "^2.18.1",
-    "mysql2": "^2.3.3",
     "tslint": "^5.20.0",
     "typescript": "^3.6.4"
   },
