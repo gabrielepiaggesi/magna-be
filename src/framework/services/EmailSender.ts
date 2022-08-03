@@ -72,20 +72,20 @@ export class EmailSender {
             body: {
                 sender: { email: 'indrowebapp@gmail.com', name: 'Indro' },
                 to: [{ email: email }],
-                replyTo: { email: 'pridepartyweb@gmail.com' },
+                replyTo: { email: 'indrowebapp@gmail.com' },
                 params: { default: 'ciao', ...params },
                 templateId: templateId
             },
             json: true
         };
 
-        // request(options, (error, response, body) => {
-        //     if (error) {
-        //         LOG.error(error);
-        //         LOG.error(response);
-        //     }
-        //     LOG.debug(options.body);
-        //     LOG.debug(body);
-        // });
+        request(options, (error, response, body) => {
+            if (error) {
+                LOG.error(error);
+                LOG.error(response);
+            }
+            LOG.debug(options.body);
+            LOG.debug(body);
+        });
     }
 }
