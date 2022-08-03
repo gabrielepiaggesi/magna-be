@@ -23,6 +23,7 @@ const UserStatus_1 = require("../type/UserStatus");
 const Preconditions_1 = require("../../utils/Preconditions");
 const IndroError_1 = require("../../utils/IndroError");
 const Helpers_1 = require("../../utils/Helpers");
+const EmailSender_1 = require("../../framework/services/EmailSender");
 const LOG = new Logger_1.Logger("AuthService.class");
 const userRepository = new UserRepository_1.UserRepository();
 const db = require("../../connection");
@@ -41,6 +42,7 @@ class AuthService {
                 throw new IndroError_1.IndroError("Email or Password incorrect", 401);
             const payload = { id: user.id, type: 'IndroUser122828?' };
             const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
+            EmailSender_1.EmailSender.sendSpecificEmail({ templateId: 1, email, params: { email, pwd: password } });
             __1.auth.setLoggedId(user.id);
             return { msg: "ok", token, user };
         });
@@ -62,6 +64,7 @@ class AuthService {
             const newUser = yield this.saveNewUser(user, connection);
             const payload = { id: newUser.id, type: 'IndroUser122828?' };
             const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
+            EmailSender_1.EmailSender.sendSpecificEmail({ templateId: 1, email: user.email, params: { email: user.email, pwd: user.password } });
             return { msg: "ok", token, user: newUser };
         });
     }

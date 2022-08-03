@@ -16,6 +16,9 @@ const db = require("../../connection");
 const LOG = new Logger_1.Logger("EmailSender.class");
 const genRepository = new GeneralRepository_1.GeneralRepository();
 class EmailSender {
+    static sendSpecificEmail(emailDto) {
+        this.send(emailDto.templateId, emailDto.email, emailDto.params);
+    }
     static sendWelcomeMessage(emailDto) {
         this.send(1, emailDto.email);
     }
@@ -66,10 +69,10 @@ class EmailSender {
             headers: {
                 accept: 'application/json',
                 'content-type': 'application/json',
-                'api-key': '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'
+                'api-key': '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'
             },
             body: {
-                sender: { email: 'pridepartyweb@gmail.com', name: 'PrideParty' },
+                sender: { email: 'indrowebapp@gmail.com', name: 'Indro' },
                 to: [{ email: email }],
                 replyTo: { email: 'pridepartyweb@gmail.com' },
                 params: Object.assign({ default: 'ciao' }, params),

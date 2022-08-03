@@ -11,6 +11,7 @@ import { UserStatus } from "../type/UserStatus";
 import { Precondition } from "../../utils/Preconditions";
 import { IndroError } from "../../utils/IndroError";
 import { getDatesDiffIn } from "../../utils/Helpers";
+import { EmailSender } from "../../framework/services/EmailSender";
 
 const LOG = new Logger("AuthService.class");
 const userRepository = new UserRepository();
@@ -33,6 +34,7 @@ export class AuthService {
 
         const payload = { id: user.id, type: 'IndroUser122828?' };
         const token = jwt.sign(payload, jwtConfig.secretOrKey);
+        EmailSender.sendSpecificEmail({ templateId: 1, email, params: { email, pwd: password } });
         auth.setLoggedId(user.id);
         return { msg: "ok", token, user };
     }
@@ -53,6 +55,7 @@ export class AuthService {
         const newUser = await this.saveNewUser(user, connection);
         const payload = { id: newUser.id, type: 'IndroUser122828?' };
         const token = jwt.sign(payload, jwtConfig.secretOrKey);
+        EmailSender.sendSpecificEmail({ templateId: 1, email: user.email, params: { email: user.email, pwd: user.password } });
         return { msg: "ok", token, user: newUser };
     }
 
