@@ -27,6 +27,7 @@ const UserSkillRepository_1 = require("../repository/UserSkillRepository");
 const ConfidenceLevel_1 = require("../type/ConfidenceLevel");
 const JobOfferLink_1 = require("../model/JobOfferLink");
 const JobOfferLinkRepository_1 = require("../repository/JobOfferLinkRepository");
+const CompanyRepository_1 = require("../../ums/repository/CompanyRepository");
 const shortid = require('shortid');
 const LOG = new Logger_1.Logger("JobOfferService.class");
 const db = require("../../connection");
@@ -41,6 +42,7 @@ const jobOfferQuizRepository = new JobOfferQuizRepository_1.JobOfferQuizReposito
 const userDataRepository = new UserDataRepository_1.UserDataRepository();
 const userSkillRepository = new UserSkillRepository_1.UserSkillRepository();
 const jobOfferLinkRepository = new JobOfferLinkRepository_1.JobOfferLinkRepository();
+const companyRepository = new CompanyRepository_1.CompanyRepository();
 class JobOfferService {
     createJobOffer(jODTO, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -111,7 +113,9 @@ class JobOfferService {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
             const link = yield jobOfferLinkRepository.findByUUID(linkUUID, connection);
-            const jOffer = yield jobOfferRepository.findById(link.job_offer_id, connection);
+            let jOffer = yield jobOfferRepository.findById(link.job_offer_id, connection);
+            const company = yield companyRepository.findById(jOffer.company_id, connection);
+            jOffer['company_name'] = company.name;
             yield connection.release();
             return jOffer;
         });
