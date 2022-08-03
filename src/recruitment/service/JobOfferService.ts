@@ -21,6 +21,7 @@ import { UserDataOption } from "../model/UserDataOption";
 import { ConfidenceLevel } from "../type/ConfidenceLevel";
 import { JobOfferLink } from "../model/JobOfferLink";
 import { JobOfferLinkRepository } from "../repository/JobOfferLinkRepository";
+import { CompanyRepository } from "../../ums/repository/CompanyRepository";
 
 const shortid = require('shortid');
 const LOG = new Logger("JobOfferService.class");
@@ -36,6 +37,7 @@ const jobOfferQuizRepository = new JobOfferQuizRepository();
 const userDataRepository = new UserDataRepository();
 const userSkillRepository = new UserSkillRepository();
 const jobOfferLinkRepository = new JobOfferLinkRepository();
+const companyRepository = new CompanyRepository();
 
 type NewJobOffer = { jobOffer: JobOfferDTO, skills: JobOfferSkillDTO[] };
 
@@ -102,7 +104,9 @@ export class JobOfferService implements JobOfferApi {
     public async getJobOfferFromLink(linkUUID: string) {
         const connection = await db.connection();
         const link = await jobOfferLinkRepository.findByUUID(linkUUID, connection);
-        const jOffer = await jobOfferRepository.findById(link.job_offer_id, connection);
+        let jOffer = await jobOfferRepository.findById(link.job_offer_id, connection);
+        const company = await companyRepository.findById(jOffer.company_id, connection);
+        jOffer['company_name'] = company.name;
         await connection.release();
         return jOffer;
     }
