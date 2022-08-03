@@ -67,9 +67,9 @@ class EmailSender {
             method: 'POST',
             url: 'https://api.sendinblue.com/v3/smtp/email',
             headers: {
-                accept: 'application/json',
+                'accept': 'application/json',
                 'content-type': 'application/json',
-                'api-key': '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'
+                'api-key': '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'
             },
             body: {
                 sender: { email: 'indrowebapp@gmail.com', name: 'Indro' },
