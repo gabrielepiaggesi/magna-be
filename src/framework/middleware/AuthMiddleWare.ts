@@ -1,7 +1,7 @@
 import passport from "passport";
 import passportJWT from "passport-jwt";
 import jwt from "jsonwebtoken";
-import { jwtConfig } from "../../../environment/dev/jwt";
+import { jwtConfig } from "../../../env/dev/jwt";
 import { UserRepository } from "../../ums/repository/UserRepository";
 const ExtractJwt = passportJWT.ExtractJwt;
 // tslint:disable-next-line:variable-name

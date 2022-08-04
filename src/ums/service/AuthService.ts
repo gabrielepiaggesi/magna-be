@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { jwtConfig } from "../../../environment/dev/jwt";
+import { jwtConfig } from "../../../env/dev/jwt";
 import { LoginDTO } from "../type/LoginDTO";
 import { SignupDTO } from "../type/SignupDTO";
 import { Logger } from "../../framework/services/Logger";

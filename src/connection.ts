@@ -1,5 +1,5 @@
 import mysql2 from "mysql2";
-import { dev } from "../environment/dev/dev";
+import { dev } from "../env/dev/dev";
 import { Logger } from "./framework/services/Logger";
 
 const LOG = new Logger("DB");

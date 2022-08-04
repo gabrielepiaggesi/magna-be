@@ -1,6 +1,6 @@
 import { Logger } from "./Logger";
 import { GeneralRepository } from "../repositories/GeneralRepository";
-import { apikeys } from "../../../environment/dev/apikeys";
+import { apikeys } from "../../../env/dev/apikeys";
 const request = require('request');
 const db = require("../../connection");
 

@@ -5,7 +5,7 @@ import { Media } from "../../media/models/Media";
 import jwt from "jsonwebtoken";
 import { MediaService } from "../../media/services/MediaService";
 import { UserRepository } from "../repository/UserRepository";
-import { jwtConfig } from "../../../environment/dev/jwt";
+import { jwtConfig } from "../../../env/dev/jwt";
 
 const LOG = new Logger("UserService.class");
 const userRepository = new UserRepository();
