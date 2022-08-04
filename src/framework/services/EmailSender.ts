@@ -1,6 +1,5 @@
 import { Logger } from "./Logger";
 import { GeneralRepository } from "../repositories/GeneralRepository";
-import { apikeys } from "../../../env/dev/apikeys";
 const request = require('request');
 const db = require("../../connection");
 
@@ -67,7 +66,7 @@ export class EmailSender {
             'method': 'POST',
             'url': 'https://api.sendinblue.com/v3/smtp/email',
             'headers': {
-              'api-key': apikeys.SENDINBLUE_API_KEY,
+              'api-key': process.env.SENDINBLUE_API_KEY, // heroku config:set GITHUB_USERNAME=joesmith
               'accept': 'application/json',
               'Content-Type': 'application/json'
             },
