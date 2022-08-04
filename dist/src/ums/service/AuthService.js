@@ -24,9 +24,16 @@ const Preconditions_1 = require("../../utils/Preconditions");
 const IndroError_1 = require("../../utils/IndroError");
 const Helpers_1 = require("../../utils/Helpers");
 const EmailSender_1 = require("../../framework/services/EmailSender");
+const JobOfferLinkRepository_1 = require("../../recruitment/repository/JobOfferLinkRepository");
+const CompanyRepository_1 = require("../repository/CompanyRepository");
+const JobOfferRepository_1 = require("../../recruitment/repository/JobOfferRepository");
 const LOG = new Logger_1.Logger("AuthService.class");
 const userRepository = new UserRepository_1.UserRepository();
 const db = require("../../connection");
+const shortid = require('shortid');
+const jobOfferLinkRepository = new JobOfferLinkRepository_1.JobOfferLinkRepository();
+const companyRepository = new CompanyRepository_1.CompanyRepository();
+const jobOfferRepository = new JobOfferRepository_1.JobOfferRepository();
 class AuthService {
     login(userDTO) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -42,7 +49,7 @@ class AuthService {
                 throw new IndroError_1.IndroError("Email or Password incorrect", 401);
             const payload = { id: user.id, type: 'IndroUser122828?' };
             const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
-            EmailSender_1.EmailSender.sendSpecificEmail({ templateId: 1, email, params: { email, pwd: password } });
+            // EmailSender.sendSpecificEmail({ templateId: 1, email, params: { email, pwd: password } });
             __1.auth.setLoggedId(user.id);
             return { msg: "ok", token, user };
         });
@@ -55,16 +62,16 @@ class AuthService {
             const connection = yield db.connection();
             const userWithThisEmail = yield userRepository.findByEmail(user.email, connection);
             yield Preconditions_1.Precondition.checkIfFalse((!!userWithThisEmail || !user.email || !user.hasAccepted), "General Error", connection);
-            const passwordHashed = yield bcrypt_1.default.hash(user.password, 10);
+            const password = shortid.generate();
+            const passwordHashed = yield bcrypt_1.default.hash(password, 10);
             user.password = passwordHashed;
-            if (!user.password) {
-                yield connection.release();
-                throw new IndroError_1.IndroError("Cannot Create Password", 500);
-            }
+            const link = yield jobOfferLinkRepository.findByUUID(user.jobOfferUUID, connection);
+            let jOffer = yield jobOfferRepository.findById(link.job_offer_id, connection);
+            const company = yield companyRepository.findById(jOffer.company_id, connection);
             const newUser = yield this.saveNewUser(user, connection);
             const payload = { id: newUser.id, type: 'IndroUser122828?' };
             const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
-            EmailSender_1.EmailSender.sendSpecificEmail({ templateId: 1, email: user.email, params: { email: user.email, pwd: user.password } });
+            EmailSender_1.EmailSender.sendSpecificEmail({ templateId: 1, email: user.email, params: { email: user.email, pwd: password, companyName: company.name, jobOfferName: jOffer.role, linkUUID: user.jobOfferUUID } });
             return { msg: "ok", token, user: newUser };
         });
     }

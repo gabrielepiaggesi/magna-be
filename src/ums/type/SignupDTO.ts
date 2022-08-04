@@ -7,6 +7,8 @@ export class SignupDTO {
     public hasAccepted: boolean = false;
     public age: number = null;
 
+    public jobOfferUUID: string;
+
     // tslint:disable-next-line:no-empty
     constructor() {}
 }

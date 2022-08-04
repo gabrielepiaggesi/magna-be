@@ -72,11 +72,12 @@ class EmailSender {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                sender: { email: 'indrowebapp@gmail.com', name: 'INDRO JOB' },
+                sender: { email: 'indrowebapp@gmail.com', name: params['companyName'] },
                 to: [{ email: email }],
                 replyTo: { email: 'indrowebapp@gmail.com' },
                 params: Object.assign({ default: 'ciao' }, params),
-                templateId: templateId
+                templateId: templateId,
+                subject: 'Credenziali di Accesso per ' + params['companyName']
             })
         };
         request(options, (error, response, body) => {
@@ -90,20 +91,4 @@ class EmailSender {
     }
 }
 exports.EmailSender = EmailSender;
-// var SibApiV3Sdk = require('sib-api-v3-sdk');
-// SibApiV3Sdk.ApiClient.instance.authentications['api-key'].apiKey = 'YOUR_API_KEY';
-// new SibApiV3Sdk.TransactionalEmailsApi().sendTransacEmail(
-//   {
-//     'subject':'Hello from the Node SDK!',
-//     'sender' : {'email':'api@sendinblue.com', 'name':'Sendinblue'},
-//     'replyTo' : {'email':'api@sendinblue.com', 'name':'Sendinblue'},
-//     'to' : [{'name': 'John Doe', 'email':'example@example.com'}],
-//     'htmlContent' : '<html><body><h1>This is a transactional email {{params.bodyMessage}}</h1></body></html>',
-//     'params' : {'bodyMessage':'Made just for you!'}
-//   }
-// ).then(function(data) {
-//   console.log(data);
-// }, function(error) {
-//   console.error(error);
-// });
 //# sourceMappingURL=EmailSender.js.map

@@ -12,10 +12,17 @@ import { Precondition } from "../../utils/Preconditions";
 import { IndroError } from "../../utils/IndroError";
 import { getDatesDiffIn } from "../../utils/Helpers";
 import { EmailSender } from "../../framework/services/EmailSender";
+import { JobOfferLinkRepository } from "../../recruitment/repository/JobOfferLinkRepository";
+import { CompanyRepository } from "../repository/CompanyRepository";
+import { JobOfferRepository } from "../../recruitment/repository/JobOfferRepository";
 
 const LOG = new Logger("AuthService.class");
 const userRepository = new UserRepository();
 const db = require("../../connection");
+const shortid = require('shortid');
+const jobOfferLinkRepository = new JobOfferLinkRepository();
+const companyRepository = new CompanyRepository();
+const jobOfferRepository = new JobOfferRepository();
 
 export class AuthService {
 
@@ -34,7 +41,7 @@ export class AuthService {
 
         const payload = { id: user.id, type: 'IndroUser122828?' };
         const token = jwt.sign(payload, jwtConfig.secretOrKey);
-        EmailSender.sendSpecificEmail({ templateId: 1, email, params: { email, pwd: password } });
+        // EmailSender.sendSpecificEmail({ templateId: 1, email, params: { email, pwd: password } });
         auth.setLoggedId(user.id);
         return { msg: "ok", token, user };
     }
@@ -48,14 +55,18 @@ export class AuthService {
         const userWithThisEmail = await userRepository.findByEmail(user.email, connection);
         await Precondition.checkIfFalse((!!userWithThisEmail || !user.email || !user.hasAccepted), "General Error", connection);
 
-        const passwordHashed = await bcrypt.hash(user.password, 10);
+        const password = shortid.generate();
+        const passwordHashed = await bcrypt.hash(password, 10);
         user.password = passwordHashed;
-        if (!user.password) { await connection.release(); throw new IndroError("Cannot Create Password", 500); }
         
+        const link = await jobOfferLinkRepository.findByUUID(user.jobOfferUUID, connection);
+        let jOffer = await jobOfferRepository.findById(link.job_offer_id, connection);
+        const company = await companyRepository.findById(jOffer.company_id, connection);
+
         const newUser = await this.saveNewUser(user, connection);
         const payload = { id: newUser.id, type: 'IndroUser122828?' };
         const token = jwt.sign(payload, jwtConfig.secretOrKey);
-        EmailSender.sendSpecificEmail({ templateId: 1, email: user.email, params: { email: user.email, pwd: user.password } });
+        EmailSender.sendSpecificEmail({ templateId: 1, email: user.email, params: { email: user.email, pwd: password, companyName: company.name, jobOfferName: jOffer.role, linkUUID: user.jobOfferUUID } });
         return { msg: "ok", token, user: newUser };
     }
 
