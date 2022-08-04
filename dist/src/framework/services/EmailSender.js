@@ -63,22 +63,21 @@ class EmailSender {
         });
     }
     static send(templateId, email, params = {}) {
-        const options = {
-            method: 'POST',
-            url: 'https://api.sendinblue.com/v3/smtp/email',
-            headers: {
+        var options = {
+            'method': 'POST',
+            'url': 'https://api.sendinblue.com/v3/smtp/email',
+            'headers': {
+                'api-key': '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',
                 'accept': 'application/json',
-                'content-type': 'application/json',
-                'api-key': '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'
+                'Content-Type': 'application/json'
             },
-            body: {
+            body: JSON.stringify({
                 sender: { email: 'indrowebapp@gmail.com', name: 'INDRO JOB' },
                 to: [{ email: email }],
                 replyTo: { email: 'indrowebapp@gmail.com' },
                 params: Object.assign({ default: 'ciao' }, params),
                 templateId: templateId
-            },
-            json: true
+            })
         };
         request(options, (error, response, body) => {
             if (error) {

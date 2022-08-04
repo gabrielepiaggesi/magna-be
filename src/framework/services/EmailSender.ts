@@ -61,25 +61,25 @@ export class EmailSender {
     }
 
     private static send(templateId: number, email: string, params = {}) {
-        const options = {
-            method: 'POST',
-            url: 'https://api.sendinblue.com/v3/smtp/email',
-            headers: {
-                'accept': 'application/json',
-                'content-type': 'application/json',
-                'api-key': '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'
+
+        var options = {
+            'method': 'POST',
+            'url': 'https://api.sendinblue.com/v3/smtp/email',
+            'headers': {
+              'api-key': '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',
+              'accept': 'application/json',
+              'Content-Type': 'application/json'
             },
-            body: {
+            body: JSON.stringify({
                 sender: { email: 'indrowebapp@gmail.com', name: 'INDRO JOB' },
                 to: [{ email: email }],
                 replyTo: { email: 'indrowebapp@gmail.com' },
                 params: { default: 'ciao', ...params },
                 templateId: templateId
-            },
-            json: true
-        };
-
-        request(options, (error, response, body) => {
+            })
+          
+          };
+          request(options, (error, response, body) => {
             if (error) {
                 LOG.error(error);
                 LOG.error(response);
