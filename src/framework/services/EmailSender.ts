@@ -1,5 +1,6 @@
 import { Logger } from "./Logger";
 import { GeneralRepository } from "../repositories/GeneralRepository";
+import { apikeys } from "../../../environment/dev/apikeys";
 const request = require('request');
 const db = require("../../connection");
 
@@ -66,7 +67,7 @@ export class EmailSender {
             'method': 'POST',
             'url': 'https://api.sendinblue.com/v3/smtp/email',
             'headers': {
-              'api-key': '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',
+              'api-key': apikeys.SENDINBLUE_API_KEY,
               'accept': 'application/json',
               'Content-Type': 'application/json'
             },
