@@ -67,10 +67,10 @@ export class EmailSender {
             headers: {
                 'accept': 'application/json',
                 'content-type': 'application/json',
-                'api-key': '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'
+                'api-key': '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'
             },
             body: {
-                sender: { email: 'indrowebapp@gmail.com', name: 'Indro' },
+                sender: { email: 'indrowebapp@gmail.com', name: 'INDRO JOB' },
                 to: [{ email: email }],
                 replyTo: { email: 'indrowebapp@gmail.com' },
                 params: { default: 'ciao', ...params },
