@@ -61,18 +61,27 @@ class AuthService {
             yield Preconditions_1.Precondition.checkIfFalse((!userAge || userAge < 18 || userAge > 100), "Età Invalida! Sei troppo giovane, non puoi iscriverti");
             const connection = yield db.connection();
             const userWithThisEmail = yield userRepository.findByEmail(user.email, connection);
-            yield Preconditions_1.Precondition.checkIfFalse((!!userWithThisEmail || !user.email || !user.hasAccepted), "General Error", connection);
             const password = shortid.generate();
             const passwordHashed = yield bcrypt_1.default.hash(password, 10);
-            user.password = passwordHashed;
             const link = yield jobOfferLinkRepository.findByUUID(user.jobOfferUUID, connection);
-            let jOffer = yield jobOfferRepository.findById(link.job_offer_id, connection);
+            const jOffer = yield jobOfferRepository.findById(link.job_offer_id, connection);
             const company = yield companyRepository.findById(jOffer.company_id, connection);
-            const newUser = yield this.saveNewUser(user, connection);
-            const payload = { id: newUser.id, type: 'IndroUser122828?' };
-            const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
-            EmailSender_1.EmailSender.sendSpecificEmail({ templateId: 1, email: user.email, params: { email: user.email, pwd: password, companyName: company.name, jobOfferName: jOffer.role, linkUUID: user.jobOfferUUID } });
-            return { msg: "ok", token, user: newUser };
+            if (userWithThisEmail) {
+                yield this.updateUserPassword(userWithThisEmail, passwordHashed, connection);
+                const payload = { id: userWithThisEmail.id, type: 'IndroUser122828?' };
+                const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
+                EmailSender_1.EmailSender.sendSpecificEmail({ templateId: 1, email: user.email, params: { email: user.email, pwd: password, companyName: company.name, jobOfferName: jOffer.role, linkUUID: user.jobOfferUUID } });
+                return { msg: "ok", token, user: userWithThisEmail };
+            }
+            else {
+                yield Preconditions_1.Precondition.checkIfFalse((!!userWithThisEmail || !user.email || !user.hasAccepted), "General Error", connection);
+                user.password = passwordHashed;
+                const newUser = yield this.saveNewUser(user, connection);
+                const payload = { id: newUser.id, type: 'IndroUser122828?' };
+                const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
+                EmailSender_1.EmailSender.sendSpecificEmail({ templateId: 1, email: user.email, params: { email: user.email, pwd: password, companyName: company.name, jobOfferName: jOffer.role, linkUUID: user.jobOfferUUID } });
+                return { msg: "ok", token, user: newUser };
+            }
         });
     }
     saveNewUser(dto, connection) {
@@ -101,6 +110,25 @@ class AuthService {
                 yield connection.rollback();
                 yield connection.release();
                 throw new IndroError_1.IndroError("Cannot Create User", 500, null, e);
+            }
+        });
+    }
+    updateUserPassword(user, pwd, connection) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield connection.newTransaction();
+            try {
+                user.password = pwd;
+                const userInserted = yield userRepository.update(user, connection);
+                __1.auth.setLoggedId(user.id);
+                yield connection.commit();
+                yield connection.release();
+                return user;
+            }
+            catch (e) {
+                LOG.error(e);
+                yield connection.rollback();
+                yield connection.release();
+                throw new IndroError_1.IndroError("Cannot Update User PWD", 500, null, e);
             }
         });
     }

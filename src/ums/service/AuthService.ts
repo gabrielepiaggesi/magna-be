@@ -53,21 +53,29 @@ export class AuthService {
 
         const connection = await db.connection();
         const userWithThisEmail = await userRepository.findByEmail(user.email, connection);
-        await Precondition.checkIfFalse((!!userWithThisEmail || !user.email || !user.hasAccepted), "General Error", connection);
 
         const password = shortid.generate();
         const passwordHashed = await bcrypt.hash(password, 10);
-        user.password = passwordHashed;
-        
         const link = await jobOfferLinkRepository.findByUUID(user.jobOfferUUID, connection);
-        let jOffer = await jobOfferRepository.findById(link.job_offer_id, connection);
+        const jOffer = await jobOfferRepository.findById(link.job_offer_id, connection);
         const company = await companyRepository.findById(jOffer.company_id, connection);
 
-        const newUser = await this.saveNewUser(user, connection);
-        const payload = { id: newUser.id, type: 'IndroUser122828?' };
-        const token = jwt.sign(payload, jwtConfig.secretOrKey);
-        EmailSender.sendSpecificEmail({ templateId: 1, email: user.email, params: { email: user.email, pwd: password, companyName: company.name, jobOfferName: jOffer.role, linkUUID: user.jobOfferUUID } });
-        return { msg: "ok", token, user: newUser };
+        if (userWithThisEmail) {
+            await this.updateUserPassword(userWithThisEmail, passwordHashed, connection);
+            const payload = { id: userWithThisEmail.id, type: 'IndroUser122828?' };
+            const token = jwt.sign(payload, jwtConfig.secretOrKey);
+            EmailSender.sendSpecificEmail({ templateId: 1, email: user.email, params: { email: user.email, pwd: password, companyName: company.name, jobOfferName: jOffer.role, linkUUID: user.jobOfferUUID } });
+            return { msg: "ok", token, user: userWithThisEmail };
+        } else {
+            await Precondition.checkIfFalse((!!userWithThisEmail || !user.email || !user.hasAccepted), "General Error", connection);
+            user.password = passwordHashed;
+    
+            const newUser = await this.saveNewUser(user, connection);
+            const payload = { id: newUser.id, type: 'IndroUser122828?' };
+            const token = jwt.sign(payload, jwtConfig.secretOrKey);
+            EmailSender.sendSpecificEmail({ templateId: 1, email: user.email, params: { email: user.email, pwd: password, companyName: company.name, jobOfferName: jOffer.role, linkUUID: user.jobOfferUUID } });
+            return { msg: "ok", token, user: newUser };
+        }
     }
 
     private async saveNewUser(dto: SignupDTO, connection) {
@@ -96,6 +104,24 @@ export class AuthService {
             await connection.rollback();
             await connection.release();
             throw new IndroError("Cannot Create User", 500, null, e);
+        }
+    }
+
+    private async updateUserPassword(user: User, pwd: string, connection) {
+        await connection.newTransaction();
+        try {
+            user.password = pwd;
+            const userInserted = await userRepository.update(user, connection);
+            auth.setLoggedId(user.id);
+
+            await connection.commit();
+            await connection.release();
+            return user;
+        } catch (e) {
+            LOG.error(e);
+            await connection.rollback();
+            await connection.release();
+            throw new IndroError("Cannot Update User PWD", 500, null, e);
         }
     }
 }
