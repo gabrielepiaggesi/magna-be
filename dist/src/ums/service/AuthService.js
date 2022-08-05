@@ -71,7 +71,7 @@ class AuthService {
                 const payload = { id: userWithThisEmail.id, type: 'IndroUser122828?' };
                 const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
                 EmailSender_1.EmailSender.sendSpecificEmail({ templateId: 1, email: user.email, params: { email: user.email, pwd: password, companyName: company.name, jobOfferName: jOffer.role, linkUUID: user.jobOfferUUID } });
-                return { msg: "ok", token, user: userWithThisEmail };
+                return { msg: "ok" };
             }
             else {
                 yield Preconditions_1.Precondition.checkIfFalse((!!userWithThisEmail || !user.email || !user.hasAccepted), "General Error", connection);

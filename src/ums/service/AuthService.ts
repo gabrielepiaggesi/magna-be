@@ -65,7 +65,7 @@ export class AuthService {
             const payload = { id: userWithThisEmail.id, type: 'IndroUser122828?' };
             const token = jwt.sign(payload, jwtConfig.secretOrKey);
             EmailSender.sendSpecificEmail({ templateId: 1, email: user.email, params: { email: user.email, pwd: password, companyName: company.name, jobOfferName: jOffer.role, linkUUID: user.jobOfferUUID } });
-            return { msg: "ok", token, user: userWithThisEmail };
+            return { msg: "ok" };
         } else {
             await Precondition.checkIfFalse((!!userWithThisEmail || !user.email || !user.hasAccepted), "General Error", connection);
             user.password = passwordHashed;

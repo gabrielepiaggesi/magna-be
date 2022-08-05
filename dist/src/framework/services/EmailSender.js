@@ -72,12 +72,12 @@ class EmailSender {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                sender: { email: 'indrowebapp@gmail.com', name: params['companyName'] },
+                sender: { email: 'indrowebapp@gmail.com', name: params['companyName'] + ' LAVORO' },
                 to: [{ email: email }],
                 replyTo: { email: 'indrowebapp@gmail.com' },
                 params: Object.assign({ default: 'ciao' }, params),
                 templateId: templateId,
-                subject: 'Credenziali di Accesso per ' + params['companyName']
+                subject: "ACCEDI ALL'OFFERTA DI LAVORO DI " + params['companyName']
             })
         };
         request(options, (error, response, body) => {
