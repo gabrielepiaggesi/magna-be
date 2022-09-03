@@ -150,11 +150,11 @@ class JobOfferService {
     removeJobOffer(jobOfferId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const uApps = yield userApplicationRepository.findByJobOfferId(jobOfferId, connection);
-            if (uApps && uApps.length) {
-                yield connection.release();
-                return null;
-            }
+            // const uApps = await userApplicationRepository.findByJobOfferId(jobOfferId, connection);
+            // if (uApps && uApps.length) {
+            //     await connection.release();
+            //     return null;
+            // }
             const data = yield this.deleteJobOffer(jobOfferId, connection);
             yield connection.release();
             return data;

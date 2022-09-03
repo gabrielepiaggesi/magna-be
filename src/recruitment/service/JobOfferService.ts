@@ -138,11 +138,11 @@ export class JobOfferService implements JobOfferApi {
     public async removeJobOffer(jobOfferId: number) {
         const connection = await db.connection();
 
-        const uApps = await userApplicationRepository.findByJobOfferId(jobOfferId, connection);
-        if (uApps && uApps.length) {
-            await connection.release();
-            return null;
-        }
+        // const uApps = await userApplicationRepository.findByJobOfferId(jobOfferId, connection);
+        // if (uApps && uApps.length) {
+        //     await connection.release();
+        //     return null;
+        // }
 
         const data = await this.deleteJobOffer(jobOfferId, connection);
         await connection.release();
