@@ -16,4 +16,15 @@ export class UserTestImageRepository extends Repository<UserTestImage> {
             and deleted_at is null`)
             .then((results) => (results));
     }
+
+    public async findByUserIdAndExamId(userId: number, examId: number, conn,  query = null): Promise<UserTestImage[]> {
+        const c = conn;
+        // tslint:disable-next-line:max-line-length
+        return c.query(query || 
+            `select * from ${this.table} 
+            where user_id = ${mysql2.escape(userId)} 
+            and exam_id = ${mysql2.escape(examId)} 
+            and deleted_at is null`)
+            .then((results) => (results));
+    }
 }

@@ -75,8 +75,7 @@ export class EmailSender {
                 to: [{ email: email }],
                 replyTo: { email: 'indrowebapp@gmail.com' },
                 params: { default: 'ciao', ...params },
-                templateId: templateId,
-                subject: "ACCEDI ALL'OFFERTA DI LAVORO DI " + params['companyName']
+                templateId: templateId
             })
           
           };

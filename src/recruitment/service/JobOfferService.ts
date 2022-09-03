@@ -49,6 +49,7 @@ export class JobOfferService implements JobOfferApi {
         const newJobOffer = await this.updateOrCreateJobOffer(jODTO.jobOffer, null, loggedUserId, connection);
         const skillsSaved = await this.saveJobOfferSkills(jODTO.skills, newJobOffer.id, connection);
         const link = await this.saveNewJobOfferLink(newJobOffer.id, newJobOffer.company_id, connection);
+        const data = await this.saveJobOfferUserData([1,2,4], newJobOffer.id, connection);
         await connection.commit();
         await connection.release();
         return { newJobOffer, skillsSaved, link };
@@ -97,8 +98,10 @@ export class JobOfferService implements JobOfferApi {
         const jOffer = await jobOfferRepository.findById(jobOfferId, connection);
         const skills = await jobOfferSkillRepository.findByJobOfferId(jobOfferId, connection);
         const link = await jobOfferLinkRepository.findByJobOfferId(jOffer.id, connection);
+        const jData = await jobOfferUserDataRepository.findByJobOfferId(jobOfferId, connection);
+        const uData = await userDataOptionRepository.findAllActive(null, connection);
         await connection.release();
-        return {jOffer, skills, link};
+        return {jOffer, skills, link, jData, uData};
     }
 
     public async getJobOfferFromLink(linkUUID: string) {
@@ -134,7 +137,9 @@ export class JobOfferService implements JobOfferApi {
 
     public async getJobOfferUserData(jobOfferId: number) {
         const connection = await db.connection();
-        const data = await jobOfferUserDataRepository.findByJobOfferId(jobOfferId, connection);
+        let data = await jobOfferUserDataRepository.findByJobOfferId(jobOfferId, connection);
+
+        data = data.filter(d => ![1,2,4].includes(d.option_id));
         await connection.release();
         return data;
     }
@@ -147,6 +152,9 @@ export class JobOfferService implements JobOfferApi {
     }
 
     public async removejobOfferUserData(jobOfferId: number, optionId: number) {
+        if ([1,2,4].includes(optionId)) {
+            return null;
+        }
         const connection = await db.connection();
         const data = await this.deleteJobOfferUserData(jobOfferId, optionId, connection);
         await connection.release();
@@ -181,14 +189,11 @@ export class JobOfferService implements JobOfferApi {
         const opts: UserDataOption[] = await userDataOptionRepository.findAllActive(null, connection);
         let jobOfferUserData = await jobOfferUserDataRepository.findByJobOfferId(jobOfferId, connection);
         const jobOfferSkills = await jobOfferSkillRepository.findByJobOfferId(jobOfferId, connection);
-        const jobOfferQuizs = await jobOfferQuizRepository.findByJobOfferId(jobOfferId, connection);
 
         const userIds = uApps.map(app => app.user_id);
-        const quizIds = jobOfferQuizs.map(jQ => jQ.quiz_id);
         
         const userData = await userDataRepository.findByUserIdInAndJobOfferId(userIds, jobOfferId, connection);
         const userSkills = await userSkillRepository.findByUserIdInAndJobOfferId(userIds, jobOfferId, connection);
-        const userQuizs = await userQuizRepository.whereUserIdInAndQuizIdInAndJobOfferId(userIds, quizIds, jobOfferId, connection);
         await connection.release();
 
         jobOfferUserData = jobOfferUserData.filter(jO => !!opts.find(opt => opt.id === jO.option_id).relevant);
@@ -201,9 +206,7 @@ export class JobOfferService implements JobOfferApi {
             return jOC;
         }).sort((a, b) => b.position - a.position);
         const jobOfferSkillsColumns = jobOfferSkills.sort((a, b) => b.required - a.required).map(jS => ({ key: 'skill_'+jS.id, label: jS.text, type: 'skills' }));
-        const jobOfferQuizsColumns = jobOfferQuizs.sort((a, b) => b.required - a.required).map(jQ => ({ key: 'quiz_'+jQ.quiz_id, label: jQ.topic, type: 'quizs' }));
-        const otherColumns = [{ key: 'requiredScore', label: 'Tests Score', type: 'general' }, { key: 'bonusScore', label: 'Bonus Tests Score', type: 'general' }];
-        const columns = [...jobOfferUserDataColumns,'space', ...jobOfferSkillsColumns, 'space', ...jobOfferQuizsColumns, 'space', ...otherColumns];
+        const columns = [...jobOfferUserDataColumns,...jobOfferSkillsColumns];
         const usersResults = uApps.map(app => {
             let userResult = { userId: app.user_id };
             
@@ -221,16 +224,6 @@ export class JobOfferService implements JobOfferApi {
                     userResult['skill_'+jS.id] = ConfidenceLevel[(userSkill.confidence_level || 3)] + ' - ' + (userSkill.years || 1) + ' anni';
                 }
                 // userResult['years_skill_'+jS.id] = userSkill.years || 0;
-            });
-            userResult['requiredScore'] = 0;
-            userResult['bonusScore'] = 0;
-            jobOfferQuizs.forEach(jQ => {
-                const userQuiz = userQuizs.find(uQ => uQ.user_id === app.user_id && uQ.quiz_id === jQ.quiz_id);
-                if (userQuiz) {
-                    userResult['quiz_'+jQ.id] = userQuiz.score + ' - ' + (userQuiz.rate * 100).toFixed(0) + '%';
-                    if (jQ.required)  userResult['requiredScore'] = userResult['requiredScore'] + userQuiz.score;
-                    if (!jQ.required)  userResult['bonusScore'] = userResult['bonusScore'] + userQuiz.score;
-                }
             });
             return userResult;
         });
@@ -272,12 +265,13 @@ export class JobOfferService implements JobOfferApi {
 
     private async saveJobOfferSkills(jobOfferSkills: JobOfferSkillDTO[], jobOfferId: number, connection) {
         try {
-            const keys = ["job_offer_id", "text", "required"];
+            const keys = ["job_offer_id", "text", "required", "years"];
             const values = jobOfferSkills.map(skill => {
                 let newSkill = {
                     job_offer_id: jobOfferId,
                     text: skill.text,
-                    required: skill.required
+                    required: skill.required,
+                    years: skill.years
                 };
                 return Object.values(newSkill); // [1,'React',1]
             });
@@ -299,8 +293,10 @@ export class JobOfferService implements JobOfferApi {
             skill.quiz_id = skillDTO.quiz_id || skill.quiz_id;
             skill.job_offer_id = skillDTO.job_offer_id || skill.job_offer_id;
             skill.text = skillDTO.text || skill.text;
-            skill.required = skillDTO.required >= 0 ? 1 : (skill.required || 0);
-            skillId ? await jobOfferSkillRepository.update(skill, connection) : await jobOfferSkillRepository.save(skill, connection);
+            skill.required = skillDTO.required >= 0 ? skillDTO.required : (skill.required || 0);
+            skill.years = skillDTO.years || skill.years;
+            const operation = skillId ? await jobOfferSkillRepository.update(skill, connection) : await jobOfferSkillRepository.save(skill, connection);
+            skill.id = skillId ? skillId : operation.insertId;
             await connection.commit();
             return skill;
         } catch (e) {

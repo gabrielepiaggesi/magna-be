@@ -15,6 +15,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const __1 = require("../..");
 const Logger_1 = require("../../framework/services/Logger");
 const Decorator_1 = require("../../utils/Decorator");
 const AuthService_1 = require("../service/AuthService");
@@ -46,6 +47,19 @@ class AuthController {
             }
         });
     }
+    getLoggedUser(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const loggedUserId = __1.auth.getLoggedUserId(req);
+                const response = yield authService.getLoggedUser(loggedUserId);
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Auth.getLoggedUser.Error' }));
+            }
+        });
+    }
 }
 __decorate([
     Decorator_1.Post(),
@@ -55,5 +69,9 @@ __decorate([
     Decorator_1.Post(),
     Decorator_1.Path("/signup")
 ], AuthController.prototype, "signup", null);
+__decorate([
+    Decorator_1.Get(),
+    Decorator_1.Path("/getLoggedUser")
+], AuthController.prototype, "getLoggedUser", null);
 exports.AuthController = AuthController;
 //# sourceMappingURL=AuthController.js.map

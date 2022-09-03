@@ -28,6 +28,7 @@ const JobOfferRepository_1 = require("../repository/JobOfferRepository");
 const MediaService_1 = require("../../media/services/MediaService");
 const UserTestImage_1 = require("../model/UserTestImage");
 const UserTestImageRepository_1 = require("../repository/UserTestImageRepository");
+const Preconditions_1 = require("../../utils/Preconditions");
 const LOG = new Logger_1.Logger("UserApplicationService.class");
 const db = require("../../connection");
 const userApplicationRepository = new UserApplicationRepository_1.UserApplicationRepository();
@@ -47,9 +48,10 @@ class UserApplicationService {
     createUserApplication(dto, files, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            yield connection.newTransaction();
             const job = yield jobOfferRepository.findById(dto.uApp.job_offer_id, connection);
+            yield Preconditions_1.Precondition.checkIfTrue((!!job), "Job does not exists", connection);
             dto.uApp.company_id = dto.uApp.company_id || job.company_id;
+            yield connection.newTransaction();
             const uApp = yield this.saveUserApplication(dto.uApp, loggedUserId, connection);
             dto.uData = dto.uData && dto.uData.length ? dto.uData : [];
             console.log(files);

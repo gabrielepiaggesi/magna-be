@@ -5,6 +5,7 @@ export class JobOfferSkill extends Table {
     public quiz_id: number;
     public text: string;
     public required: number;
+    public years?: number;
 
     // tslint:disable-next-line:no-empty
     constructor() { super(); }

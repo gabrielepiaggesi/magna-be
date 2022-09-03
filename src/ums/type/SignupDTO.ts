@@ -8,6 +8,7 @@ export class SignupDTO {
     public age: number = null;
 
     public jobOfferUUID: string;
+    public examUUID: string;
 
     // tslint:disable-next-line:no-empty
     constructor() {}

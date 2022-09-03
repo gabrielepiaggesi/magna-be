@@ -23,7 +23,7 @@ const JwtStrategy = passport_jwt_1.default.Strategy;
 const userRepository = new UserRepository_1.UserRepository();
 class AuthMiddleWare {
     constructor() {
-        this.jwtOptions = { jwtFromRequest: null, secretOrKey: null };
+        this.jwtOptions = { jwtFromRequest: null, secretOrKey: 'IndroUser122828?' };
         this.isUser = passport_1.default.authenticate("jwt", { session: false });
         this.jwtOptions.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
         this.jwtOptions.secretOrKey = jwt_1.jwtConfig.secretOrKey;
@@ -31,7 +31,7 @@ class AuthMiddleWare {
         this.strategy = new JwtStrategy(this.jwtOptions, (jwt_payload, next) => __awaiter(this, void 0, void 0, function* () {
             console.log("payload received", jwt_payload);
             // const user = await userRepository.findById(jwt_payload.id);
-            if (jwt_payload.id && jwt_payload.type === 'PridePartyUser42') {
+            if (jwt_payload.id && jwt_payload.type === 'IndroUser122828?') {
                 this.loggedId = jwt_payload.id;
                 next(null, true);
             }

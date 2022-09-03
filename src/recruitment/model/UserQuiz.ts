@@ -4,6 +4,7 @@ export class UserQuiz extends Table {
     public user_id: number;
     public quiz_id: number;
     public job_offer_id: number;
+    public exam_id: number;
     public status: string;
     public score: number;
     public rate: number;

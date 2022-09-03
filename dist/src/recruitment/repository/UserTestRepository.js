@@ -47,6 +47,18 @@ class UserTestRepository extends Repository_1.Repository {
                 .then((results) => results);
         });
     }
+    findByUserIdAndUserQuizIdIn(userId, userQuizIds, conn, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            // tslint:disable-next-line:max-line-length
+            return c.query(query ||
+                `select * from ${this.table} 
+            where user_id = ${mysql2_1.default.escape(userId)} 
+            and user_quiz_id in (?)  
+            and deleted_at is null`, [userQuizIds])
+                .then((results) => results);
+        });
+    }
 }
 exports.UserTestRepository = UserTestRepository;
 //# sourceMappingURL=UserTestRepository.js.map

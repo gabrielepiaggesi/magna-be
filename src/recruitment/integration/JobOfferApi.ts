@@ -2,6 +2,7 @@ export interface JobOfferApi {
     createJobOffer(...args);
     updateJobOffer(...args);
     updateJobOfferSkill(...args);
+    addJobOfferSkill(...args);
     removeJobOfferSkill(...args);
     getJobOffers(...args);
     getJobOffer(...args);

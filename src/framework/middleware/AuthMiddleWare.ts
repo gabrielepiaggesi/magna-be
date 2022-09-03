@@ -9,7 +9,7 @@ const JwtStrategy = passportJWT.Strategy;
 const userRepository = new UserRepository();
 
 export class AuthMiddleWare {
-  public jwtOptions = { jwtFromRequest: null, secretOrKey: null };
+  public jwtOptions = { jwtFromRequest: null, secretOrKey: 'IndroUser122828?' };
   public strategy;
   public isUser = passport.authenticate("jwt", { session: false });
   public loggedId;
@@ -21,7 +21,7 @@ export class AuthMiddleWare {
     this.strategy = new JwtStrategy(this.jwtOptions, async (jwt_payload, next) => {
       console.log("payload received", jwt_payload);
       // const user = await userRepository.findById(jwt_payload.id);
-      if (jwt_payload.id && jwt_payload.type === 'PridePartyUser42') {
+      if (jwt_payload.id && jwt_payload.type === 'IndroUser122828?') {
         this.loggedId = jwt_payload.id;
         next(null, true);
       } else {

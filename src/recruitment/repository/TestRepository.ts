@@ -18,6 +18,14 @@ export class TestRepository extends Repository<Test> {
             .then((results) => results);
     }
 
+    public async findByQuizIdIn(quizIds: number[], conn,  query = null): Promise<Test[]> {
+        const c = conn;
+        // tslint:disable-next-line:max-line-length
+        return c.query(query || 
+            `select * from ${this.table} where quiz_id in (?) and deleted_at is null`, [quizIds])
+            .then((results) => results);
+    }
+
     public async findByQuizIdWithJoin(quizId: number, conn,  query = null): Promise<any[]> {
         const c = conn;
         // tslint:disable-next-line:max-line-length
@@ -34,5 +42,23 @@ export class TestRepository extends Repository<Test> {
                 results
             );
              return results});
+    }
+
+    public async findByQuizIdInWithJoin(quizIds: number[], conn,  query = null): Promise<any[]> {
+        const c = conn;
+        // tslint:disable-next-line:max-line-length
+        return c.query(query || 
+            `select *, opt.id as option_id, text.id as text_id, img.id as images_id, test.id as test_id 
+            from ${this.table} test 
+            join tests_texts text on text.test_id = test.id and text.deleted_at is null 
+            join tests_options opt on opt.test_id = test.id and opt.deleted_at is null 
+            join tests_images img on img.test_id = test.id and img.deleted_at is null 
+            where test.quiz_id in (?) 
+            and test.deleted_at is null
+            `, [quizIds])
+            .then((results) => { 
+                console.log(results);
+                return results
+            });
     }
 }

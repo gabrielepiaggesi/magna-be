@@ -30,4 +30,15 @@ export class UserTestRepository extends Repository<UserTest> {
             and deleted_at is null`)
             .then((results) => results);
     }
+
+    public async findByUserIdAndUserQuizIdIn(userId: number, userQuizIds: number[], conn, query = null): Promise<UserTest[]> {
+        const c = conn;
+        // tslint:disable-next-line:max-line-length
+        return c.query(query || 
+            `select * from ${this.table} 
+            where user_id = ${mysql2.escape(userId)} 
+            and user_quiz_id in (?)  
+            and deleted_at is null`, [userQuizIds])
+            .then((results) => results);
+    }
 }

@@ -22,4 +22,20 @@ export class UserSkillRepository extends Repository<UserSkill> {
             `select * from ${this.table} where user_id in (?) and job_offer_id = ${mysql2.escape(jobOfferId)} and deleted_at is null`, [userIds])
             .then((results) => results);
     }
+
+    public async findByUserIdAndExamId(userId: number, examId: number, conn,  query = null): Promise<UserSkill[]> {
+        const c = conn;
+        // tslint:disable-next-line:max-line-length
+        return c.query(query || 
+            `select * from ${this.table} where user_id = ${mysql2.escape(userId)} and exam_id = ${mysql2.escape(examId)} and deleted_at is null`)
+            .then((results) => results);
+    }
+
+    public async findByUserIdInAndExamId(userIds: number[], examId: number, conn,  query = null): Promise<UserSkill[]> {
+        const c = conn;
+        // tslint:disable-next-line:max-line-length
+        return c.query(query || 
+            `select * from ${this.table} where user_id in (?) and exam_id = ${mysql2.escape(examId)} and deleted_at is null`, [userIds])
+            .then((results) => results);
+    }
 }

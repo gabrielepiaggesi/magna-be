@@ -23,6 +23,9 @@ import { UserTestRepository } from "../repository/UserTestRepository";
 import { UserQuizRepository } from "../repository/UserQuizRepository";
 import { MediaService } from "../../media/services/MediaService";
 import { Media } from "../../media/models/Media";
+import { ExamQuizRepository } from "../repository/ExamQuizRepository";
+import { UserApplicationRepository } from "../repository/UserApplicationRepository";
+import { ExamRepository } from "../repository/ExamRepository";
 
 const LOG = new Logger("QuizService.class");
 const db = require("../../connection");
@@ -36,6 +39,9 @@ const companyQuizRepository = new CompanyQuizRepository();
 const userTestRepository = new UserTestRepository();
 const userQuizRepository = new UserQuizRepository();
 const mediaService = new MediaService();
+const userApplicationRepository = new UserApplicationRepository();
+const examRepository = new ExamRepository();
+const examQuizRepository = new ExamQuizRepository();
 
 export type NewTestDTO = { test: TestDTO, options: TestOptionDTO[], texts: TestTextDTO[], file: TestImageDTO };
 
@@ -45,14 +51,14 @@ export class QuizService implements QuizApi {
         const connection = await db.connection();
         await connection.newTransaction();
         const quiz = await this.updateOrCreateQuiz(dto, null, loggedUserId, connection);
-        const jobOfferQuiz = await this.updateOrCreateJobOfferQuiz(dto, quiz.id, null, connection);
+        // const jobOfferQuiz = await this.updateOrCreateJobOfferQuiz(dto, quiz.id, null, connection);
         const companyQuiz = await this.createCompanyQuiz(quiz.id, dto.company_id, connection);
         await connection.commit();
         await connection.release();
-        return { quiz, jobOfferQuiz, companyQuiz };
+        return { quiz, companyQuiz };
     }
 
-    public async updateQuiz(dto: QuizDTO, jQuizId: number) {
+    public async updateQuizAndJobOfferQuiz(dto: QuizDTO, jQuizId: number) {
         const connection = await db.connection();
         await connection.newTransaction();
         const quiz = await this.updateOrCreateQuiz(dto, dto.quiz_id, null, connection);
@@ -60,6 +66,15 @@ export class QuizService implements QuizApi {
         await connection.commit();
         await connection.release();
         return {quiz, jobOfferQuiz};
+    }
+
+    public async updateQuiz(dto: QuizDTO, quizId: number) {
+        const connection = await db.connection();
+        await connection.newTransaction();
+        const quiz = await this.updateOrCreateQuiz(dto, quizId, null, connection);
+        await connection.commit();
+        await connection.release();
+        return quiz;
     }
 
     public async createTest(dto: NewTestDTO, loggedUserId: number) {
@@ -104,6 +119,34 @@ export class QuizService implements QuizApi {
 
                 const opt1 = await this.updateTestOption(oldDto, oldRightOption.id, connection);
                 const opt2 = await this.updateTestOption(newDto, newRightOption.id, connection);
+            } else if (dto.test.new_right_option && !dto.test.old_right_option) {
+
+                const oldRightOption = await testOptionRepository.findCorrectOptionByTestId(test.id, connection);
+                if (oldRightOption && oldRightOption.id !== dto.test.new_right_option) {
+                    const newRightOption = await testOptionRepository.findById(dto.test.new_right_option, connection);
+                    const oldDto = {...oldRightOption};
+                    delete oldDto.is_correct;
+                    delete oldDto.points;
+                    oldDto.is_correct = 0;
+                    oldDto.points = 0;
+
+                    const newDto = {...newRightOption};
+                    delete newDto.is_correct;
+                    delete newDto.points;
+                    newDto.is_correct = 1;
+                    newDto.points = test.points;
+
+                    const opt1 = await this.updateTestOption(oldDto, oldRightOption.id, connection);
+                    const opt2 = await this.updateTestOption(newDto, newRightOption.id, connection);
+                } else if (!oldRightOption) {
+                    const newRightOption = await testOptionRepository.findById(dto.test.new_right_option, connection);
+                    const newDto = {...newRightOption};
+                    delete newDto.is_correct;
+                    delete newDto.points;
+                    newDto.is_correct = 1;
+                    newDto.points = test.points;
+                    const opt2 = await this.updateTestOption(newDto, newRightOption.id, connection);
+                }
             }
         await connection.commit();
         await connection.release();
@@ -172,9 +215,9 @@ export class QuizService implements QuizApi {
         const connection = await db.connection();
         await connection.newTransaction();
         const test = await this.deleteTest(testId, connection);
+        await this.resetQuizTestsPoints(quizId);
         await connection.commit();
         await connection.release();
-        await this.resetQuizTestsPoints(quizId);
         return test;
     }
 
@@ -246,12 +289,21 @@ export class QuizService implements QuizApi {
         return { test, options, texts, images, uTest };
     }
 
-    public async getQuiz(quizId: number, loggedUserId: number) {
+    public async getQuizs(companyId: number) {
         const connection = await db.connection();
-        const jQuiz = await jobOfferQuizRepository.findById(quizId, connection);
+        const companyQuizs = await companyQuizRepository.findByCompanyId(companyId, connection);
+        const quizIds = companyQuizs.map(cQ => cQ.quiz_id);
+        const quizs = await quizRepository.findWhereIdIn(quizIds, connection);
+        await connection.release();
+        return quizs;
+    }
+
+    public async getJobOfferQuiz(jobOfferQuizId: number, loggedUserId: number) {
+        const connection = await db.connection();
+        const jQuiz = await jobOfferQuizRepository.findById(jobOfferQuizId, connection);
         const quiz = await quizRepository.findById(jQuiz.quiz_id, connection);
         const uQuiz = await userQuizRepository.findByQuizIdAndJobOfferIdAndUserId(jQuiz.quiz_id, jQuiz.job_offer_id, loggedUserId, connection);
-        const tests = await testRepository.findByQuizId(quizId, connection);
+        const tests = await testRepository.findByQuizId(quiz.id, connection);
         const testsIds = tests.map(t => t.id);
         const opts = testsIds.length ? await testOptionRepository.findByTestIdsIn(testsIds, connection) : [];
         const texts = testsIds.length ? await testTextRepository.findByTestIdsIn(testsIds, connection) : [];
@@ -269,10 +321,71 @@ export class QuizService implements QuizApi {
         return { jQuiz, quiz, uQuiz, tests: newTests };
     }
 
+    public async getExamQuiz(examQuizId: number, loggedUserId: number) {
+        const connection = await db.connection();
+        const eQuiz = await examQuizRepository.findById(examQuizId, connection);
+        const quiz = await quizRepository.findById(eQuiz.quiz_id, connection);
+        const uQuiz = await userQuizRepository.findByQuizIdAndExamIdAndUserId(eQuiz.quiz_id, eQuiz.exam_id, loggedUserId, connection);
+        const tests = await testRepository.findByQuizId(quiz.id, connection);
+        const testsIds = tests.map(t => t.id);
+        const opts = testsIds.length ? await testOptionRepository.findByTestIdsIn(testsIds, connection) : [];
+        const texts = testsIds.length ? await testTextRepository.findByTestIdsIn(testsIds, connection) : [];
+        const imgs = testsIds.length ? await testImageRepository.findByTestIdsIn(testsIds, connection) : [];
+        await connection.release();
+        
+        const newTests = tests.map(test => {
+            return {
+                ...test,
+                options: [...opts].filter(opt => opt.test_id == test.id),
+                texts: [...texts].filter(opt => opt.test_id == test.id),
+                images: [...imgs].filter(opt => opt.test_id == test.id)
+            }
+        });
+        return { eQuiz: eQuiz, quiz, uQuiz, tests: newTests };
+    }
+
+    public async getQuiz(quizId: number) {
+        const connection = await db.connection();
+        let uApps = [];
+        const examQuizs = await examQuizRepository.findByQuizId(quizId, connection);
+        const examsIds = examQuizs.map(eQz => eQz.exam_id);
+        if (examsIds.length) {
+            const exams = await examRepository.findByIdInAndActive(examsIds, connection);
+            if (exams.length) {
+                uApps = await userApplicationRepository.findByExamIdIn(examsIds, connection);
+            }
+        }
+        const quiz = await quizRepository.findById(quizId, connection);
+        const tests = await testRepository.findByQuizId(quiz.id, connection);
+        const testsIds = tests.map(t => t.id);
+        const opts = testsIds.length ? await testOptionRepository.findByTestIdsIn(testsIds, connection) : [];
+        const texts = testsIds.length ? await testTextRepository.findByTestIdsIn(testsIds, connection) : [];
+        const imgs = testsIds.length ? await testImageRepository.findByTestIdsIn(testsIds, connection) : [];
+        await connection.release();
+        
+        const newTests = tests.map(test => {
+            return {
+                ...test,
+                options: [...opts].filter(opt => opt.test_id == test.id),
+                texts: [...texts].filter(opt => opt.test_id == test.id),
+                images: [...imgs].filter(opt => opt.test_id == test.id)
+            }
+        });
+        return { quiz, tests: newTests, uApps };
+    }
+
     public async getJobOfferQuizs(jobOfferId: number, loggedUserId: number) {
         const connection = await db.connection();
         const quizs = await jobOfferQuizRepository.findByJobOfferId(jobOfferId, connection);
         const uQuizs = await userQuizRepository.findByJobOfferIdAndUserId(jobOfferId, loggedUserId, connection);
+        await connection.release();
+        return {quizs, uQuizs};
+    }
+
+    public async getExamQuizs(examId: number, loggedUserId: number) {
+        const connection = await db.connection();
+        const quizs = await examQuizRepository.findByExamId(examId, connection);
+        const uQuizs = await userQuizRepository.findByExamIdAndUserId(examId, loggedUserId, connection);
         await connection.release();
         return {quizs, uQuizs};
     }
@@ -330,8 +443,8 @@ export class QuizService implements QuizApi {
             test.minutes = dto.minutes || test.minutes;
             test.type = dto.type || test.type;
             test.points = dto.points >= 0 ? dto.points : test.points;
-            test.position_order = dto.position_order || test.position_order;
-            test.difficulty_level = dto.difficulty_level || test.difficulty_level;
+            test.position_order = dto.position_order >= 0 ? dto.position_order : test.position_order;
+            test.difficulty_level = dto.difficulty_level  >= 0 ? dto.difficulty_level : test.difficulty_level;
 
             const coInserted = testId ? await testRepository.update(test, connection) : await testRepository.save(test, connection);
             test.id = testId ? test.id : coInserted.insertId;

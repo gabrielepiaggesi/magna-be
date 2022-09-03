@@ -1,6 +1,6 @@
 export interface QuizApi {
     createQuiz(...args);
-    updateQuiz(...args);
+    updateQuizAndJobOfferQuiz(...args);
     createTest(...args);
     updateTest(...args);
     editTestOption(...args);
@@ -10,5 +10,5 @@ export interface QuizApi {
     createNewTestImage(...args);
     removeTestImage(...args);
     getTest(...args);
-    getQuiz(...args);
+    getJobOfferQuiz(...args);
 }

@@ -32,6 +32,18 @@ class UserTestImageRepository extends Repository_1.Repository {
                 .then((results) => (results));
         });
     }
+    findByUserIdAndExamId(userId, examId, conn, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            // tslint:disable-next-line:max-line-length
+            return c.query(query ||
+                `select * from ${this.table} 
+            where user_id = ${mysql2_1.default.escape(userId)} 
+            and exam_id = ${mysql2_1.default.escape(examId)} 
+            and deleted_at is null`)
+                .then((results) => (results));
+        });
+    }
 }
 exports.UserTestImageRepository = UserTestImageRepository;
 //# sourceMappingURL=UserTestImageRepository.js.map

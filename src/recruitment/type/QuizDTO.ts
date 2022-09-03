@@ -11,6 +11,7 @@ export type QuizDTO = {
     tests_points: number;
 
     job_offer_id?: number;
+    exam_id?: number;
     job_offer_quiz_id?: number;
     position_order?: number;
     company_id?: number;

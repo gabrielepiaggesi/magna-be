@@ -76,8 +76,7 @@ class EmailSender {
                 to: [{ email: email }],
                 replyTo: { email: 'indrowebapp@gmail.com' },
                 params: Object.assign({ default: 'ciao' }, params),
-                templateId: templateId,
-                subject: "ACCEDI ALL'OFFERTA DI LAVORO DI " + params['companyName']
+                templateId: templateId
             })
         };
         request(options, (error, response, body) => {

@@ -47,6 +47,44 @@ class UserApplicationRepository extends Repository_1.Repository {
                 .then((results) => (results[0] || null));
         });
     }
+    findByExamId(examId, conn, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            // tslint:disable-next-line:max-line-length
+            return c.query(query ||
+                `select * from ${this.table} 
+            where exam_id = ${mysql2_1.default.escape(examId)} 
+            and deleted_at is null 
+            order by user_id asc`)
+                .then((results) => (results));
+        });
+    }
+    findByExamIdIn(examIds, conn, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            // tslint:disable-next-line:max-line-length
+            return c.query(query ||
+                `select * from ${this.table} 
+            where exam_id in (?) 
+            and deleted_at is null 
+            order by user_id asc`, [examIds])
+                .then((results) => (results));
+        });
+    }
+    findByUserIdAndExamId(userId, examId, conn, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            // tslint:disable-next-line:max-line-length
+            return c.query(query ||
+                `select * from ${this.table} 
+            where user_id = ${mysql2_1.default.escape(userId)} 
+            and exam_id = ${mysql2_1.default.escape(examId)} 
+            and deleted_at is null 
+            ORDER BY id DESC 
+            limit 1`)
+                .then((results) => (results[0] || null));
+        });
+    }
 }
 exports.UserApplicationRepository = UserApplicationRepository;
 //# sourceMappingURL=UserApplicationRepository.js.map

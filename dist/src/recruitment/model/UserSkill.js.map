@@ -1,1 +1,1 @@
-{"version":3,"file":"UserSkill.js","sourceRoot":"","sources":["../../../../src/recruitment/model/UserSkill.ts"],"names":[],"mappings":";;AAAA,wDAAqD;AAErD,MAAa,SAAU,SAAQ,aAAK;IAOhC,oCAAoC;IACpC,gBAAgB,KAAK,EAAE,CAAC,CAAC,CAAC;CAC7B;AATD,8BASC"}
+{"version":3,"file":"UserSkill.js","sourceRoot":"","sources":["../../../../src/recruitment/model/UserSkill.ts"],"names":[],"mappings":";;AAAA,wDAAqD;AAErD,MAAa,SAAU,SAAQ,aAAK;IAShC,oCAAoC;IACpC,gBAAgB,KAAK,EAAE,CAAC,CAAC,CAAC;CAC7B;AAXD,8BAWC"}

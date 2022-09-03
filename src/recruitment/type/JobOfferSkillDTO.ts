@@ -3,4 +3,5 @@ export type JobOfferSkillDTO = {
     quiz_id: number;
     text: string;
     required: number;
+    years?: number;
 }

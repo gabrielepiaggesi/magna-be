@@ -30,6 +30,15 @@ class TestRepository extends Repository_1.Repository {
                 .then((results) => results);
         });
     }
+    findByQuizIdIn(quizIds, conn, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            // tslint:disable-next-line:max-line-length
+            return c.query(query ||
+                `select * from ${this.table} where quiz_id in (?) and deleted_at is null`, [quizIds])
+                .then((results) => results);
+        });
+    }
     findByQuizIdWithJoin(quizId, conn, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;
@@ -43,6 +52,25 @@ class TestRepository extends Repository_1.Repository {
             where test.quiz_id = ${mysql2_1.default.escape(quizId)} 
             and test.deleted_at is null
             `)
+                .then((results) => {
+                console.log(results);
+                return results;
+            });
+        });
+    }
+    findByQuizIdInWithJoin(quizIds, conn, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            // tslint:disable-next-line:max-line-length
+            return c.query(query ||
+                `select *, opt.id as option_id, text.id as text_id, img.id as images_id, test.id as test_id 
+            from ${this.table} test 
+            join tests_texts text on text.test_id = test.id and text.deleted_at is null 
+            join tests_options opt on opt.test_id = test.id and opt.deleted_at is null 
+            join tests_images img on img.test_id = test.id and img.deleted_at is null 
+            where test.quiz_id in (?) 
+            and test.deleted_at is null
+            `, [quizIds])
                 .then((results) => {
                 console.log(results);
                 return results;

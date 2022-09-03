@@ -26,6 +26,9 @@ const TestTextRepository_1 = require("../repository/TestTextRepository");
 const UserTestRepository_1 = require("../repository/UserTestRepository");
 const UserQuizRepository_1 = require("../repository/UserQuizRepository");
 const MediaService_1 = require("../../media/services/MediaService");
+const ExamQuizRepository_1 = require("../repository/ExamQuizRepository");
+const UserApplicationRepository_1 = require("../repository/UserApplicationRepository");
+const ExamRepository_1 = require("../repository/ExamRepository");
 const LOG = new Logger_1.Logger("QuizService.class");
 const db = require("../../connection");
 const quizRepository = new QuizRepository_1.QuizRepository();
@@ -38,20 +41,23 @@ const companyQuizRepository = new CompanyQuizRepository_1.CompanyQuizRepository(
 const userTestRepository = new UserTestRepository_1.UserTestRepository();
 const userQuizRepository = new UserQuizRepository_1.UserQuizRepository();
 const mediaService = new MediaService_1.MediaService();
+const userApplicationRepository = new UserApplicationRepository_1.UserApplicationRepository();
+const examRepository = new ExamRepository_1.ExamRepository();
+const examQuizRepository = new ExamQuizRepository_1.ExamQuizRepository();
 class QuizService {
     createQuiz(dto, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
             yield connection.newTransaction();
             const quiz = yield this.updateOrCreateQuiz(dto, null, loggedUserId, connection);
-            const jobOfferQuiz = yield this.updateOrCreateJobOfferQuiz(dto, quiz.id, null, connection);
+            // const jobOfferQuiz = await this.updateOrCreateJobOfferQuiz(dto, quiz.id, null, connection);
             const companyQuiz = yield this.createCompanyQuiz(quiz.id, dto.company_id, connection);
             yield connection.commit();
             yield connection.release();
-            return { quiz, jobOfferQuiz, companyQuiz };
+            return { quiz, companyQuiz };
         });
     }
-    updateQuiz(dto, jQuizId) {
+    updateQuizAndJobOfferQuiz(dto, jQuizId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
             yield connection.newTransaction();
@@ -60,6 +66,16 @@ class QuizService {
             yield connection.commit();
             yield connection.release();
             return { quiz, jobOfferQuiz };
+        });
+    }
+    updateQuiz(dto, quizId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            yield connection.newTransaction();
+            const quiz = yield this.updateOrCreateQuiz(dto, quizId, null, connection);
+            yield connection.commit();
+            yield connection.release();
+            return quiz;
         });
     }
     createTest(dto, loggedUserId) {
@@ -100,6 +116,33 @@ class QuizService {
                 newDto.points = test.points;
                 const opt1 = yield this.updateTestOption(oldDto, oldRightOption.id, connection);
                 const opt2 = yield this.updateTestOption(newDto, newRightOption.id, connection);
+            }
+            else if (dto.test.new_right_option && !dto.test.old_right_option) {
+                const oldRightOption = yield testOptionRepository.findCorrectOptionByTestId(test.id, connection);
+                if (oldRightOption && oldRightOption.id !== dto.test.new_right_option) {
+                    const newRightOption = yield testOptionRepository.findById(dto.test.new_right_option, connection);
+                    const oldDto = Object.assign({}, oldRightOption);
+                    delete oldDto.is_correct;
+                    delete oldDto.points;
+                    oldDto.is_correct = 0;
+                    oldDto.points = 0;
+                    const newDto = Object.assign({}, newRightOption);
+                    delete newDto.is_correct;
+                    delete newDto.points;
+                    newDto.is_correct = 1;
+                    newDto.points = test.points;
+                    const opt1 = yield this.updateTestOption(oldDto, oldRightOption.id, connection);
+                    const opt2 = yield this.updateTestOption(newDto, newRightOption.id, connection);
+                }
+                else if (!oldRightOption) {
+                    const newRightOption = yield testOptionRepository.findById(dto.test.new_right_option, connection);
+                    const newDto = Object.assign({}, newRightOption);
+                    delete newDto.is_correct;
+                    delete newDto.points;
+                    newDto.is_correct = 1;
+                    newDto.points = test.points;
+                    const opt2 = yield this.updateTestOption(newDto, newRightOption.id, connection);
+                }
             }
             yield connection.commit();
             yield connection.release();
@@ -173,9 +216,9 @@ class QuizService {
             const connection = yield db.connection();
             yield connection.newTransaction();
             const test = yield this.deleteTest(testId, connection);
+            yield this.resetQuizTestsPoints(quizId);
             yield connection.commit();
             yield connection.release();
-            yield this.resetQuizTestsPoints(quizId);
             return test;
         });
     }
@@ -251,13 +294,23 @@ class QuizService {
             return { test, options, texts, images, uTest };
         });
     }
-    getQuiz(quizId, loggedUserId) {
+    getQuizs(companyId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const jQuiz = yield jobOfferQuizRepository.findById(quizId, connection);
+            const companyQuizs = yield companyQuizRepository.findByCompanyId(companyId, connection);
+            const quizIds = companyQuizs.map(cQ => cQ.quiz_id);
+            const quizs = yield quizRepository.findWhereIdIn(quizIds, connection);
+            yield connection.release();
+            return quizs;
+        });
+    }
+    getJobOfferQuiz(jobOfferQuizId, loggedUserId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            const jQuiz = yield jobOfferQuizRepository.findById(jobOfferQuizId, connection);
             const quiz = yield quizRepository.findById(jQuiz.quiz_id, connection);
             const uQuiz = yield userQuizRepository.findByQuizIdAndJobOfferIdAndUserId(jQuiz.quiz_id, jQuiz.job_offer_id, loggedUserId, connection);
-            const tests = yield testRepository.findByQuizId(quizId, connection);
+            const tests = yield testRepository.findByQuizId(quiz.id, connection);
             const testsIds = tests.map(t => t.id);
             const opts = testsIds.length ? yield testOptionRepository.findByTestIdsIn(testsIds, connection) : [];
             const texts = testsIds.length ? yield testTextRepository.findByTestIdsIn(testsIds, connection) : [];
@@ -269,11 +322,63 @@ class QuizService {
             return { jQuiz, quiz, uQuiz, tests: newTests };
         });
     }
+    getExamQuiz(examQuizId, loggedUserId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            const eQuiz = yield examQuizRepository.findById(examQuizId, connection);
+            const quiz = yield quizRepository.findById(eQuiz.quiz_id, connection);
+            const uQuiz = yield userQuizRepository.findByQuizIdAndExamIdAndUserId(eQuiz.quiz_id, eQuiz.exam_id, loggedUserId, connection);
+            const tests = yield testRepository.findByQuizId(quiz.id, connection);
+            const testsIds = tests.map(t => t.id);
+            const opts = testsIds.length ? yield testOptionRepository.findByTestIdsIn(testsIds, connection) : [];
+            const texts = testsIds.length ? yield testTextRepository.findByTestIdsIn(testsIds, connection) : [];
+            const imgs = testsIds.length ? yield testImageRepository.findByTestIdsIn(testsIds, connection) : [];
+            yield connection.release();
+            const newTests = tests.map(test => {
+                return Object.assign(Object.assign({}, test), { options: [...opts].filter(opt => opt.test_id == test.id), texts: [...texts].filter(opt => opt.test_id == test.id), images: [...imgs].filter(opt => opt.test_id == test.id) });
+            });
+            return { eQuiz: eQuiz, quiz, uQuiz, tests: newTests };
+        });
+    }
+    getQuiz(quizId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            let uApps = [];
+            const examQuizs = yield examQuizRepository.findByQuizId(quizId, connection);
+            const examsIds = examQuizs.map(eQz => eQz.exam_id);
+            if (examsIds.length) {
+                const exams = yield examRepository.findByIdInAndActive(examsIds, connection);
+                if (exams.length) {
+                    uApps = yield userApplicationRepository.findByExamIdIn(examsIds, connection);
+                }
+            }
+            const quiz = yield quizRepository.findById(quizId, connection);
+            const tests = yield testRepository.findByQuizId(quiz.id, connection);
+            const testsIds = tests.map(t => t.id);
+            const opts = testsIds.length ? yield testOptionRepository.findByTestIdsIn(testsIds, connection) : [];
+            const texts = testsIds.length ? yield testTextRepository.findByTestIdsIn(testsIds, connection) : [];
+            const imgs = testsIds.length ? yield testImageRepository.findByTestIdsIn(testsIds, connection) : [];
+            yield connection.release();
+            const newTests = tests.map(test => {
+                return Object.assign(Object.assign({}, test), { options: [...opts].filter(opt => opt.test_id == test.id), texts: [...texts].filter(opt => opt.test_id == test.id), images: [...imgs].filter(opt => opt.test_id == test.id) });
+            });
+            return { quiz, tests: newTests, uApps };
+        });
+    }
     getJobOfferQuizs(jobOfferId, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
             const quizs = yield jobOfferQuizRepository.findByJobOfferId(jobOfferId, connection);
             const uQuizs = yield userQuizRepository.findByJobOfferIdAndUserId(jobOfferId, loggedUserId, connection);
+            yield connection.release();
+            return { quizs, uQuizs };
+        });
+    }
+    getExamQuizs(examId, loggedUserId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            const quizs = yield examQuizRepository.findByExamId(examId, connection);
+            const uQuizs = yield userQuizRepository.findByExamIdAndUserId(examId, loggedUserId, connection);
             yield connection.release();
             return { quizs, uQuizs };
         });
@@ -335,8 +440,8 @@ class QuizService {
                 test.minutes = dto.minutes || test.minutes;
                 test.type = dto.type || test.type;
                 test.points = dto.points >= 0 ? dto.points : test.points;
-                test.position_order = dto.position_order || test.position_order;
-                test.difficulty_level = dto.difficulty_level || test.difficulty_level;
+                test.position_order = dto.position_order >= 0 ? dto.position_order : test.position_order;
+                test.difficulty_level = dto.difficulty_level >= 0 ? dto.difficulty_level : test.difficulty_level;
                 const coInserted = testId ? yield testRepository.update(test, connection) : yield testRepository.save(test, connection);
                 test.id = testId ? test.id : coInserted.insertId;
                 !testId && LOG.info("NEW TEST", test.id);

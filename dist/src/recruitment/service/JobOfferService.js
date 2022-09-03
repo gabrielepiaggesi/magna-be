@@ -51,6 +51,7 @@ class JobOfferService {
             const newJobOffer = yield this.updateOrCreateJobOffer(jODTO.jobOffer, null, loggedUserId, connection);
             const skillsSaved = yield this.saveJobOfferSkills(jODTO.skills, newJobOffer.id, connection);
             const link = yield this.saveNewJobOfferLink(newJobOffer.id, newJobOffer.company_id, connection);
+            const data = yield this.saveJobOfferUserData([1, 2, 4], newJobOffer.id, connection);
             yield connection.commit();
             yield connection.release();
             return { newJobOffer, skillsSaved, link };
@@ -105,8 +106,10 @@ class JobOfferService {
             const jOffer = yield jobOfferRepository.findById(jobOfferId, connection);
             const skills = yield jobOfferSkillRepository.findByJobOfferId(jobOfferId, connection);
             const link = yield jobOfferLinkRepository.findByJobOfferId(jOffer.id, connection);
+            const jData = yield jobOfferUserDataRepository.findByJobOfferId(jobOfferId, connection);
+            const uData = yield userDataOptionRepository.findAllActive(null, connection);
             yield connection.release();
-            return { jOffer, skills, link };
+            return { jOffer, skills, link, jData, uData };
         });
     }
     getJobOfferFromLink(linkUUID) {
@@ -147,7 +150,8 @@ class JobOfferService {
     getJobOfferUserData(jobOfferId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const data = yield jobOfferUserDataRepository.findByJobOfferId(jobOfferId, connection);
+            let data = yield jobOfferUserDataRepository.findByJobOfferId(jobOfferId, connection);
+            data = data.filter(d => ![1, 2, 4].includes(d.option_id));
             yield connection.release();
             return data;
         });
@@ -162,6 +166,9 @@ class JobOfferService {
     }
     removejobOfferUserData(jobOfferId, optionId) {
         return __awaiter(this, void 0, void 0, function* () {
+            if ([1, 2, 4].includes(optionId)) {
+                return null;
+            }
             const connection = yield db.connection();
             const data = yield this.deleteJobOfferUserData(jobOfferId, optionId, connection);
             yield connection.release();
@@ -193,12 +200,9 @@ class JobOfferService {
             const opts = yield userDataOptionRepository.findAllActive(null, connection);
             let jobOfferUserData = yield jobOfferUserDataRepository.findByJobOfferId(jobOfferId, connection);
             const jobOfferSkills = yield jobOfferSkillRepository.findByJobOfferId(jobOfferId, connection);
-            const jobOfferQuizs = yield jobOfferQuizRepository.findByJobOfferId(jobOfferId, connection);
             const userIds = uApps.map(app => app.user_id);
-            const quizIds = jobOfferQuizs.map(jQ => jQ.quiz_id);
             const userData = yield userDataRepository.findByUserIdInAndJobOfferId(userIds, jobOfferId, connection);
             const userSkills = yield userSkillRepository.findByUserIdInAndJobOfferId(userIds, jobOfferId, connection);
-            const userQuizs = yield userQuizRepository.whereUserIdInAndQuizIdInAndJobOfferId(userIds, quizIds, jobOfferId, connection);
             yield connection.release();
             jobOfferUserData = jobOfferUserData.filter(jO => !!opts.find(opt => opt.id === jO.option_id).relevant);
             const jobOfferUserDataColumns = jobOfferUserData.map(jO => {
@@ -212,9 +216,7 @@ class JobOfferService {
                 return jOC;
             }).sort((a, b) => b.position - a.position);
             const jobOfferSkillsColumns = jobOfferSkills.sort((a, b) => b.required - a.required).map(jS => ({ key: 'skill_' + jS.id, label: jS.text, type: 'skills' }));
-            const jobOfferQuizsColumns = jobOfferQuizs.sort((a, b) => b.required - a.required).map(jQ => ({ key: 'quiz_' + jQ.quiz_id, label: jQ.topic, type: 'quizs' }));
-            const otherColumns = [{ key: 'requiredScore', label: 'Tests Score', type: 'general' }, { key: 'bonusScore', label: 'Bonus Tests Score', type: 'general' }];
-            const columns = [...jobOfferUserDataColumns, 'space', ...jobOfferSkillsColumns, 'space', ...jobOfferQuizsColumns, 'space', ...otherColumns];
+            const columns = [...jobOfferUserDataColumns, ...jobOfferSkillsColumns];
             const usersResults = uApps.map(app => {
                 let userResult = { userId: app.user_id };
                 jobOfferUserData.forEach(jO => {
@@ -233,18 +235,6 @@ class JobOfferService {
                         userResult['skill_' + jS.id] = ConfidenceLevel_1.ConfidenceLevel[(userSkill.confidence_level || 3)] + ' - ' + (userSkill.years || 1) + ' anni';
                     }
                     // userResult['years_skill_'+jS.id] = userSkill.years || 0;
-                });
-                userResult['requiredScore'] = 0;
-                userResult['bonusScore'] = 0;
-                jobOfferQuizs.forEach(jQ => {
-                    const userQuiz = userQuizs.find(uQ => uQ.user_id === app.user_id && uQ.quiz_id === jQ.quiz_id);
-                    if (userQuiz) {
-                        userResult['quiz_' + jQ.id] = userQuiz.score + ' - ' + (userQuiz.rate * 100).toFixed(0) + '%';
-                        if (jQ.required)
-                            userResult['requiredScore'] = userResult['requiredScore'] + userQuiz.score;
-                        if (!jQ.required)
-                            userResult['bonusScore'] = userResult['bonusScore'] + userQuiz.score;
-                    }
                 });
                 return userResult;
             });
@@ -288,12 +278,13 @@ class JobOfferService {
     saveJobOfferSkills(jobOfferSkills, jobOfferId, connection) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const keys = ["job_offer_id", "text", "required"];
+                const keys = ["job_offer_id", "text", "required", "years"];
                 const values = jobOfferSkills.map(skill => {
                     let newSkill = {
                         job_offer_id: jobOfferId,
                         text: skill.text,
-                        required: skill.required
+                        required: skill.required,
+                        years: skill.years
                     };
                     return Object.values(newSkill); // [1,'React',1]
                 });
@@ -316,8 +307,10 @@ class JobOfferService {
                 skill.quiz_id = skillDTO.quiz_id || skill.quiz_id;
                 skill.job_offer_id = skillDTO.job_offer_id || skill.job_offer_id;
                 skill.text = skillDTO.text || skill.text;
-                skill.required = skillDTO.required >= 0 ? 1 : (skill.required || 0);
-                skillId ? yield jobOfferSkillRepository.update(skill, connection) : yield jobOfferSkillRepository.save(skill, connection);
+                skill.required = skillDTO.required >= 0 ? skillDTO.required : (skill.required || 0);
+                skill.years = skillDTO.years || skill.years;
+                const operation = skillId ? yield jobOfferSkillRepository.update(skill, connection) : yield jobOfferSkillRepository.save(skill, connection);
+                skill.id = skillId ? skillId : operation.insertId;
                 yield connection.commit();
                 return skill;
             }

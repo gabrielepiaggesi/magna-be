@@ -71,6 +71,56 @@ class UserQuizRepository extends Repository_1.Repository {
             where job_offer_id = ${mysql2_1.default.escape(jobOfferId)} and deleted_at is null and user_id in (?) and quiz_id in (?) order by user_id asc`, [userIds, quizIds]).then((results) => results);
         });
     }
+    whereUserIdInAndExamId(userIds, examId, conn = null, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!userIds.length)
+                return [];
+            const c = conn || (yield db.connection());
+            return c.query(query ||
+                `select * 
+            from ${this.table} 
+            where exam_id = ${mysql2_1.default.escape(examId)} and deleted_at is null and user_id in (?) order by user_id asc`, [userIds]).then((results) => results);
+        });
+    }
+    findByQuizIdAndExamIdAndUserId(quizId, examId, userId, conn, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            // tslint:disable-next-line:max-line-length
+            return c.query(query ||
+                `select * from ${this.table} 
+            where user_id = ${mysql2_1.default.escape(userId)} 
+            and exam_id = ${mysql2_1.default.escape(examId)} 
+            and quiz_id = ${mysql2_1.default.escape(quizId)} 
+            and deleted_at is null 
+            order by id desc 
+            limit 1`)
+                .then((results) => results[0] || null);
+        });
+    }
+    findByExamIdAndUserId(examId, userId, conn, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            // tslint:disable-next-line:max-line-length
+            return c.query(query ||
+                `select * from ${this.table} 
+            where user_id = ${mysql2_1.default.escape(userId)} 
+            and exam_id = ${mysql2_1.default.escape(examId)} 
+            and deleted_at is null 
+            order by id desc`)
+                .then((results) => results);
+        });
+    }
+    whereUserIdInAndQuizIdInAndExamId(userIds, quizIds, examId, conn = null, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!userIds.length)
+                return [];
+            const c = conn || (yield db.connection());
+            return c.query(query ||
+                `select * 
+            from ${this.table} 
+            where exam_id = ${mysql2_1.default.escape(examId)} and deleted_at is null and user_id in (?) and quiz_id in (?) order by user_id asc`, [userIds, quizIds]).then((results) => results);
+        });
+    }
 }
 exports.UserQuizRepository = UserQuizRepository;
 //# sourceMappingURL=UserQuizRepository.js.map

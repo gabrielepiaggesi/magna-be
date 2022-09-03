@@ -29,6 +29,7 @@ import { UserDataOption } from "../model/UserDataOption";
 import { UserImageDTO } from "../type/UserImageDTO";
 import { UserTestImage } from "../model/UserTestImage";
 import { UserTestImageRepository } from "../repository/UserTestImageRepository";
+import { Precondition } from "../../utils/Preconditions";
 
 const LOG = new Logger("UserApplicationService.class");
 const db = require("../../connection");
@@ -52,9 +53,12 @@ export class UserApplicationService implements UserApplicationApi {
 
     public async createUserApplication(dto: NewUserAppDTO, files: File[], loggedUserId: number) {
         const connection = await db.connection();
-        await connection.newTransaction();
         const job = await jobOfferRepository.findById(dto.uApp.job_offer_id, connection);
+        await Precondition.checkIfTrue((!!job), "Job does not exists", connection);
         dto.uApp.company_id = dto.uApp.company_id || job.company_id;
+
+        await connection.newTransaction();
+
         const uApp = await this.saveUserApplication(dto.uApp, loggedUserId, connection);
         dto.uData = dto.uData && dto.uData.length ? dto.uData : [];
 

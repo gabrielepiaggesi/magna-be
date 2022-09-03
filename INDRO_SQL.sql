@@ -392,5 +392,81 @@ CREATE TABLE IF NOT EXISTS users_tests_images (
 )  ENGINE=INNODB;
 
 
+CREATE TABLE IF NOT EXISTS exams (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    role VARCHAR(2550) NOT NULL,
+    status VARCHAR(255) NOT NULL,
+    company_id BIGINT NOT NULL,
+    author_user_id BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP DEFAULT NULL
+)  ENGINE=INNODB;
+
+
+CREATE TABLE IF NOT EXISTS exams_links (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    uuid VARCHAR(255) NOT NULL,
+    exam_id BIGINT NOT NULL,
+    company_id BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP DEFAULT NULL
+)  ENGINE=INNODB;
+
+
+CREATE TABLE IF NOT EXISTS exams_quizs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    exam_id BIGINT NOT NULL,
+    quiz_id BIGINT NOT NULL,
+    position_order BIGINT DEFAULT NULL,
+    required TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP DEFAULT NULL
+)  ENGINE=INNODB;
+
+    
+CREATE TABLE IF NOT EXISTS exams_skills (
+	id BIGINT AUTO_INCREMENT PRIMARY KEY,
+	exam_id BIGINT NOT NULL,
+    text VARCHAR(255) NOT NULL,
+	required TINYINT(1) DEFAULT 1,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	deleted_at TIMESTAMP DEFAULT NULL
+)  ENGINE=INNODB;
+
+    
+CREATE TABLE IF NOT EXISTS exams_users_data (
+	id BIGINT AUTO_INCREMENT PRIMARY KEY,
+	exam_id BIGINT NOT NULL,
+    option_id BIGINT NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	deleted_at TIMESTAMP DEFAULT NULL
+)  ENGINE=INNODB;
+
+
+ALTER TABLE users_applications MODIFY COLUMN job_offer_id BIGINT DEFAULT NULL;
+alter table users_applications add exam_id BIGINT DEFAULT NULL;
+
+ALTER TABLE users_data MODIFY COLUMN job_offer_id BIGINT DEFAULT NULL;
+alter table users_data add exam_id BIGINT DEFAULT NULL;
+
+ALTER TABLE users_quizs MODIFY COLUMN job_offer_id BIGINT DEFAULT NULL;
+alter table users_quizs add exam_id BIGINT DEFAULT NULL;
+
+
+ALTER TABLE users_skills MODIFY COLUMN job_offer_skill_id BIGINT DEFAULT NULL;
+alter table users_skills add exam_skill_id BIGINT DEFAULT NULL;
+
+ALTER TABLE users_tests_images MODIFY COLUMN job_offer_id BIGINT DEFAULT NULL;
+alter table users_tests_images add exam_id BIGINT DEFAULT NULL;
+
+alter table exams add description VARCHAR(255) DEFAULT NULL;
+
+alter table job_offers_skills add years DOUBLE(2,1) DEFAULT NULL;
+
 
 

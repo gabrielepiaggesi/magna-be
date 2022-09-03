@@ -32,14 +32,26 @@ export class QuizController implements QuizApi {
     }
 
     @Post()
-    @Path("/updateQuiz/:jQuizId")
-    public async updateQuiz(res: Response, req) {
+    @Path("/updateQuizAndJobOfferQuiz/:jQuizId")
+    public async updateQuizAndJobOfferQuiz(res: Response, req) {
         try {
-            const response = await quizService.updateQuiz(req.body, parseInt(req.params.jQuizId, 10));
+            const response = await quizService.updateQuizAndJobOfferQuiz(req.body, parseInt(req.params.jQuizId, 10));
             return res.status(200).json(response);
         } catch(e) {
             LOG.debug(e);
-            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Quiz.UpdateQuiz'});
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Quiz.updateQuizAndJobOfferQuiz'});
+        }
+    }
+
+    @Post()
+    @Path("/updateQuiz/:quizId")
+    public async updateQuiz(res: Response, req) {
+        try {
+            const response = await quizService.updateQuiz(req.body, parseInt(req.params.quizId, 10));
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Quiz.updateQuiz'});
         }
     }
 
@@ -160,15 +172,52 @@ export class QuizController implements QuizApi {
     }
 
     @Get()
-    @Path("/getQuiz/:quizId")
-    public async getQuiz(res: Response, req) {
+    @Path("/getQuizs/:companyId")
+    public async getQuizs(res: Response, req) {
+        try {
+            const response = await quizService.getQuizs(parseInt(req.params.companyId, 10));
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Quiz.getQuizs'});
+        }
+    }
+
+    @Get()
+    @Path("/getJobOfferQuiz/:jobOfferQuizId")
+    public async getJobOfferQuiz(res: Response, req) {
         try {
             const loggedUserId = auth.getLoggedUserId(req);
-            const response = await quizService.getQuiz(parseInt(req.params.quizId, 10), loggedUserId);
+            const response = await quizService.getJobOfferQuiz(parseInt(req.params.jobOfferQuizId, 10), loggedUserId);
             return res.status(200).json(response);
         } catch(e) {
             LOG.debug(e);
             return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Quiz.GetQuiz'});
+        }
+    }
+
+    @Get()
+    @Path("/getExamQuiz/:examQuizId")
+    public async getExamQuiz(res: Response, req) {
+        try {
+            const loggedUserId = auth.getLoggedUserId(req);
+            const response = await quizService.getExamQuiz(parseInt(req.params.examQuizId, 10), loggedUserId);
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Quiz.getExamQuiz'});
+        }
+    }
+
+    @Get()
+    @Path("/getQuiz/:quizId")
+    public async getQuiz(res: Response, req) {
+        try {
+            const response = await quizService.getQuiz(parseInt(req.params.quizId, 10));
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Quiz.getQuiz'});
         }
     }
 
@@ -182,6 +231,31 @@ export class QuizController implements QuizApi {
         } catch(e) {
             LOG.debug(e);
             return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Quiz.GetQuiz'});
+        }
+    }
+
+    @Get()
+    @Path("/getExamQuizs/:examId")
+    public async getExamQuizs(res: Response, req) {
+        try {
+            const loggedUserId = auth.getLoggedUserId(req);
+            const response = await quizService.getExamQuizs(parseInt(req.params.examId, 10), loggedUserId);
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Quiz.GetQuiz'});
+        }
+    }
+
+    @Post()
+    @Path("/resetQuizTestsPoints/:quizId")
+    public async resetQuizTestsPoints(res: Response, req) {
+        try {
+            const response = await quizService.resetQuizTestsPoints(parseInt(req.params.quizId, 10));
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Quiz.resetQuizTestsPoints'});
         }
     }
 

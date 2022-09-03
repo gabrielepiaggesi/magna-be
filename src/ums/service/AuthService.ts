@@ -15,6 +15,13 @@ import { EmailSender } from "../../framework/services/EmailSender";
 import { JobOfferLinkRepository } from "../../recruitment/repository/JobOfferLinkRepository";
 import { CompanyRepository } from "../repository/CompanyRepository";
 import { JobOfferRepository } from "../../recruitment/repository/JobOfferRepository";
+import { ExamLinkRepository } from "../../recruitment/repository/ExamLinkRepository";
+import { ExamRepository } from "../../recruitment/repository/ExamRepository";
+import { Exam } from "../../recruitment/model/Exam";
+import { JobOffer } from "../../recruitment/model/JobOffer";
+import { JobOfferLink } from "../../recruitment/model/JobOfferLink";
+import { ExamLink } from "../../recruitment/model/ExamLink";
+import { Company } from "../model/Company";
 
 const LOG = new Logger("AuthService.class");
 const userRepository = new UserRepository();
@@ -23,8 +30,18 @@ const shortid = require('shortid');
 const jobOfferLinkRepository = new JobOfferLinkRepository();
 const companyRepository = new CompanyRepository();
 const jobOfferRepository = new JobOfferRepository();
+const examLinkRepository = new ExamLinkRepository();
+const examRepository = new ExamRepository();
 
 export class AuthService {
+
+    public async getLoggedUser(userId: number) {
+        const connection = await db.connection();
+        const user = await userRepository.findById(userId, connection);
+        delete user.password;
+        await connection.release();
+        return user;
+    }
 
     public async login(userDTO: LoginDTO) {
         LOG.debug("login...");
@@ -46,34 +63,49 @@ export class AuthService {
         return { msg: "ok", token, user };
     }
 
-    public async signup(user: SignupDTO) {
-        LOG.debug("signup...", user);
-        const userAge = getDatesDiffIn(user.birthdate, Date.now(), 'years');
+    public async signup(userDTO: SignupDTO) {
+        LOG.debug("signup...", userDTO);
+        const userAge = getDatesDiffIn(userDTO.birthdate, Date.now(), 'years');
         await Precondition.checkIfFalse((!userAge || userAge < 18 || userAge > 100), "Età Invalida! Sei troppo giovane, non puoi iscriverti");
 
         const connection = await db.connection();
-        const userWithThisEmail = await userRepository.findByEmail(user.email, connection);
+        const userWithThisEmail = await userRepository.findByEmail(userDTO.email, connection);
 
         const password = shortid.generate();
         const passwordHashed = await bcrypt.hash(password, 10);
-        const link = await jobOfferLinkRepository.findByUUID(user.jobOfferUUID, connection);
-        const jOffer = await jobOfferRepository.findById(link.job_offer_id, connection);
-        const company = await companyRepository.findById(jOffer.company_id, connection);
+
+        const uuid = userDTO.jobOfferUUID || userDTO.examUUID;
+        const entityLink: JobOfferLink|ExamLink = userDTO.jobOfferUUID ? await jobOfferLinkRepository.findByUUID(uuid, connection) : await examLinkRepository.findByUUID(uuid, connection);
+        const entity: JobOffer|Exam = userDTO.jobOfferUUID ?  await jobOfferRepository.findById(entityLink['job_offer_id'], connection) : await examRepository.findById(entityLink['exam_id'], connection);
+        const company: Company = await companyRepository.findById(entity.company_id, connection);
+
+        const emailTemplateId = userDTO.jobOfferUUID ? 1 : 2;
 
         if (userWithThisEmail) {
             await this.updateUserPassword(userWithThisEmail, passwordHashed, connection);
             const payload = { id: userWithThisEmail.id, type: 'IndroUser122828?' };
             const token = jwt.sign(payload, jwtConfig.secretOrKey);
-            EmailSender.sendSpecificEmail({ templateId: 1, email: user.email, params: { email: user.email, pwd: password, companyName: company.name, jobOfferName: jOffer.role, linkUUID: user.jobOfferUUID } });
+            EmailSender.sendSpecificEmail({ 
+                templateId: emailTemplateId, 
+                email: userDTO.email, 
+                params: { 
+                    email: userDTO.email, 
+                    pwd: password, 
+                    companyName: company.name, 
+                    role: entity.role, 
+                    linkUUID: uuid,
+                    token
+                } 
+            });
             return { msg: "ok" };
         } else {
-            await Precondition.checkIfFalse((!!userWithThisEmail || !user.email || !user.hasAccepted), "General Error", connection);
-            user.password = passwordHashed;
+            await Precondition.checkIfFalse((!!userWithThisEmail || !userDTO.email || !userDTO.hasAccepted), "General Error", connection);
+            userDTO.password = passwordHashed;
     
-            const newUser = await this.saveNewUser(user, connection);
+            const newUser = await this.saveNewUser(userDTO, connection);
             const payload = { id: newUser.id, type: 'IndroUser122828?' };
             const token = jwt.sign(payload, jwtConfig.secretOrKey);
-            EmailSender.sendSpecificEmail({ templateId: 1, email: user.email, params: { email: user.email, pwd: password, companyName: company.name, jobOfferName: jOffer.role, linkUUID: user.jobOfferUUID } });
+            EmailSender.sendSpecificEmail({ templateId: emailTemplateId, email: userDTO.email, params: { token, email: userDTO.email, pwd: password, companyName: company.name, role: entity.role, linkUUID: uuid } });
             return { msg: "ok", token, user: newUser };
         }
     }

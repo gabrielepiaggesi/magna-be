@@ -42,15 +42,27 @@ class QuizController {
             }
         });
     }
-    updateQuiz(res, req) {
+    updateQuizAndJobOfferQuiz(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const response = yield quizService.updateQuiz(req.body, parseInt(req.params.jQuizId, 10));
+                const response = yield quizService.updateQuizAndJobOfferQuiz(req.body, parseInt(req.params.jQuizId, 10));
                 return res.status(200).json(response);
             }
             catch (e) {
                 LOG.debug(e);
-                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Quiz.UpdateQuiz' }));
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Quiz.updateQuizAndJobOfferQuiz' }));
+            }
+        });
+    }
+    updateQuiz(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield quizService.updateQuiz(req.body, parseInt(req.params.quizId, 10));
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Quiz.updateQuiz' }));
             }
         });
     }
@@ -168,16 +180,53 @@ class QuizController {
             }
         });
     }
-    getQuiz(res, req) {
+    getQuizs(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield quizService.getQuizs(parseInt(req.params.companyId, 10));
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Quiz.getQuizs' }));
+            }
+        });
+    }
+    getJobOfferQuiz(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const loggedUserId = __1.auth.getLoggedUserId(req);
-                const response = yield quizService.getQuiz(parseInt(req.params.quizId, 10), loggedUserId);
+                const response = yield quizService.getJobOfferQuiz(parseInt(req.params.jobOfferQuizId, 10), loggedUserId);
                 return res.status(200).json(response);
             }
             catch (e) {
                 LOG.debug(e);
                 return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Quiz.GetQuiz' }));
+            }
+        });
+    }
+    getExamQuiz(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const loggedUserId = __1.auth.getLoggedUserId(req);
+                const response = yield quizService.getExamQuiz(parseInt(req.params.examQuizId, 10), loggedUserId);
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Quiz.getExamQuiz' }));
+            }
+        });
+    }
+    getQuiz(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield quizService.getQuiz(parseInt(req.params.quizId, 10));
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Quiz.getQuiz' }));
             }
         });
     }
@@ -191,6 +240,31 @@ class QuizController {
             catch (e) {
                 LOG.debug(e);
                 return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Quiz.GetQuiz' }));
+            }
+        });
+    }
+    getExamQuizs(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const loggedUserId = __1.auth.getLoggedUserId(req);
+                const response = yield quizService.getExamQuizs(parseInt(req.params.examId, 10), loggedUserId);
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Quiz.GetQuiz' }));
+            }
+        });
+    }
+    resetQuizTestsPoints(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield quizService.resetQuizTestsPoints(parseInt(req.params.quizId, 10));
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Quiz.resetQuizTestsPoints' }));
             }
         });
     }
@@ -249,7 +323,11 @@ __decorate([
 ], QuizController.prototype, "createQuiz", null);
 __decorate([
     Decorator_1.Post(),
-    Decorator_1.Path("/updateQuiz/:jQuizId")
+    Decorator_1.Path("/updateQuizAndJobOfferQuiz/:jQuizId")
+], QuizController.prototype, "updateQuizAndJobOfferQuiz", null);
+__decorate([
+    Decorator_1.Post(),
+    Decorator_1.Path("/updateQuiz/:quizId")
 ], QuizController.prototype, "updateQuiz", null);
 __decorate([
     Decorator_1.Post(),
@@ -291,12 +369,32 @@ __decorate([
 ], QuizController.prototype, "getTest", null);
 __decorate([
     Decorator_1.Get(),
+    Decorator_1.Path("/getQuizs/:companyId")
+], QuizController.prototype, "getQuizs", null);
+__decorate([
+    Decorator_1.Get(),
+    Decorator_1.Path("/getJobOfferQuiz/:jobOfferQuizId")
+], QuizController.prototype, "getJobOfferQuiz", null);
+__decorate([
+    Decorator_1.Get(),
+    Decorator_1.Path("/getExamQuiz/:examQuizId")
+], QuizController.prototype, "getExamQuiz", null);
+__decorate([
+    Decorator_1.Get(),
     Decorator_1.Path("/getQuiz/:quizId")
 ], QuizController.prototype, "getQuiz", null);
 __decorate([
     Decorator_1.Get(),
     Decorator_1.Path("/getJobOfferQuizs/:jobOfferId")
 ], QuizController.prototype, "getJobOfferQuizs", null);
+__decorate([
+    Decorator_1.Get(),
+    Decorator_1.Path("/getExamQuizs/:examId")
+], QuizController.prototype, "getExamQuizs", null);
+__decorate([
+    Decorator_1.Post(),
+    Decorator_1.Path("/resetQuizTestsPoints/:quizId")
+], QuizController.prototype, "resetQuizTestsPoints", null);
 __decorate([
     Decorator_1.Post(),
     Decorator_1.Path("/createNewTestOption/:testId")
