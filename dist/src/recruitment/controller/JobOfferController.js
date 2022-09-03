@@ -168,7 +168,7 @@ class JobOfferController {
             }
         });
     }
-    removeExam(res, req) {
+    removeJobOffer(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const response = yield jobOfferService.removeJobOffer(parseInt(req.params.jobOfferId, 10));
@@ -280,7 +280,7 @@ __decorate([
 __decorate([
     Decorator_1.Post(),
     Decorator_1.Path("/removeJobOffer/:jobOfferId")
-], JobOfferController.prototype, "removeExam", null);
+], JobOfferController.prototype, "removeJobOffer", null);
 __decorate([
     Decorator_1.Get(),
     Decorator_1.Path("/getJobOfferUserData/:jobOfferId")

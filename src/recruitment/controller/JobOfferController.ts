@@ -158,7 +158,7 @@ export class JobOfferController implements JobOfferApi {
 
     @Post()
     @Path("/removeJobOffer/:jobOfferId")
-    public async removeExam(res: Response, req) {
+    public async removeJobOffer(res: Response, req) {
         try {
             const response = await jobOfferService.removeJobOffer(parseInt(req.params.jobOfferId, 10));
             return res.status(200).json(response);
