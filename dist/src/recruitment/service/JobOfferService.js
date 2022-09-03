@@ -147,6 +147,19 @@ class JobOfferService {
             return data;
         });
     }
+    removeJobOffer(jobOfferId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            const uApps = yield userApplicationRepository.findByJobOfferId(jobOfferId, connection);
+            if (uApps && uApps.length) {
+                yield connection.release();
+                return null;
+            }
+            const data = yield this.deleteJobOffer(jobOfferId, connection);
+            yield connection.release();
+            return data;
+        });
+    }
     getJobOfferUserData(jobOfferId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
@@ -241,12 +254,31 @@ class JobOfferService {
             return { columns, usersResults };
         });
     }
+    deleteJobOffer(jobOfferId, connection) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const data = yield jobOfferRepository.findById(jobOfferId, connection);
+            if (!data)
+                return data;
+            yield connection.newTransaction();
+            try {
+                yield jobOfferRepository.delete(data, connection);
+                yield connection.commit();
+                return data;
+            }
+            catch (e) {
+                LOG.error(e);
+                yield connection.rollback();
+                yield connection.release();
+                throw new IndroError_1.IndroError("Cannot Delete JobOffer", 500, null, e);
+            }
+        });
+    }
     updateOrCreateJobOffer(jODTO, jobOfferId = null, loggedUserId, connection) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const newJo = jobOfferId ? yield jobOfferRepository.findById(jobOfferId, connection) : new JobOffer_1.JobOffer();
                 newJo.author_user_id = jobOfferId ? newJo.author_user_id : loggedUserId;
-                newJo.status = jobOfferId ? newJo.status : "NEW";
+                newJo.status = jODTO.status || newJo.status || "ACTIVE";
                 newJo.company_id = jODTO.company_id || newJo.company_id;
                 newJo.lang = jODTO.lang || newJo.lang;
                 newJo.role = jODTO.role || newJo.role;

@@ -168,6 +168,18 @@ class JobOfferController {
             }
         });
     }
+    removeExam(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield jobOfferService.removeJobOffer(parseInt(req.params.jobOfferId, 10));
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'JobOffer.removeJobOffer' }));
+            }
+        });
+    }
     getJobOfferUserData(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -265,6 +277,10 @@ __decorate([
     Decorator_1.Post(),
     Decorator_1.Path("/setJobOfferUserData/:jobOfferId")
 ], JobOfferController.prototype, "setJobOfferUserData", null);
+__decorate([
+    Decorator_1.Post(),
+    Decorator_1.Path("/removeJobOffer/:jobOfferId")
+], JobOfferController.prototype, "removeExam", null);
 __decorate([
     Decorator_1.Get(),
     Decorator_1.Path("/getJobOfferUserData/:jobOfferId")

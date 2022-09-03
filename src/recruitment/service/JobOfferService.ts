@@ -135,6 +135,20 @@ export class JobOfferService implements JobOfferApi {
         return data;
     }
 
+    public async removeJobOffer(jobOfferId: number) {
+        const connection = await db.connection();
+
+        const uApps = await userApplicationRepository.findByJobOfferId(jobOfferId, connection);
+        if (uApps && uApps.length) {
+            await connection.release();
+            return null;
+        }
+
+        const data = await this.deleteJobOffer(jobOfferId, connection);
+        await connection.release();
+        return data;
+    }
+
     public async getJobOfferUserData(jobOfferId: number) {
         const connection = await db.connection();
         let data = await jobOfferUserDataRepository.findByJobOfferId(jobOfferId, connection);
@@ -230,11 +244,28 @@ export class JobOfferService implements JobOfferApi {
         return { columns, usersResults };
     }
 
+    private async deleteJobOffer(jobOfferId: number, connection) {
+        const data = await jobOfferRepository.findById(jobOfferId, connection);
+        if (!data) return data;
+        await connection.newTransaction();
+        try {
+            await jobOfferRepository.delete(data, connection);
+            await connection.commit();
+            return data;
+        } catch (e) {
+            LOG.error(e);
+            await connection.rollback();
+            await connection.release();
+            throw new IndroError("Cannot Delete JobOffer", 500, null, e);
+        }
+    }
+
+
     private async updateOrCreateJobOffer(jODTO: JobOfferDTO, jobOfferId = null, loggedUserId: number, connection) {
         try {
             const newJo = jobOfferId ? await jobOfferRepository.findById(jobOfferId, connection) : new JobOffer();
             newJo.author_user_id = jobOfferId ? newJo.author_user_id : loggedUserId;
-            newJo.status = jobOfferId ? newJo.status : "NEW";
+            newJo.status = jODTO.status || newJo.status || "ACTIVE";
             newJo.company_id = jODTO.company_id || newJo.company_id;
             newJo.lang = jODTO.lang || newJo.lang;
             newJo.role = jODTO.role || newJo.role;

@@ -563,7 +563,7 @@ export class ExamService implements ExamApi {
             LOG.error(e);
             await connection.rollback();
             await connection.release();
-            throw new IndroError("Cannot Delete Exam UserData", 500, null, e);
+            throw new IndroError("Cannot Delete Exam", 500, null, e);
         }
     }
 

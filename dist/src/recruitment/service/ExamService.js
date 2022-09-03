@@ -576,7 +576,7 @@ class ExamService {
                 LOG.error(e);
                 yield connection.rollback();
                 yield connection.release();
-                throw new IndroError_1.IndroError("Cannot Delete Exam UserData", 500, null, e);
+                throw new IndroError_1.IndroError("Cannot Delete Exam", 500, null, e);
             }
         });
     }

@@ -156,6 +156,18 @@ export class JobOfferController implements JobOfferApi {
         }
     }
 
+    @Post()
+    @Path("/removeJobOffer/:jobOfferId")
+    public async removeExam(res: Response, req) {
+        try {
+            const response = await jobOfferService.removeJobOffer(parseInt(req.params.jobOfferId, 10));
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'JobOffer.removeJobOffer'});
+        }
+    }
+
     @Get()
     @Path("/getJobOfferUserData/:jobOfferId")
     public async getJobOfferUserData(res: Response, req) {
