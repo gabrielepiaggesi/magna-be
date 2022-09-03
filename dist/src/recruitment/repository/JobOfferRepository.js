@@ -35,7 +35,7 @@ class JobOfferRepository extends Repository_1.Repository {
             const c = conn;
             // tslint:disable-next-line:max-line-length
             return c.query(query ||
-                `select * from ${this.table} where company_id = ${mysql2_1.default.escape(companyId)}`)
+                `select * from ${this.table} where company_id = ${mysql2_1.default.escape(companyId)} and deleted_at is null order by id desc`)
                 .then((results) => results);
         });
     }

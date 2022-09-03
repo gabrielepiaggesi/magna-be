@@ -19,7 +19,7 @@ export class JobOfferRepository extends Repository<JobOffer> {
         const c = conn;
         // tslint:disable-next-line:max-line-length
         return c.query(query || 
-            `select * from ${this.table} where company_id = ${mysql2.escape(companyId)}`)
+            `select * from ${this.table} where company_id = ${mysql2.escape(companyId)} and deleted_at is null order by id desc`)
             .then((results) => results);
     }
 }
