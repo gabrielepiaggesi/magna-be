@@ -139,7 +139,7 @@ export class JobOfferService implements JobOfferApi {
         const connection = await db.connection();
         let data = await jobOfferUserDataRepository.findByJobOfferId(jobOfferId, connection);
 
-        data = data.filter(d => ![1,2,4].includes(d.option_id));
+        // data = data.filter(d => ![1,2,4].includes(d.option_id));
         await connection.release();
         return data;
     }

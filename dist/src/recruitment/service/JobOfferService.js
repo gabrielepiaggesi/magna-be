@@ -151,7 +151,7 @@ class JobOfferService {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
             let data = yield jobOfferUserDataRepository.findByJobOfferId(jobOfferId, connection);
-            data = data.filter(d => ![1, 2, 4].includes(d.option_id));
+            // data = data.filter(d => ![1,2,4].includes(d.option_id));
             yield connection.release();
             return data;
         });
