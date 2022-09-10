@@ -46,6 +46,7 @@ export class AuthService {
     public async totalUsers() {
         const connection = await db.connection();
         const users = await userRepository.findTotalUsers(connection);
+        console.log(users);
         await connection.release();
         return { total: users.length };
     }

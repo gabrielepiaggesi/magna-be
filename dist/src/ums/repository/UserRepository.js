@@ -57,7 +57,7 @@ class UserRepository extends Repository_1.Repository {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;
             const q = `select * from ${this.table}`;
-            return yield c.query(query || q).then((results) => results[0]);
+            return yield c.query(query || q).then((results) => results);
         });
     }
 }
