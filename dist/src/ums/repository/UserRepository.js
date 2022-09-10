@@ -56,7 +56,7 @@ class UserRepository extends Repository_1.Repository {
     findTotalUsers(conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;
-            const q = `select count(*) as count from preorders`;
+            const q = `select * from ${this.table}`;
             return yield c.query(query || q).then((results) => results[0]);
         });
     }

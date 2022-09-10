@@ -48,6 +48,14 @@ class AuthService {
             return user;
         });
     }
+    totalUsers() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            const users = yield userRepository.findTotalUsers(connection);
+            yield connection.release();
+            return { total: users.length };
+        });
+    }
     login(userDTO) {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.debug("login...");

@@ -72,6 +72,18 @@ class AuthController {
             }
         });
     }
+    totalUsers(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield authService.totalUsers();
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Auth.totalUsers.Error' }));
+            }
+        });
+    }
 }
 __decorate([
     Decorator_1.Post(),
@@ -89,5 +101,9 @@ __decorate([
     Decorator_1.Get(),
     Decorator_1.Path("/getLoggedUser")
 ], AuthController.prototype, "getLoggedUser", null);
+__decorate([
+    Decorator_1.Get(),
+    Decorator_1.Path("/totalUsers")
+], AuthController.prototype, "totalUsers", null);
 exports.AuthController = AuthController;
 //# sourceMappingURL=AuthController.js.map

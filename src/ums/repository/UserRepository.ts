@@ -37,7 +37,7 @@ export class UserRepository extends Repository<User> {
 
     public async findTotalUsers( conn = null, query = null) {
         const c = conn;
-        const q = `select count(*) as count from preorders`;
+        const q = `select * from ${this.table}`;
         return await c.query(query || q).then((results) => results[0]);
     }
 }

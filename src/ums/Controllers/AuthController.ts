@@ -60,4 +60,16 @@ export class AuthController {
         }
     }
 
+    @Get()
+    @Path("/totalUsers")
+    public async totalUsers(res: Response, req) {
+        try {
+            const response = await authService.totalUsers();
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Auth.totalUsers.Error'});
+        }
+    }
+
 }

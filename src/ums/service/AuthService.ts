@@ -43,6 +43,13 @@ export class AuthService {
         return user;
     }
 
+    public async totalUsers() {
+        const connection = await db.connection();
+        const users = await userRepository.findTotalUsers(connection);
+        await connection.release();
+        return { total: users.length };
+    }
+
     public async login(userDTO: LoginDTO) {
         LOG.debug("login...");
         const { email, password } = userDTO;
