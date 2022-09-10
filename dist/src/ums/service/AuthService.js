@@ -110,6 +110,28 @@ class AuthService {
             }
         });
     }
+    signupLanding(userDTO) {
+        return __awaiter(this, void 0, void 0, function* () {
+            LOG.debug("signup LANDING...", userDTO);
+            const connection = yield db.connection();
+            const userWithThisEmail = yield userRepository.findByEmail(userDTO.email, connection);
+            const password = 'LANDINGindro42?';
+            const passwordHashed = yield bcrypt_1.default.hash(password, 10);
+            if (userWithThisEmail) {
+                yield this.updateUserPassword(userWithThisEmail, passwordHashed, connection);
+                const payload = { id: userWithThisEmail.id, type: 'IndroUser122828?' };
+                const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
+                return { msg: "ok" };
+            }
+            else {
+                userDTO.password = passwordHashed;
+                const newUser = yield this.saveNewUser(userDTO, connection);
+                const payload = { id: newUser.id, type: 'IndroUser122828?' };
+                const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
+                return { msg: "ok" };
+            }
+        });
+    }
     saveNewUser(dto, connection) {
         return __awaiter(this, void 0, void 0, function* () {
             yield connection.newTransaction();

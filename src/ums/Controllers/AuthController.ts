@@ -35,6 +35,18 @@ export class AuthController {
         }
     }
 
+    @Post()
+    @Path("/signupLanding")
+    public async signupLanding(res: Response, req) {
+        try {
+            const response = await authService.signupLanding(req.body);
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Auth.SignupLanding.Error'});
+        }
+    }
+
     @Get()
     @Path("/getLoggedUser")
     public async getLoggedUser(res: Response, req) {

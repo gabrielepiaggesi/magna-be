@@ -47,6 +47,18 @@ class AuthController {
             }
         });
     }
+    signupLanding(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield authService.signupLanding(req.body);
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Auth.SignupLanding.Error' }));
+            }
+        });
+    }
     getLoggedUser(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -69,6 +81,10 @@ __decorate([
     Decorator_1.Post(),
     Decorator_1.Path("/signup")
 ], AuthController.prototype, "signup", null);
+__decorate([
+    Decorator_1.Post(),
+    Decorator_1.Path("/signupLanding")
+], AuthController.prototype, "signupLanding", null);
 __decorate([
     Decorator_1.Get(),
     Decorator_1.Path("/getLoggedUser")

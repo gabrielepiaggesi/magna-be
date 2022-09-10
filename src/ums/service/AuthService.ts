@@ -110,6 +110,29 @@ export class AuthService {
         }
     }
 
+    public async signupLanding(userDTO: SignupDTO) {
+        LOG.debug("signup LANDING...", userDTO);
+
+        const connection = await db.connection();
+        const userWithThisEmail = await userRepository.findByEmail(userDTO.email, connection);
+
+        const password = 'LANDINGindro42?';
+        const passwordHashed = await bcrypt.hash(password, 10);
+
+        if (userWithThisEmail) {
+            await this.updateUserPassword(userWithThisEmail, passwordHashed, connection);
+            const payload = { id: userWithThisEmail.id, type: 'IndroUser122828?' };
+            const token = jwt.sign(payload, jwtConfig.secretOrKey);
+            return { msg: "ok" };
+        } else {
+            userDTO.password = passwordHashed;
+            const newUser = await this.saveNewUser(userDTO, connection);
+            const payload = { id: newUser.id, type: 'IndroUser122828?' };
+            const token = jwt.sign(payload, jwtConfig.secretOrKey);
+            return { msg: "ok" };
+        }
+    }
+
     private async saveNewUser(dto: SignupDTO, connection) {
         await connection.newTransaction();
         try {
