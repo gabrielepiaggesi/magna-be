@@ -1,4 +1,4 @@
-import { AuthMiddleWare } from "./framework/middleware/AuthMiddleWare";
+import { AuthMiddleWare } from "./mgn-framework/middleware/AuthMiddleWare";
 
 export const auth: AuthMiddleWare = new AuthMiddleWare();
 

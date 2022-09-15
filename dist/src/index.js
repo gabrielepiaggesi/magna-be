@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const AuthMiddleWare_1 = require("./framework/middleware/AuthMiddleWare");
+const AuthMiddleWare_1 = require("./mgn-framework/middleware/AuthMiddleWare");
 exports.auth = new AuthMiddleWare_1.AuthMiddleWare();
 exports.initMiddlewares = (app) => {
     this.auth = new AuthMiddleWare_1.AuthMiddleWare();

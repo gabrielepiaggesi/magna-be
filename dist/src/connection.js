@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mysql2_1 = __importDefault(require("mysql2"));
 const dev_1 = require("../env/dev/dev");
-const Logger_1 = require("./framework/services/Logger");
+const Logger_1 = require("./mgn-framework/services/Logger");
 const LOG = new Logger_1.Logger("DB");
 const pool = mysql2_1.default.createPool(dev_1.dev);
 const connection = () => {

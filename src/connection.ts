@@ -1,6 +1,6 @@
 import mysql2 from "mysql2";
 import { dev } from "../env/dev/dev";
-import { Logger } from "./framework/services/Logger";
+import { Logger } from "./mgn-framework/services/Logger";
 
 const LOG = new Logger("DB");
 const pool = mysql2.createPool(dev);

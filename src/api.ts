@@ -1,22 +1,27 @@
 import express from "express";
-import { ExamController } from "./recruitment/controller/ExamController";
 import { auth } from ".";
-import { JobOfferController } from "./recruitment/controller/JobOfferController";
-import { QuizController } from "./recruitment/controller/QuizController";
-import { UserApplicationController } from "./recruitment/controller/UserApplicationController";
-import { AuthController } from "./ums/Controllers/AuthController";
-import { CompanyController } from "./ums/Controllers/CompanyController";
+import { AuthController } from "./mgn-entity/controller/AuthController";
+import { BusinessController } from "./mgn-entity/controller/BusinessController";
+import { UserController } from "./mgn-entity/controller/UserController";
+import { UserReviewController } from "./mgn-network/controller/UserReviewController";
+import { UserSocialPostController } from "./mgn-network/controller/UserSocialPostController";
+import { BusinessDiscountController } from "./mgn-reward/controller/BusinessDiscountController";
+import { BusinessFidelityCardController } from "./mgn-reward/controller/BusinessFidelityCardController";
+import { UserDiscountController } from "./mgn-reward/controller/UserDiscountController";
+import { UserFidelityCardController } from "./mgn-reward/controller/UserFidelityCardController";
 import { routeFromController } from "./utils/Helpers";
-import { ExamApplicationController } from "./recruitment/controller/ExamApplicationController";
 const routes = express.Router();
 
 routes.use("/auth", routeFromController(new AuthController()));
-routes.use("/company", auth.isUser, routeFromController(new CompanyController()));
+routes.use("/user", auth.isUser, routeFromController(new UserController()));
+routes.use("/business", auth.isUser, routeFromController(new BusinessController()));
 
-routes.use("/quiz", auth.isUser, routeFromController(new QuizController()));
-routes.use("/jobOffer", routeFromController(new JobOfferController()));
-routes.use("/exam", routeFromController(new ExamController()));
-routes.use("/userApplication/job", auth.isUser, routeFromController(new UserApplicationController()));
-routes.use("/userApplication/exam", auth.isUser, routeFromController(new ExamApplicationController()));
+routes.use("/userReview", auth.isUser, routeFromController(new UserReviewController()));
+routes.use("/userSocialPost", auth.isUser, routeFromController(new UserSocialPostController()));
+
+routes.use("/businessDiscount", auth.isUser, routeFromController(new BusinessDiscountController()));
+routes.use("/userDiscount", auth.isUser, routeFromController(new UserDiscountController()));
+routes.use("/businessFidelityCard", auth.isUser, routeFromController(new BusinessFidelityCardController()));
+routes.use("/userFidelityCard", auth.isUser, routeFromController(new UserFidelityCardController()));
 
 export default routes;

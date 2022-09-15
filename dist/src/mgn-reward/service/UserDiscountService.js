@@ -1,0 +1,170 @@
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const BusinessRepository_1 = require("../../mgn-entity/repository/BusinessRepository");
+const Logger_1 = require("../../mgn-framework/services/Logger");
+const IndroError_1 = require("../../utils/IndroError");
+const UserDiscount_1 = require("../model/UserDiscount");
+const UserDiscountRepository_1 = require("../repository/UserDiscountRepository");
+const LOG = new Logger_1.Logger("CompanyService.class");
+const db = require("../../connection");
+const userDiscountRepository = new UserDiscountRepository_1.UserDiscountRepository();
+const businessRepository = new BusinessRepository_1.BusinessRepository();
+class UserDiscountService {
+    addUserDiscount(dto, userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            yield connection.newTransaction();
+            const newUserDiscount = yield this.createUserDiscount(dto, userId, connection);
+            yield connection.commit();
+            yield connection.release();
+            return newUserDiscount;
+        });
+    }
+    updateUserDiscount(dto, userDiscountId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            yield connection.newTransaction();
+            const newUserDiscount = yield this.setUserDiscount(dto, userDiscountId, connection);
+            yield connection.commit();
+            yield connection.release();
+            return newUserDiscount;
+        });
+    }
+    suspendUserDiscount(userDiscountId, loggedUserId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            const userBusinesses = yield businessRepository.findByUserId(loggedUserId, connection);
+            const businessesIds = userBusinesses.map(uB => uB.id);
+            yield connection.newTransaction();
+            const business = yield this.updateUserDiscountStatus('SUSPENDED', userDiscountId, businessesIds, connection);
+            yield connection.commit();
+            yield connection.release();
+            return business;
+        });
+    }
+    activateUserDiscount(businessDiscountId, loggedUserId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            const userBusinesses = yield businessRepository.findByUserId(loggedUserId, connection);
+            const businessesIds = userBusinesses.map(uB => uB.id);
+            yield connection.newTransaction();
+            const business = yield this.updateUserDiscountStatus('ACTIVE', businessDiscountId, businessesIds, connection);
+            yield connection.commit();
+            yield connection.release();
+            return business;
+        });
+    }
+    getUserDiscounts(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            const usersDiscounts = yield userDiscountRepository.findByUserId(userId, connection);
+            yield connection.release();
+            return usersDiscounts;
+        });
+    }
+    getUserDiscount(userDiscountId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            const userDiscount = yield userDiscountRepository.findById(userDiscountId, connection);
+            yield connection.release();
+            return userDiscount;
+        });
+    }
+    deleteUserDiscount(userDiscountId, loggedUserId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            const userBusinesses = yield businessRepository.findByUserId(loggedUserId, connection);
+            const businessesIds = userBusinesses.map(uB => uB.id);
+            yield connection.newTransaction();
+            const business = yield this.removeUserDiscount(userDiscountId, businessesIds, connection);
+            yield connection.commit();
+            yield connection.release();
+            return business;
+        });
+    }
+    createUserDiscount(discountDTO, userId, connection) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const newDiscount = new UserDiscount_1.UserDiscount();
+                newDiscount.user_id = userId;
+                newDiscount.business_id = +discountDTO.business_id;
+                newDiscount.discount_id = +discountDTO.discount_id;
+                newDiscount.status = 'ACTIVE';
+                const coInserted = yield userDiscountRepository.save(newDiscount, connection);
+                newDiscount.id = coInserted.insertId;
+                LOG.info("NEW USER DISCOUNT", newDiscount.id);
+                return newDiscount;
+            }
+            catch (e) {
+                LOG.error(e);
+                yield connection.rollback();
+                yield connection.release();
+                throw new IndroError_1.IndroError("Cannot Create USER DISCOUNT", 500, null, e);
+            }
+        });
+    }
+    setUserDiscount(discountDTO, userDiscountId, connection) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const discount = yield userDiscountRepository.findById(userDiscountId, connection);
+                discount.business_id = +discountDTO.business_id;
+                discount.discount_id = +discountDTO.discount_id;
+                yield userDiscountRepository.update(discount, connection);
+                LOG.info("UPDATE USER DISCOUNT", discount.id);
+                return discount;
+            }
+            catch (e) {
+                LOG.error(e);
+                yield connection.rollback();
+                yield connection.release();
+                throw new IndroError_1.IndroError("Cannot UPDATE USER DISCOUNT", 500, null, e);
+            }
+        });
+    }
+    removeUserDiscount(businessDiscountId, businessesIds, connection) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const discount = yield userDiscountRepository.findById(businessDiscountId, connection);
+            if (!discount || !businessesIds.includes(discount.business_id))
+                return discount;
+            try {
+                yield userDiscountRepository.delete(discount, connection);
+                return discount;
+            }
+            catch (e) {
+                LOG.error(e);
+                yield connection.rollback();
+                yield connection.release();
+                throw new IndroError_1.IndroError("Cannot Delete User Discount", 500, null, e);
+            }
+        });
+    }
+    updateUserDiscountStatus(status, userDiscountId, businessesIds, connection) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const discount = yield userDiscountRepository.findById(userDiscountId, connection);
+            if (!discount || !businessesIds.includes(discount.business_id))
+                return discount;
+            try {
+                discount.status = status;
+                yield userDiscountRepository.update(discount, connection);
+                return discount;
+            }
+            catch (e) {
+                LOG.error(e);
+                yield connection.rollback();
+                yield connection.release();
+                throw new IndroError_1.IndroError("Cannot Update User Discount Status", 500, null, e);
+            }
+        });
+    }
+}
+exports.UserDiscountService = UserDiscountService;
+//# sourceMappingURL=UserDiscountService.js.map

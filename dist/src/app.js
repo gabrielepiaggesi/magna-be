@@ -9,7 +9,7 @@ const cors_1 = __importDefault(require("cors"));
 const express_1 = __importDefault(require("express"));
 const api_1 = __importDefault(require("./api"));
 const _1 = require(".");
-const cron_1 = require("./cron");
+const mgn_cron_1 = require("./mgn-cron");
 process.on('uncaughtException', function (err) {
     console.log('Caught exception: ', err);
 });
@@ -20,7 +20,7 @@ const port = process.env.PORT || 8000;
 _1.initMiddlewares(app);
 // startConnection();
 // init all crons/jobs
-cron_1.initJobs(app);
+mgn_cron_1.initJobs(app);
 app.use(cors_1.default());
 app.use(body_parser_1.default.json());
 app.use(api_1.default);

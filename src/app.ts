@@ -4,7 +4,7 @@ import cors from "cors";
 import express from "express";
 import api from "./api";
 import { initMiddlewares } from ".";
-import { initJobs } from "./cron";
+import { initJobs } from "./mgn-cron";
 
 
 
