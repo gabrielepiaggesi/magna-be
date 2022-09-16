@@ -89,7 +89,7 @@ class BusinessFidelityCardController {
     getBusinessFidelityCard(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const response = yield businessFidelityCardService.getBusinessFidelityCard(parseInt(req.params.businessFidelityCardId, 10));
+                const response = yield businessFidelityCardService.getBusinessFidelityCard(parseInt(req.params.businessId, 10));
                 return res.status(200).json(response);
             }
             catch (e) {
@@ -157,7 +157,7 @@ __decorate([
 ], BusinessFidelityCardController.prototype, "activateBusinessFidelityCard", null);
 __decorate([
     Decorator_1.Get(),
-    Decorator_1.Path("/getBusinessFidelityCard/:businessFidelityCardId")
+    Decorator_1.Path("/getBusinessFidelityCard/:businessId")
 ], BusinessFidelityCardController.prototype, "getBusinessFidelityCard", null);
 __decorate([
     Decorator_1.Get(),

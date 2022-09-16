@@ -16,11 +16,13 @@ const Preconditions_1 = require("../../utils/Preconditions");
 const BusinessFidelityCard_1 = require("../model/BusinessFidelityCard");
 const BusinessFidelityCardRepository_1 = require("../repository/BusinessFidelityCardRepository");
 const UserFidelityCardRepository_1 = require("../repository/UserFidelityCardRepository");
+const UserDiscountService_1 = require("./UserDiscountService");
 const LOG = new Logger_1.Logger("CompanyService.class");
 const db = require("../../connection");
 const businessFidelityCardRepository = new BusinessFidelityCardRepository_1.BusinessFidelityCardRepository();
 const businessRepository = new BusinessRepository_1.BusinessRepository();
 const userFidelityCardRepository = new UserFidelityCardRepository_1.UserFidelityCardRepository();
+const userDiscountService = new UserDiscountService_1.UserDiscountService();
 class BusinessFidelityCardService {
     addBusinessFidelityCard(dto, businessId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -73,13 +75,16 @@ class BusinessFidelityCardService {
             yield Preconditions_1.Precondition.checkIfTrue(userFidelityCard &&
                 userFidelityCard.business_id === +businessId &&
                 userFidelityCard.status == 'ACTIVE', 'USER FIDELITY CARD INVALID', connection, 403);
-            const businessFidelityCard = yield businessFidelityCardRepository.findById(userFidelityCard.discount_id, connection);
+            const businessFidelityCard = yield businessFidelityCardRepository.findActiveByBusinessId(businessId, connection);
             yield Preconditions_1.Precondition.checkIfTrue(businessFidelityCard && businessFidelityCard.status == 'ACTIVE', 'BUSINESS FIDELITY CARD INVALID', connection, 403);
             yield connection.newTransaction();
-            const newUserFidelityCard = yield this.updateUserFidelityCardCountdown(userFidelityCard.id, [businessId], connection);
+            const newUserFidelityCard = yield this.updateUserFidelityCardCountdown(userFidelityCard.id, [businessId], businessFidelityCard.expenses_amount, connection);
+            if (newUserFidelityCard.discount) {
+                yield userDiscountService.addUserOriginDiscount(userFidelityCard.business_id, userFidelityCard.user_id, 'FIDELITY_CARD', connection);
+            }
             yield connection.commit();
             yield connection.release();
-            return newUserFidelityCard;
+            return newUserFidelityCard.fidelityCard;
         });
     }
     resetUserFidelityCardValidity(userFidelityCardId, businessId) {
@@ -106,10 +111,10 @@ class BusinessFidelityCardService {
             return businessFidelityCards;
         });
     }
-    getBusinessFidelityCard(businessFidelityCardId) {
+    getBusinessFidelityCard(businessId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const businessFidelityCard = yield businessFidelityCardRepository.findById(businessFidelityCardId, connection);
+            const businessFidelityCard = yield businessFidelityCardRepository.findByBusinessId(businessId, connection);
             yield connection.release();
             return businessFidelityCard;
         });
@@ -131,7 +136,8 @@ class BusinessFidelityCardService {
             try {
                 const newFidelityCard = new BusinessFidelityCard_1.BusinessFidelityCard();
                 newFidelityCard.business_id = +businessId;
-                newFidelityCard.discount_id = +fidelityCardDTO.discount_id;
+                if (fidelityCardDTO.discount_id)
+                    newFidelityCard.discount_id = +fidelityCardDTO.discount_id;
                 newFidelityCard.expenses_amount = +fidelityCardDTO.expenses_amount;
                 newFidelityCard.status = 'ACTIVE';
                 const coInserted = yield businessFidelityCardRepository.save(newFidelityCard, connection);
@@ -151,7 +157,8 @@ class BusinessFidelityCardService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const newFidelityCard = yield businessFidelityCardRepository.findById(businessFidelityCardId, connection);
-                newFidelityCard.discount_id = +fidelityCardDTO.discount_id;
+                if (fidelityCardDTO.discount_id || newFidelityCard.discount_id)
+                    newFidelityCard.discount_id = +fidelityCardDTO.discount_id || newFidelityCard.discount_id;
                 newFidelityCard.expenses_amount = +fidelityCardDTO.expenses_amount;
                 yield businessFidelityCardRepository.update(newFidelityCard, connection);
                 LOG.info("UPDATE BUSINESS FIDELITY CARD", newFidelityCard.id);
@@ -200,29 +207,49 @@ class BusinessFidelityCardService {
             }
         });
     }
-    updateUserFidelityCardCountdown(userFidelityCardId, businessesIds, connection) {
+    updateUserFidelityCardCountdown(userFidelityCardId, businessesIds, businessExpensesAmount, connection) {
         return __awaiter(this, void 0, void 0, function* () {
             const fidelityCard = yield userFidelityCardRepository.findById(userFidelityCardId, connection);
             if (!fidelityCard || !businessesIds.includes(fidelityCard.business_id))
-                return fidelityCard;
+                return { fidelityCard, discount: false };
             try {
-                if (!fidelityCard.discount_countdown) {
+                if (fidelityCard.discount_countdown <= 0 || !fidelityCard.discount_countdown) {
+                    LOG.error("HELP !!! COUNTDOWN LESS THAN ZERO! WTF", fidelityCard.id);
+                    fidelityCard.discount_countdown = businessExpensesAmount;
+                    yield userFidelityCardRepository.update(fidelityCard, connection);
+                    return { fidelityCard, discount: false };
+                }
+                else if (fidelityCard.discount_countdown == 1) {
+                    // BONUS!
+                    fidelityCard.discount_countdown = businessExpensesAmount;
+                    fidelityCard.expenses_amount = businessExpensesAmount;
                     fidelityCard.usage_amount = (+fidelityCard.usage_amount) + 1;
                     yield userFidelityCardRepository.update(fidelityCard, connection);
-                    // TODO: create user discount
-                    return fidelityCard;
+                    return { fidelityCard, discount: true };
                 }
-                else {
-                    if (fidelityCard.discount_countdown <= 0) {
-                        LOG.error("HELP !!! COUNTDOWN LESS THAN ZERO! WTF", fidelityCard.id);
-                        return fidelityCard;
+                else if (fidelityCard.expenses_amount != businessExpensesAmount) {
+                    const timesWentThereIncludedNow = fidelityCard.expenses_amount - (fidelityCard.discount_countdown - 1);
+                    if (timesWentThereIncludedNow >= businessExpensesAmount) {
+                        // BONUS!
+                        fidelityCard.discount_countdown = businessExpensesAmount;
+                        fidelityCard.usage_amount = (+fidelityCard.usage_amount) + 1;
+                        fidelityCard.expenses_amount = businessExpensesAmount;
+                        yield userFidelityCardRepository.update(fidelityCard, connection);
+                        return { fidelityCard, discount: true };
                     }
                     else {
-                        fidelityCard.discount_countdown = (+fidelityCard.discount_countdown) - 1;
+                        fidelityCard.discount_countdown = businessExpensesAmount - timesWentThereIncludedNow;
                         fidelityCard.usage_amount = (+fidelityCard.usage_amount) + 1;
+                        fidelityCard.expenses_amount = businessExpensesAmount;
                         yield userFidelityCardRepository.update(fidelityCard, connection);
-                        return fidelityCard;
+                        return { fidelityCard, discount: false };
                     }
+                }
+                else {
+                    fidelityCard.discount_countdown = (+fidelityCard.discount_countdown) - 1;
+                    fidelityCard.usage_amount = (+fidelityCard.usage_amount) + 1;
+                    yield userFidelityCardRepository.update(fidelityCard, connection);
+                    return { fidelityCard, discount: false };
                 }
             }
             catch (e) {

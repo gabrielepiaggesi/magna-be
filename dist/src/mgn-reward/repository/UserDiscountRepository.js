@@ -29,6 +29,21 @@ class UserDiscountRepository extends Repository_1.Repository {
         select * from ${this.table} where user_id = ${mysql2_1.default.escape(userId)} and status = 'ACTIVE' and deleted_at is null order by id desc`).then((results) => results);
         });
     }
+    findActiveByUserIdJoinBusiness(userId, conn = null, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            // tslint:disable-next-line:max-line-length
+            return c.query(query || `
+            select ud.*, b.name as business_name, bd.amount as discount_amount, bd.monthly_limit as discount_monthly_limit, bd.minimum_expense as discount_minimum_expense, bd.type as discount_type 
+            from ${this.table} ud 
+            join businesses b on b.id = ud.business_id and b.deleted_at is null 
+            join businesses_discounts bd on bd.id = ud.discount_id and bd.deleted_at is null and bd.status = 'ACTIVE' 
+            where ud.user_id = ${mysql2_1.default.escape(userId)} 
+            and ud.status = 'ACTIVE' 
+            and ud.deleted_at is null 
+            order by ud.id desc`).then((results) => results);
+        });
+    }
     findByUserId(userId, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;

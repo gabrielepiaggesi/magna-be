@@ -49,10 +49,18 @@ export class BusinessService implements BusinessApi {
         const connection = await db.connection();
 
         const business = await businessRepository.findById(businessId, connection);
-        await Precondition.checkIfTrue((!!business), "Company does not exist", connection);
         await connection.release();
 
         return business;
+    }
+
+    public async getUserBusinessesList(userId: number) {
+        const connection = await db.connection();
+
+        const businesses = await businessRepository.findByUserId(userId, connection);
+        await connection.release();
+
+        return businesses;
     }
 
     private async updateOrCreateBusiness(newBusinessDTO: any, businessId: number, loggedUserId: number, connection) {

@@ -1,1 +1,1 @@
-{"version":3,"file":"UserFidelityCard.js","sourceRoot":"","sources":["../../../../src/mgn-reward/model/UserFidelityCard.ts"],"names":[],"mappings":";;AAAA,4DAAyD;AAEzD,MAAa,gBAAiB,SAAQ,aAAK;IASvC,oCAAoC;IACpC,gBAAgB,KAAK,EAAE,CAAC,CAAC,CAAC;CAC7B;AAXD,4CAWC"}
+{"version":3,"file":"UserFidelityCard.js","sourceRoot":"","sources":["../../../../src/mgn-reward/model/UserFidelityCard.ts"],"names":[],"mappings":";;AAAA,4DAAyD;AAEzD,MAAa,gBAAiB,SAAQ,aAAK;IAUvC,oCAAoC;IACpC,gBAAgB,KAAK,EAAE,CAAC,CAAC,CAAC;CAC7B;AAZD,4CAYC"}

@@ -10,6 +10,7 @@ const express_1 = __importDefault(require("express"));
 const api_1 = __importDefault(require("./api"));
 const _1 = require(".");
 const mgn_cron_1 = require("./mgn-cron");
+process.env.SENDINBLUE_API_KEY = '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';
 process.on('uncaughtException', function (err) {
     console.log('Caught exception: ', err);
 });

@@ -13,11 +13,13 @@ const BusinessRepository_1 = require("../../mgn-entity/repository/BusinessReposi
 const Logger_1 = require("../../mgn-framework/services/Logger");
 const IndroError_1 = require("../../utils/IndroError");
 const UserDiscount_1 = require("../model/UserDiscount");
+const BusinessDiscountRepository_1 = require("../repository/BusinessDiscountRepository");
 const UserDiscountRepository_1 = require("../repository/UserDiscountRepository");
 const LOG = new Logger_1.Logger("CompanyService.class");
 const db = require("../../connection");
 const userDiscountRepository = new UserDiscountRepository_1.UserDiscountRepository();
 const businessRepository = new BusinessRepository_1.BusinessRepository();
+const businessDiscountRepository = new BusinessDiscountRepository_1.BusinessDiscountRepository();
 class UserDiscountService {
     addUserDiscount(dto, userId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -26,6 +28,21 @@ class UserDiscountService {
             const newUserDiscount = yield this.createUserDiscount(dto, userId, connection);
             yield connection.commit();
             yield connection.release();
+            return newUserDiscount;
+        });
+    }
+    addUserOriginDiscount(businessId, userId, origin, connection) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const businessDiscount = yield businessDiscountRepository.findActiveByBusinessIdAndOrigin(businessId, origin, connection);
+            if (!businessDiscount) {
+                yield connection.release();
+                return;
+            }
+            const dto = {
+                business_id: businessId,
+                discount_id: businessDiscount.id
+            };
+            const newUserDiscount = yield this.createUserDiscount(dto, userId, connection);
             return newUserDiscount;
         });
     }
@@ -66,7 +83,7 @@ class UserDiscountService {
     getUserDiscounts(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const usersDiscounts = yield userDiscountRepository.findByUserId(userId, connection);
+            const usersDiscounts = yield userDiscountRepository.findActiveByUserIdJoinBusiness(userId, connection);
             yield connection.release();
             return usersDiscounts;
         });

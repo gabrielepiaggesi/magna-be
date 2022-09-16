@@ -27,4 +27,11 @@ export class UserSocialPostRepository extends Repository<UserSocialPost> {
         return c.query(query || `
         select * from ${this.table} where business_id = ${mysql2.escape(businessId)} and deleted_at is null order by id desc`).then((results) => results);
     }
+
+    public async findPendingByBusinessId(businessId: number, conn = null,  query = null): Promise<UserSocialPost[]> {
+        const c = conn;
+        // tslint:disable-next-line:max-line-length
+        return c.query(query || `
+        select * from ${this.table} where business_id = ${mysql2.escape(businessId)} and status = 'PENDING' and deleted_at is null order by id desc`).then((results) => results);
+    }
 }

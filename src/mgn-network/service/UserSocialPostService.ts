@@ -1,5 +1,6 @@
 import { BusinessRepository } from "../../mgn-entity/repository/BusinessRepository";
 import { Logger } from "../../mgn-framework/services/Logger";
+import { UserDiscountService } from "../../mgn-reward/service/UserDiscountService";
 import { IndroError } from "../../utils/IndroError";
 import { Precondition } from "../../utils/Preconditions";
 import { UserSocialPostApi } from "../integration/UserSocialPostApi";
@@ -11,12 +12,14 @@ const db = require("../../connection");
 const userSocialPostRepository = new UserSocialPostRepository();
 const businessRepository = new BusinessRepository();
 
+const userDiscountService = new UserDiscountService();
+
 export class UserSocialPostService implements UserSocialPostApi {
 
     public async getBusinessSocialPosts(businessId: number) {
         const connection = await db.connection();
 
-        const businessSocialPosts = await userSocialPostRepository.findByBusinessId(businessId, connection);
+        const businessSocialPosts = await userSocialPostRepository.findPendingByBusinessId(businessId, connection);
         await connection.release();
         
         return businessSocialPosts;
@@ -45,8 +48,12 @@ export class UserSocialPostService implements UserSocialPostApi {
         const userBusinesses = await businessRepository.findByUserId(loggedUserId, connection);
         const businessesIds = userBusinesses.map(uB => uB.id);
 
+        const socialPost = await userSocialPostRepository.findById(userSocialPostId, connection);
+        if (!socialPost || !businessesIds.includes(socialPost.business_id)) return socialPost;
+
         await connection.newTransaction();
-        const business = await this.updateUserSocialPostStatus('APPROVED', userSocialPostId, businessesIds, connection);
+        const business = await this.updateUserSocialPostStatus('APPROVED', socialPost, connection);
+        await userDiscountService.addUserOriginDiscount(socialPost.business_id, socialPost.user_id, 'FIDELITY_CARD', connection);
         await connection.commit();
         await connection.release();
 
@@ -58,8 +65,11 @@ export class UserSocialPostService implements UserSocialPostApi {
         const userBusinesses = await businessRepository.findByUserId(loggedUserId, connection);
         const businessesIds = userBusinesses.map(uB => uB.id);
 
+        const socialPost = await userSocialPostRepository.findById(userSocialPostId, connection);
+        if (!socialPost || !businessesIds.includes(socialPost.business_id)) return socialPost;
+
         await connection.newTransaction();
-        const business = await this.updateUserSocialPostStatus('DISCARDED', userSocialPostId, businessesIds, connection);
+        const business = await this.updateUserSocialPostStatus('DISCARDED', socialPost, connection);
         await connection.commit();
         await connection.release();
 
@@ -111,9 +121,7 @@ export class UserSocialPostService implements UserSocialPostApi {
         }
     }
 
-    private async updateUserSocialPostStatus(status: string, userSocialPostId: number, businessesIds: number[], connection) {
-        const socialPost = await userSocialPostRepository.findById(userSocialPostId, connection);
-        if (!socialPost || !businessesIds.includes(socialPost.business_id)) return socialPost;
+    private async updateUserSocialPostStatus(status: string, socialPost: UserSocialPost, connection) {
         try {
             socialPost.status = status;
             await userSocialPostRepository.update(socialPost, connection);

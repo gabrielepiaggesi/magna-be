@@ -74,6 +74,18 @@ class BusinessController {
             }
         });
     }
+    getUserBusinessesList(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield businessService.getUserBusinessesList(parseInt(req.params.userId, 10));
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Business.getUserBusinessesList.Error' }));
+            }
+        });
+    }
 }
 __decorate([
     Decorator_1.Post(),
@@ -91,5 +103,9 @@ __decorate([
     Decorator_1.Get(),
     Decorator_1.Path("/getBusiness/:businessId")
 ], BusinessController.prototype, "getBusiness", null);
+__decorate([
+    Decorator_1.Get(),
+    Decorator_1.Path("/getUserBusinessesList/:userId")
+], BusinessController.prototype, "getUserBusinessesList", null);
 exports.BusinessController = BusinessController;
 //# sourceMappingURL=BusinessController.js.map

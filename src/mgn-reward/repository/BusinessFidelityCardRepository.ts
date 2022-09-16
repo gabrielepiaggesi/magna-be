@@ -7,17 +7,17 @@ export class BusinessFidelityCardRepository extends Repository<BusinessFidelityC
     public table = "businesses_fidelities_cards";
     // ${mysql2.escape(stripeId)}
 
-    public async findActiveByBusinessId(businessId: number, conn = null,  query = null): Promise<BusinessFidelityCard[]> {
+    public async findActiveByBusinessId(businessId: number, conn = null,  query = null): Promise<BusinessFidelityCard> {
         const c = conn;
         // tslint:disable-next-line:max-line-length
         return c.query(query || `
-        select * from ${this.table} where business_id = ${mysql2.escape(businessId)} and status = 'ACTIVE' and deleted_at is null order by id desc`).then((results) => results);
+        select * from ${this.table} where business_id = ${mysql2.escape(businessId)} and status = 'ACTIVE' and deleted_at is null order by id desc limit 1`).then((results) => results[0] || null);
     }
 
-    public async findByBusinessId(businessId: number, conn = null,  query = null): Promise<BusinessFidelityCard[]> {
+    public async findByBusinessId(businessId: number, conn = null,  query = null): Promise<BusinessFidelityCard> {
         const c = conn;
         // tslint:disable-next-line:max-line-length
         return c.query(query || `
-        select * from ${this.table} where business_id = ${mysql2.escape(businessId)} and deleted_at is null order by id desc`).then((results) => results);
+        select * from ${this.table} where business_id = ${mysql2.escape(businessId)} and deleted_at is null order by id desc limit 1`).then((results) => results[0] || null);
     }
 }

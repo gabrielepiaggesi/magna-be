@@ -27,7 +27,7 @@ class UserFidelityCardController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const loggedUserId = __1.auth.getLoggedUserId(req);
-                const response = yield userFidelityCardService.addUserFidelityCard(req.body, loggedUserId);
+                const response = yield userFidelityCardService.addUserFidelityCard(parseInt(req.params.businessId, 10), loggedUserId);
                 return res.status(200).json(response);
             }
             catch (e) {
@@ -115,7 +115,7 @@ class UserFidelityCardController {
 }
 __decorate([
     Decorator_1.Post(),
-    Decorator_1.Path("/addUserFidelityCard")
+    Decorator_1.Path("/addUserFidelityCard/:businessId")
 ], UserFidelityCardController.prototype, "addUserFidelityCard", null);
 __decorate([
     Decorator_1.Post(),

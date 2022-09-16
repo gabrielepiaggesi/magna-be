@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const BusinessRepository_1 = require("../../mgn-entity/repository/BusinessRepository");
 const Logger_1 = require("../../mgn-framework/services/Logger");
+const UserDiscountService_1 = require("../../mgn-reward/service/UserDiscountService");
 const IndroError_1 = require("../../utils/IndroError");
 const Preconditions_1 = require("../../utils/Preconditions");
 const UserSocialPost_1 = require("../model/UserSocialPost");
@@ -19,11 +20,12 @@ const LOG = new Logger_1.Logger("CompanyService.class");
 const db = require("../../connection");
 const userSocialPostRepository = new UserSocialPostRepository_1.UserSocialPostRepository();
 const businessRepository = new BusinessRepository_1.BusinessRepository();
+const userDiscountService = new UserDiscountService_1.UserDiscountService();
 class UserSocialPostService {
     getBusinessSocialPosts(businessId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const businessSocialPosts = yield userSocialPostRepository.findByBusinessId(businessId, connection);
+            const businessSocialPosts = yield userSocialPostRepository.findPendingByBusinessId(businessId, connection);
             yield connection.release();
             return businessSocialPosts;
         });
@@ -49,8 +51,12 @@ class UserSocialPostService {
             const connection = yield db.connection();
             const userBusinesses = yield businessRepository.findByUserId(loggedUserId, connection);
             const businessesIds = userBusinesses.map(uB => uB.id);
+            const socialPost = yield userSocialPostRepository.findById(userSocialPostId, connection);
+            if (!socialPost || !businessesIds.includes(socialPost.business_id))
+                return socialPost;
             yield connection.newTransaction();
-            const business = yield this.updateUserSocialPostStatus('APPROVED', userSocialPostId, businessesIds, connection);
+            const business = yield this.updateUserSocialPostStatus('APPROVED', socialPost, connection);
+            yield userDiscountService.addUserOriginDiscount(socialPost.business_id, socialPost.user_id, 'FIDELITY_CARD', connection);
             yield connection.commit();
             yield connection.release();
             return business;
@@ -61,8 +67,11 @@ class UserSocialPostService {
             const connection = yield db.connection();
             const userBusinesses = yield businessRepository.findByUserId(loggedUserId, connection);
             const businessesIds = userBusinesses.map(uB => uB.id);
+            const socialPost = yield userSocialPostRepository.findById(userSocialPostId, connection);
+            if (!socialPost || !businessesIds.includes(socialPost.business_id))
+                return socialPost;
             yield connection.newTransaction();
-            const business = yield this.updateUserSocialPostStatus('DISCARDED', userSocialPostId, businessesIds, connection);
+            const business = yield this.updateUserSocialPostStatus('DISCARDED', socialPost, connection);
             yield connection.commit();
             yield connection.release();
             return business;
@@ -112,11 +121,8 @@ class UserSocialPostService {
             }
         });
     }
-    updateUserSocialPostStatus(status, userSocialPostId, businessesIds, connection) {
+    updateUserSocialPostStatus(status, socialPost, connection) {
         return __awaiter(this, void 0, void 0, function* () {
-            const socialPost = yield userSocialPostRepository.findById(userSocialPostId, connection);
-            if (!socialPost || !businessesIds.includes(socialPost.business_id))
-                return socialPost;
             try {
                 socialPost.status = status;
                 yield userSocialPostRepository.update(socialPost, connection);

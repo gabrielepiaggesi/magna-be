@@ -12,10 +12,10 @@ const LOG = new Logger("BusinessDiscountController.class");
 export class BusinessDiscountController implements BusinessDiscountApi {
 
     @Post()
-    @Path("/addBusinessDiscount/:discountId")
+    @Path("/addBusinessDiscount/:businessId")
     public async addBusinessDiscount(res: Response, req) {
         try {
-            const response = await businessDiscountService.addBusinessDiscount(req.body, parseInt(req.params.discountId, 10));
+            const response = await businessDiscountService.addBusinessDiscount(req.body, parseInt(req.params.businessId, 10));
             return res.status(200).json(response);
         } catch(e) {
             LOG.debug(e);

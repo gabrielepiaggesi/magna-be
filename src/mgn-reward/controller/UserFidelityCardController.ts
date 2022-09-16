@@ -12,11 +12,11 @@ const LOG = new Logger("UserFidelityCardController.class");
 export class UserFidelityCardController implements UserFidelityCardApi {
     
     @Post()
-    @Path("/addUserFidelityCard")
+    @Path("/addUserFidelityCard/:businessId")
     public async addUserFidelityCard(res: Response, req) {
         try {
             const loggedUserId = auth.getLoggedUserId(req);
-            const response = await userFidelityCardService.addUserFidelityCard(req.body, loggedUserId);
+            const response = await userFidelityCardService.addUserFidelityCard(parseInt(req.params.businessId, 10), loggedUserId);
             return res.status(200).json(response);
         } catch(e) {
             LOG.debug(e);

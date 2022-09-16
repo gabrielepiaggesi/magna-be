@@ -29,6 +29,29 @@ class UserFidelityCardRepository extends Repository_1.Repository {
         select * from ${this.table} where user_id = ${mysql2_1.default.escape(userId)} and status = 'ACTIVE' and deleted_at is null order by id desc`).then((results) => results);
         });
     }
+    findActiveByUserIdAndBusinessId(userId, businessId, conn = null, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            // tslint:disable-next-line:max-line-length
+            return c.query(query || `
+        select * from ${this.table} where user_id = ${mysql2_1.default.escape(userId)} and business_id = ${mysql2_1.default.escape(businessId)} and status = 'ACTIVE' and deleted_at is null order by id desc`).then((results) => results);
+        });
+    }
+    findActiveByUserIdJoinBusiness(userId, conn = null, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            // tslint:disable-next-line:max-line-length
+            return c.query(query || `
+            select uf.*, b.name as business_name, bf.expenses_amount as business_expenses_amount, uf.expenses_amount as user_expenses_amount 
+            from ${this.table} uf 
+            join businesses b on b.id = uf.business_id and b.deleted_at is null 
+            join businesses_fidelities_cards bf on bf.id = uf.fidelity_card_id and bf.deleted_at is null and bf.status = 'ACTIVE' 
+            where uf.user_id = ${mysql2_1.default.escape(userId)} 
+            and uf.status = 'ACTIVE' 
+            and uf.deleted_at is null 
+            order by uf.id desc`).then((results) => results);
+        });
+    }
     findByUserId(userId, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;

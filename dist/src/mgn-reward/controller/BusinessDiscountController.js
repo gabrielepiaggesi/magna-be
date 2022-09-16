@@ -26,7 +26,7 @@ class BusinessDiscountController {
     addBusinessDiscount(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const response = yield businessDiscountService.addBusinessDiscount(req.body, parseInt(req.params.discountId, 10));
+                const response = yield businessDiscountService.addBusinessDiscount(req.body, parseInt(req.params.businessId, 10));
                 return res.status(200).json(response);
             }
             catch (e) {
@@ -125,7 +125,7 @@ class BusinessDiscountController {
 }
 __decorate([
     Decorator_1.Post(),
-    Decorator_1.Path("/addBusinessDiscount/:discountId")
+    Decorator_1.Path("/addBusinessDiscount/:businessId")
 ], BusinessDiscountController.prototype, "addBusinessDiscount", null);
 __decorate([
     Decorator_1.Post(),

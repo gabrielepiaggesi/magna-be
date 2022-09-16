@@ -121,7 +121,7 @@ export class BusinessDiscountService implements BusinessDiscountApi {
             newDiscount.business_id = +businessId;
             newDiscount.origin = discountDTO.origin;
             newDiscount.amount = +discountDTO.amount;
-            newDiscount.monthly_limit = +discountDTO.monthly_limit;
+            if (discountDTO.monthly_limit) newDiscount.monthly_limit = +discountDTO.monthly_limit;
             newDiscount.minimum_expense = +discountDTO.minimum_expense;
             newDiscount.status = 'ACTIVE';
 
@@ -144,7 +144,7 @@ export class BusinessDiscountService implements BusinessDiscountApi {
             discount.business_id = discountDTO.business_id;
             discount.origin = discount.origin;
             discount.amount = +discountDTO.amount || discount.amount;
-            discount.monthly_limit = +discountDTO.monthly_limit || discount.monthly_limit;
+            if (discountDTO.monthly_limit) discount.monthly_limit = +discountDTO.monthly_limit || discount.monthly_limit;
             discount.minimum_expense = +discountDTO.minimum_expense || discount.minimum_expense;
             discount.status = 'ACTIVE';
 

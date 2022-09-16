@@ -3,4 +3,5 @@ export interface BusinessApi {
     deleteBusiness(...args);
     updateBusiness(...args);
     getBusiness(...args);
+    getUserBusinessesList(...args);
 }

@@ -53,9 +53,16 @@ class BusinessService {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
             const business = yield businessRepository.findById(businessId, connection);
-            yield Preconditions_1.Precondition.checkIfTrue((!!business), "Company does not exist", connection);
             yield connection.release();
             return business;
+        });
+    }
+    getUserBusinessesList(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            const businesses = yield businessRepository.findByUserId(userId, connection);
+            yield connection.release();
+            return businesses;
         });
     }
     updateOrCreateBusiness(newBusinessDTO, businessId, loggedUserId, connection) {

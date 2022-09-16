@@ -29,6 +29,14 @@ class BusinessDiscountRepository extends Repository_1.Repository {
         select * from ${this.table} where business_id = ${mysql2_1.default.escape(businessId)} and status = 'ACTIVE' and deleted_at is null order by id desc`).then((results) => results);
         });
     }
+    findActiveByBusinessIdAndOrigin(businessId, origin, conn = null, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            // tslint:disable-next-line:max-line-length
+            return c.query(query || `
+        select * from ${this.table} where business_id = ${mysql2_1.default.escape(businessId)} and origin = ${mysql2_1.default.escape(origin)} and status = 'ACTIVE' and deleted_at is null order by id desc limit 1`).then((results) => results[0] || null);
+        });
+    }
     findByBusinessId(businessId, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;

@@ -75,10 +75,10 @@ export class BusinessFidelityCardController implements BusinessFidelityCardApi {
     }
 
     @Get()
-    @Path("/getBusinessFidelityCard/:businessFidelityCardId")
+    @Path("/getBusinessFidelityCard/:businessId")
     public async getBusinessFidelityCard(res: Response, req) {
         try {
-            const response = await businessFidelityCardService.getBusinessFidelityCard(parseInt(req.params.businessFidelityCardId, 10));
+            const response = await businessFidelityCardService.getBusinessFidelityCard(parseInt(req.params.businessId, 10));
             return res.status(200).json(response);
         } catch(e) {
             LOG.debug(e);
@@ -105,7 +105,7 @@ export class BusinessFidelityCardController implements BusinessFidelityCardApi {
             const response = await businessFidelityCardService.checkUserFidelityCardValidity(parseInt(req.params.userFidelityCardId, 10), parseInt(req.params.businessId, 10));
             return res.status(200).json(response);
         } catch(e) {
-            LOG.debug(e);
+            LOG.debug(e); 
             return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'BusinessFidelityCard.checkUserFidelityCardValidity.Error'});
         }
     }

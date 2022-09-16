@@ -6,12 +6,15 @@ import { BusinessFidelityCardApi } from "../integration/BusinessFidelityCardApi"
 import { BusinessFidelityCard } from "../model/BusinessFidelityCard";
 import { BusinessFidelityCardRepository } from "../repository/BusinessFidelityCardRepository";
 import { UserFidelityCardRepository } from "../repository/UserFidelityCardRepository";
+import { UserDiscountService } from "./UserDiscountService";
 
 const LOG = new Logger("CompanyService.class");
 const db = require("../../connection");
 const businessFidelityCardRepository = new BusinessFidelityCardRepository();
 const businessRepository = new BusinessRepository();
 const userFidelityCardRepository = new UserFidelityCardRepository();
+
+const userDiscountService = new UserDiscountService();
 
 export class BusinessFidelityCardService implements BusinessFidelityCardApi {
 
@@ -72,15 +75,18 @@ export class BusinessFidelityCardService implements BusinessFidelityCardApi {
             userFidelityCard.status == 'ACTIVE', 'USER FIDELITY CARD INVALID', 
         connection, 403);
         
-        const businessFidelityCard = await businessFidelityCardRepository.findById(userFidelityCard.discount_id, connection);
+        const businessFidelityCard = await businessFidelityCardRepository.findActiveByBusinessId(businessId, connection);
         await Precondition.checkIfTrue(businessFidelityCard && businessFidelityCard.status == 'ACTIVE', 'BUSINESS FIDELITY CARD INVALID', connection, 403);
 
         await connection.newTransaction();
-        const newUserFidelityCard = await this.updateUserFidelityCardCountdown(userFidelityCard.id, [businessId], connection);
+        const newUserFidelityCard = await this.updateUserFidelityCardCountdown(userFidelityCard.id, [businessId], businessFidelityCard.expenses_amount, connection);
+        if (newUserFidelityCard.discount) {
+            await userDiscountService.addUserOriginDiscount(userFidelityCard.business_id, userFidelityCard.user_id, 'FIDELITY_CARD', connection);
+        }
         await connection.commit();
         await connection.release();
 
-        return newUserFidelityCard;
+        return newUserFidelityCard.fidelityCard;
     }
 
     public async resetUserFidelityCardValidity(userFidelityCardId: number, businessId: number) {
@@ -112,10 +118,10 @@ export class BusinessFidelityCardService implements BusinessFidelityCardApi {
         return businessFidelityCards;
     }
 
-    public async getBusinessFidelityCard(businessFidelityCardId: number) {
+    public async getBusinessFidelityCard(businessId: number) {
         const connection = await db.connection();
 
-        const businessFidelityCard = await businessFidelityCardRepository.findById(businessFidelityCardId, connection);
+        const businessFidelityCard = await businessFidelityCardRepository.findByBusinessId(businessId, connection);
         await connection.release();
 
         return businessFidelityCard;
@@ -138,7 +144,7 @@ export class BusinessFidelityCardService implements BusinessFidelityCardApi {
         try {
             const newFidelityCard = new BusinessFidelityCard();
             newFidelityCard.business_id = +businessId;
-            newFidelityCard.discount_id = +fidelityCardDTO.discount_id;
+            if (fidelityCardDTO.discount_id) newFidelityCard.discount_id = +fidelityCardDTO.discount_id;
             newFidelityCard.expenses_amount = +fidelityCardDTO.expenses_amount;
             newFidelityCard.status = 'ACTIVE';
 
@@ -157,7 +163,7 @@ export class BusinessFidelityCardService implements BusinessFidelityCardApi {
     private async setBusinessFidelityCard(fidelityCardDTO: any, businessFidelityCardId: number, connection) {
         try {
             const newFidelityCard = await businessFidelityCardRepository.findById(businessFidelityCardId, connection);
-            newFidelityCard.discount_id = +fidelityCardDTO.discount_id;
+            if (fidelityCardDTO.discount_id || newFidelityCard.discount_id) newFidelityCard.discount_id = +fidelityCardDTO.discount_id || newFidelityCard.discount_id;
             newFidelityCard.expenses_amount = +fidelityCardDTO.expenses_amount;
 
             await businessFidelityCardRepository.update(newFidelityCard, connection);
@@ -200,25 +206,45 @@ export class BusinessFidelityCardService implements BusinessFidelityCardApi {
         }
     }
 
-    private async updateUserFidelityCardCountdown(userFidelityCardId: number, businessesIds: number[], connection) {
+    private async updateUserFidelityCardCountdown(userFidelityCardId: number, businessesIds: number[], businessExpensesAmount: number, connection) {
         const fidelityCard = await userFidelityCardRepository.findById(userFidelityCardId, connection);
-        if (!fidelityCard || !businessesIds.includes(fidelityCard.business_id)) return fidelityCard;
+        if (!fidelityCard || !businessesIds.includes(fidelityCard.business_id)) return { fidelityCard, discount: false };
         try {
-            if (!fidelityCard.discount_countdown) {
+            if (fidelityCard.discount_countdown <= 0 || !fidelityCard.discount_countdown) {
+                LOG.error("HELP !!! COUNTDOWN LESS THAN ZERO! WTF", fidelityCard.id);
+                fidelityCard.discount_countdown = businessExpensesAmount;
+                await userFidelityCardRepository.update(fidelityCard, connection);
+                return { fidelityCard, discount: false };
+            } else if (fidelityCard.discount_countdown == 1) {
+                // BONUS!
+                fidelityCard.discount_countdown = businessExpensesAmount;
+                fidelityCard.expenses_amount = businessExpensesAmount;
                 fidelityCard.usage_amount = (+fidelityCard.usage_amount) + 1;
                 await userFidelityCardRepository.update(fidelityCard, connection);
-                // TODO: create user discount
-                return fidelityCard;
-            } else {
-                if (fidelityCard.discount_countdown <= 0) {
-                    LOG.error("HELP !!! COUNTDOWN LESS THAN ZERO! WTF", fidelityCard.id);
-                    return fidelityCard;
-                } else {
-                    fidelityCard.discount_countdown = (+fidelityCard.discount_countdown) - 1;
+                return { fidelityCard, discount: true };
+            } else if (fidelityCard.expenses_amount != businessExpensesAmount) {
+                
+                const timesWentThereIncludedNow = fidelityCard.expenses_amount - (fidelityCard.discount_countdown - 1);
+                if (timesWentThereIncludedNow >= businessExpensesAmount) {
+                    // BONUS!
+                    fidelityCard.discount_countdown = businessExpensesAmount;
                     fidelityCard.usage_amount = (+fidelityCard.usage_amount) + 1;
+                    fidelityCard.expenses_amount = businessExpensesAmount;
                     await userFidelityCardRepository.update(fidelityCard, connection);
-                    return fidelityCard;
+                    return { fidelityCard, discount: true };
+                } else {
+                    fidelityCard.discount_countdown = businessExpensesAmount - timesWentThereIncludedNow;
+                    fidelityCard.usage_amount = (+fidelityCard.usage_amount) + 1;
+                    fidelityCard.expenses_amount = businessExpensesAmount;
+                    await userFidelityCardRepository.update(fidelityCard, connection);
+                    return { fidelityCard, discount: false };
                 }
+
+            } else {
+                fidelityCard.discount_countdown = (+fidelityCard.discount_countdown) - 1;
+                fidelityCard.usage_amount = (+fidelityCard.usage_amount) + 1;
+                await userFidelityCardRepository.update(fidelityCard, connection);
+                return { fidelityCard, discount: false };
             }
         } catch (e) {
             LOG.error(e);

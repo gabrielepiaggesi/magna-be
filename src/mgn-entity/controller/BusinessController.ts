@@ -62,4 +62,16 @@ export class BusinessController implements BusinessApi {
         }
     }
 
+    @Get()
+    @Path("/getUserBusinessesList/:userId")
+    public async getUserBusinessesList(res: Response, req) {
+        try {
+            const response = await businessService.getUserBusinessesList(parseInt(req.params.userId, 10));
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Business.getUserBusinessesList.Error'});
+        }
+    }
+
 }

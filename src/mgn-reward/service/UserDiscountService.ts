@@ -4,13 +4,14 @@ import { IndroError } from "../../utils/IndroError";
 import { Precondition } from "../../utils/Preconditions";
 import { UserDiscountApi } from "../integration/UserDiscountApi";
 import { UserDiscount } from "../model/UserDiscount";
+import { BusinessDiscountRepository } from "../repository/BusinessDiscountRepository";
 import { UserDiscountRepository } from "../repository/UserDiscountRepository";
 
 const LOG = new Logger("CompanyService.class");
 const db = require("../../connection");
 const userDiscountRepository = new UserDiscountRepository();
 const businessRepository = new BusinessRepository();
-
+const businessDiscountRepository = new BusinessDiscountRepository();
 export class UserDiscountService implements UserDiscountApi {
 
     public async addUserDiscount(dto: any, userId: number) {
@@ -21,6 +22,21 @@ export class UserDiscountService implements UserDiscountApi {
         await connection.commit();
         await connection.release();
         
+        return newUserDiscount;
+    }
+
+    public async addUserOriginDiscount(businessId: number, userId: number, origin: 'FIDELITY_CARD'|'IG_POST', connection) {
+        const businessDiscount = await businessDiscountRepository.findActiveByBusinessIdAndOrigin(businessId, origin, connection);
+        if (!businessDiscount) {
+            await connection.release();
+            return;
+        }
+
+        const dto = {
+            business_id: businessId,
+            discount_id: businessDiscount.id
+        };
+        const newUserDiscount = await this.createUserDiscount(dto, userId, connection);
         return newUserDiscount;
     }
 
@@ -64,7 +80,7 @@ export class UserDiscountService implements UserDiscountApi {
     public async getUserDiscounts(userId: number) {
         const connection = await db.connection();
 
-        const usersDiscounts = await userDiscountRepository.findByUserId(userId, connection);
+        const usersDiscounts = await userDiscountRepository.findActiveByUserIdJoinBusiness(userId, connection);
         await connection.release();
 
         return usersDiscounts;

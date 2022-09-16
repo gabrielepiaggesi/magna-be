@@ -26,7 +26,7 @@ class BusinessFidelityCardRepository extends Repository_1.Repository {
             const c = conn;
             // tslint:disable-next-line:max-line-length
             return c.query(query || `
-        select * from ${this.table} where business_id = ${mysql2_1.default.escape(businessId)} and status = 'ACTIVE' and deleted_at is null order by id desc`).then((results) => results);
+        select * from ${this.table} where business_id = ${mysql2_1.default.escape(businessId)} and status = 'ACTIVE' and deleted_at is null order by id desc limit 1`).then((results) => results[0] || null);
         });
     }
     findByBusinessId(businessId, conn = null, query = null) {
@@ -34,7 +34,7 @@ class BusinessFidelityCardRepository extends Repository_1.Repository {
             const c = conn;
             // tslint:disable-next-line:max-line-length
             return c.query(query || `
-        select * from ${this.table} where business_id = ${mysql2_1.default.escape(businessId)} and deleted_at is null order by id desc`).then((results) => results);
+        select * from ${this.table} where business_id = ${mysql2_1.default.escape(businessId)} and deleted_at is null order by id desc limit 1`).then((results) => results[0] || null);
         });
     }
 }

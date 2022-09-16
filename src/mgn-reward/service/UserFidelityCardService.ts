@@ -15,11 +15,17 @@ const businessRepository = new BusinessRepository();
 
 export class UserFidelityCardService implements UserFidelityCardApi {
 
-    public async addUserFidelityCard(dto: any, userId: number) {
+    public async addUserFidelityCard(businessId: number, userId: number) {
         const connection = await db.connection();
         
+        const userFidelityCard = await userFidelityCardRepository.findActiveByUserIdAndBusinessId(userId, businessId, connection);
+        if (userFidelityCard) {
+            await connection.release();
+            return userFidelityCard;
+        }
+
         await connection.newTransaction();
-        const newUserFidelityCard = await this.createUserFidelityCard(dto, userId, connection);
+        const newUserFidelityCard = await this.createUserFidelityCard(businessId, userId, connection);
         await connection.commit();
         await connection.release();
         
@@ -55,6 +61,18 @@ export class UserFidelityCardService implements UserFidelityCardApi {
         const userBusinesses = await businessRepository.findByUserId(loggedUserId, connection);
         const businessesIds = userBusinesses.map(uB => uB.id);
 
+        const fidelityCard = await userFidelityCardRepository.findById(userFidelityCardId, connection);
+        if (!fidelityCard || !businessesIds.includes(fidelityCard.business_id)) return fidelityCard;
+
+        const userFidelityCard = await userFidelityCardRepository.findActiveByUserIdAndBusinessId(fidelityCard.user_id, fidelityCard.business_id, connection);
+        if (userFidelityCard) {
+            await connection.newTransaction();
+            await this.removeUserFidelityCard(userFidelityCardId, loggedUserId, connection);
+            await connection.commit();
+            await connection.release();
+            return userFidelityCard;
+        }
+
         await connection.newTransaction();
         const business = await this.updateUserFidelityCardStatus('ACTIVE', userFidelityCardId, businessesIds, connection);
         await connection.commit();
@@ -66,7 +84,7 @@ export class UserFidelityCardService implements UserFidelityCardApi {
     public async getUserFidelityCards(userId: number) {
         const connection = await db.connection();
 
-        const userFidelityCards = await userFidelityCardRepository.findByUserId(userId, connection);
+        const userFidelityCards = await userFidelityCardRepository.findActiveByUserIdJoinBusiness(userId, connection);
         await connection.release();
 
         return userFidelityCards;
@@ -92,14 +110,15 @@ export class UserFidelityCardService implements UserFidelityCardApi {
         return business;
     }
 
-    private async createUserFidelityCard(fidelityCardDTO: any, userId: number, connection) {
-        const businessFidelityCard = await businessFidelityCardRepository.findById(+fidelityCardDTO.fidelity_card_id, connection);
-        if (!businessFidelityCard || businessFidelityCard.business_id != +fidelityCardDTO.businessId) return businessFidelityCard;
+    private async createUserFidelityCard(businessId: number, userId: number, connection) {
+        const businessFidelityCard = await businessFidelityCardRepository.findActiveByBusinessId(+businessId, connection);
+        if (!businessFidelityCard) return businessFidelityCard;
         try {
             const newFidelityCard = new UserFidelityCard();
-            newFidelityCard.business_id = +fidelityCardDTO.businessId;
-            newFidelityCard.discount_id = +fidelityCardDTO.discount_id;
-            newFidelityCard.fidelity_card_id = +fidelityCardDTO.fidelity_card_id;
+            newFidelityCard.business_id = businessFidelityCard.business_id;
+            newFidelityCard.discount_id = businessFidelityCard.discount_id;
+            newFidelityCard.fidelity_card_id = businessFidelityCard.id;
+            newFidelityCard.expenses_amount = businessFidelityCard.expenses_amount;
             newFidelityCard.user_id = userId;
             newFidelityCard.status = 'ACTIVE';
             newFidelityCard.usage_amount = 0;
