@@ -12,13 +12,22 @@ import { IndroError } from "../../utils/IndroError";
 import { getDatesDiffIn } from "../../utils/Helpers";
 import { EmailSender } from "../../mgn-framework/services/EmailSender";
 import { AuthApi } from "../integration/AuthApi";
+import { AppVersionRepository } from "../repository/AppVersionRepository";
 
 const LOG = new Logger("AuthService.class");
 const userRepository = new UserRepository();
+const appVersionRepository = new AppVersionRepository();
 const db = require("../../connection");
 const shortid = require('shortid');
 
 export class AuthService implements AuthApi {
+
+    public async appVersion() {
+        const connection = await db.connection();
+        const appVersion = await appVersionRepository.findLastActiveAppVersion(connection);
+        await connection.release();
+        return appVersion;
+    }
 
     public async login(userDTO: LoginDTO) {
         LOG.debug("login...");

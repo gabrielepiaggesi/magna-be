@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { auth } from "../..";
 import { Logger } from "../../mgn-framework/services/Logger";
-import { Path, Post } from "../../utils/Decorator";
+import { Get, Path, Post } from "../../utils/Decorator";
 import { AuthApi } from "../integration/AuthApi";
 import { AuthService } from "../service/AuthService";
 
@@ -32,6 +32,18 @@ export class AuthController implements AuthApi {
         } catch(e) {
             LOG.debug(e);
             return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Auth.Signup.Error'});
+        }
+    }
+
+    @Get()
+    @Path("/appVersion")
+    public async appVersion(res: Response, req) {
+        try {
+            const response = await authService.appVersion();
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Auth.appVersion.Error'});
         }
     }
 
