@@ -23,11 +23,21 @@ const Preconditions_1 = require("../../utils/Preconditions");
 const IndroError_1 = require("../../utils/IndroError");
 const Helpers_1 = require("../../utils/Helpers");
 const EmailSender_1 = require("../../mgn-framework/services/EmailSender");
+const AppVersionRepository_1 = require("../repository/AppVersionRepository");
 const LOG = new Logger_1.Logger("AuthService.class");
 const userRepository = new UserRepository_1.UserRepository();
+const appVersionRepository = new AppVersionRepository_1.AppVersionRepository();
 const db = require("../../connection");
 const shortid = require('shortid');
 class AuthService {
+    appVersion() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            const appVersion = yield appVersionRepository.findLastActiveAppVersion(connection);
+            yield connection.release();
+            return appVersion;
+        });
+    }
     login(userDTO) {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.debug("login...");

@@ -46,6 +46,18 @@ class AuthController {
             }
         });
     }
+    appVersion(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield authService.appVersion();
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Auth.appVersion.Error' }));
+            }
+        });
+    }
 }
 __decorate([
     Decorator_1.Post(),
@@ -55,5 +67,9 @@ __decorate([
     Decorator_1.Post(),
     Decorator_1.Path("/signup")
 ], AuthController.prototype, "signup", null);
+__decorate([
+    Decorator_1.Get(),
+    Decorator_1.Path("/appVersion")
+], AuthController.prototype, "appVersion", null);
 exports.AuthController = AuthController;
 //# sourceMappingURL=AuthController.js.map
