@@ -15,10 +15,12 @@ const BusinessFidelityCardController_1 = require("./mgn-reward/controller/Busine
 const UserDiscountController_1 = require("./mgn-reward/controller/UserDiscountController");
 const UserFidelityCardController_1 = require("./mgn-reward/controller/UserFidelityCardController");
 const Helpers_1 = require("./utils/Helpers");
+const ReservationController_1 = require("./mgn-network/controller/ReservationController");
 const routes = express_1.default.Router();
 routes.use("/auth", Helpers_1.routeFromController(new AuthController_1.AuthController()));
 routes.use("/user", _1.auth.isUser, Helpers_1.routeFromController(new UserController_1.UserController()));
 routes.use("/business", _1.auth.isUser, Helpers_1.routeFromController(new BusinessController_1.BusinessController()));
+routes.use("/reservation", _1.auth.isUser, Helpers_1.routeFromController(new ReservationController_1.ReservationController()));
 routes.use("/userReview", _1.auth.isUser, Helpers_1.routeFromController(new UserReviewController_1.UserReviewController()));
 routes.use("/userSocialPost", _1.auth.isUser, Helpers_1.routeFromController(new UserSocialPostController_1.UserSocialPostController()));
 routes.use("/businessDiscount", _1.auth.isUser, Helpers_1.routeFromController(new BusinessDiscountController_1.BusinessDiscountController()));

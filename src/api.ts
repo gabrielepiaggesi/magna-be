@@ -10,12 +10,14 @@ import { BusinessFidelityCardController } from "./mgn-reward/controller/Business
 import { UserDiscountController } from "./mgn-reward/controller/UserDiscountController";
 import { UserFidelityCardController } from "./mgn-reward/controller/UserFidelityCardController";
 import { routeFromController } from "./utils/Helpers";
+import { ReservationController } from './mgn-network/controller/ReservationController';
 const routes = express.Router();
 
 routes.use("/auth", routeFromController(new AuthController()));
 routes.use("/user", auth.isUser, routeFromController(new UserController()));
 routes.use("/business", auth.isUser, routeFromController(new BusinessController()));
 
+routes.use("/reservation", auth.isUser, routeFromController(new ReservationController()));
 routes.use("/userReview", auth.isUser, routeFromController(new UserReviewController()));
 routes.use("/userSocialPost", auth.isUser, routeFromController(new UserSocialPostController()));
 
