@@ -16,6 +16,7 @@ const UserDiscountController_1 = require("./mgn-reward/controller/UserDiscountCo
 const UserFidelityCardController_1 = require("./mgn-reward/controller/UserFidelityCardController");
 const Helpers_1 = require("./utils/Helpers");
 const ReservationController_1 = require("./mgn-network/controller/ReservationController");
+const UserReferralController_1 = require("./mgn-reward/controller/UserReferralController");
 const routes = express_1.default.Router();
 routes.use("/auth", Helpers_1.routeFromController(new AuthController_1.AuthController()));
 routes.use("/user", _1.auth.isUser, Helpers_1.routeFromController(new UserController_1.UserController()));
@@ -27,5 +28,6 @@ routes.use("/businessDiscount", _1.auth.isUser, Helpers_1.routeFromController(ne
 routes.use("/userDiscount", _1.auth.isUser, Helpers_1.routeFromController(new UserDiscountController_1.UserDiscountController()));
 routes.use("/businessFidelityCard", _1.auth.isUser, Helpers_1.routeFromController(new BusinessFidelityCardController_1.BusinessFidelityCardController()));
 routes.use("/userFidelityCard", _1.auth.isUser, Helpers_1.routeFromController(new UserFidelityCardController_1.UserFidelityCardController()));
+routes.use("/userReferral", _1.auth.isUser, Helpers_1.routeFromController(new UserReferralController_1.UserReferralController()));
 exports.default = routes;
 //# sourceMappingURL=api.js.map

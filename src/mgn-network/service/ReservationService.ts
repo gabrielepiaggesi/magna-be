@@ -56,11 +56,14 @@ export class ReservationService implements ReservationApi {
         return newUser;
     }
 
-    public async updateBusinessReservation(dto: { status: string, subStatus?: string, tableNumber?: number }, reservationId: number, userId: number) {
+    public async updateBusinessReservation(dto: { status: string, subStatus?: string, tableNumber?: number, businessDate?: string }, reservationId: number, userId: number) {
         const connection = await db.connection();
         const userBusinesses = await businessRepository.findByUserId(userId, connection);
         const businessesIds = userBusinesses.map(uB => uB.id);
 
+        if (dto.subStatus && dto.subStatus === 'new_date' && dto.businessDate) {
+            dto.businessDate = new Date(Date.now()).toISOString().substring(0,10) + ' ' + dto.businessDate;
+        }
         const res = await reservationRepository.findById(reservationId, connection);
         if (!res || !businessesIds.includes(res.business_id)) return res;
 

@@ -11,6 +11,7 @@ import { UserDiscountController } from "./mgn-reward/controller/UserDiscountCont
 import { UserFidelityCardController } from "./mgn-reward/controller/UserFidelityCardController";
 import { routeFromController } from "./utils/Helpers";
 import { ReservationController } from './mgn-network/controller/ReservationController';
+import { UserReferralController } from "./mgn-reward/controller/UserReferralController";
 const routes = express.Router();
 
 routes.use("/auth", routeFromController(new AuthController()));
@@ -25,5 +26,6 @@ routes.use("/businessDiscount", auth.isUser, routeFromController(new BusinessDis
 routes.use("/userDiscount", auth.isUser, routeFromController(new UserDiscountController()));
 routes.use("/businessFidelityCard", auth.isUser, routeFromController(new BusinessFidelityCardController()));
 routes.use("/userFidelityCard", auth.isUser, routeFromController(new UserFidelityCardController()));
+routes.use("/userReferral", auth.isUser, routeFromController(new UserReferralController()));
 
 export default routes;

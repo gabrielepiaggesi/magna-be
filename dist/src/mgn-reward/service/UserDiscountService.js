@@ -15,17 +15,19 @@ const IndroError_1 = require("../../utils/IndroError");
 const UserDiscount_1 = require("../model/UserDiscount");
 const BusinessDiscountRepository_1 = require("../repository/BusinessDiscountRepository");
 const UserDiscountRepository_1 = require("../repository/UserDiscountRepository");
+const UserFidelityCardService_1 = require("./UserFidelityCardService");
 const LOG = new Logger_1.Logger("CompanyService.class");
 const db = require("../../connection");
 const userDiscountRepository = new UserDiscountRepository_1.UserDiscountRepository();
 const businessRepository = new BusinessRepository_1.BusinessRepository();
 const businessDiscountRepository = new BusinessDiscountRepository_1.BusinessDiscountRepository();
+const userFidelityCardService = new UserFidelityCardService_1.UserFidelityCardService();
 class UserDiscountService {
     addUserDiscount(dto, userId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
             yield connection.newTransaction();
-            const newUserDiscount = yield this.createUserDiscount(dto, userId, connection);
+            const newUserDiscount = yield this.createUserDiscount(dto, userId, null, connection);
             yield connection.commit();
             yield connection.release();
             return newUserDiscount;
@@ -35,15 +37,35 @@ class UserDiscountService {
         return __awaiter(this, void 0, void 0, function* () {
             const businessDiscount = yield businessDiscountRepository.findActiveByBusinessIdAndOrigin(businessId, origin, connection);
             if (!businessDiscount) {
-                yield connection.release();
                 return;
             }
             const dto = {
                 business_id: businessId,
                 discount_id: businessDiscount.id
             };
-            const newUserDiscount = yield this.createUserDiscount(dto, userId, connection);
+            const newUserDiscount = yield this.createUserDiscount(dto, userId, null, connection);
             return newUserDiscount;
+        });
+    }
+    addUserReferralDiscount(businessId, userId, referralId, connection) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const businessDiscount = yield businessDiscountRepository.findActiveByBusinessIdAndOrigin(businessId, 'REFERRAL', connection);
+            if (!businessDiscount) {
+                return;
+            }
+            const usersDiscount = yield userDiscountRepository.findByUserIdAndBusinessId(userId, businessId, connection);
+            if (!usersDiscount.length) {
+                yield userFidelityCardService.addUserFidelityCardInternal(businessId, userId, connection);
+                const dto = {
+                    business_id: businessId,
+                    discount_id: businessDiscount.id
+                };
+                const newUserDiscount = yield this.createUserDiscount(dto, userId, referralId, connection);
+                return newUserDiscount;
+            }
+            else {
+                return null;
+            }
         });
     }
     updateUserDiscount(dto, userDiscountId) {
@@ -108,11 +130,13 @@ class UserDiscountService {
             return business;
         });
     }
-    createUserDiscount(discountDTO, userId, connection) {
+    createUserDiscount(discountDTO, userId, referralId = null, connection) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const newDiscount = new UserDiscount_1.UserDiscount();
                 newDiscount.user_id = userId;
+                if (referralId)
+                    newDiscount.referral_id = referralId;
                 newDiscount.business_id = +discountDTO.business_id;
                 newDiscount.discount_id = +discountDTO.discount_id;
                 newDiscount.status = 'ACTIVE';

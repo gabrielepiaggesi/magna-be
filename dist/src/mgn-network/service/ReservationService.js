@@ -64,6 +64,9 @@ class ReservationService {
             const connection = yield db.connection();
             const userBusinesses = yield businessRepository.findByUserId(userId, connection);
             const businessesIds = userBusinesses.map(uB => uB.id);
+            if (dto.subStatus && dto.subStatus === 'new_date' && dto.businessDate) {
+                dto.businessDate = new Date(Date.now()).toISOString().substring(0, 10) + ' ' + dto.businessDate;
+            }
             const res = yield reservationRepository.findById(reservationId, connection);
             if (!res || !businessesIds.includes(res.business_id))
                 return res;

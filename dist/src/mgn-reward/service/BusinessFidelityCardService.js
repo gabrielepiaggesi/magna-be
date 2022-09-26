@@ -219,13 +219,23 @@ class BusinessFidelityCardService {
                     yield userFidelityCardRepository.update(fidelityCard, connection);
                     return { fidelityCard, discount: false };
                 }
-                else if (fidelityCard.discount_countdown == 1) {
-                    // BONUS!
-                    fidelityCard.discount_countdown = businessExpensesAmount;
-                    fidelityCard.expenses_amount = businessExpensesAmount;
-                    fidelityCard.usage_amount = (+fidelityCard.usage_amount) + 1;
-                    yield userFidelityCardRepository.update(fidelityCard, connection);
-                    return { fidelityCard, discount: true };
+                else if (fidelityCard.discount_countdown <= 2) {
+                    if (fidelityCard.discount_countdown == 2) {
+                        // BONUS!
+                        fidelityCard.discount_countdown = fidelityCard.discount_countdown - 1;
+                        fidelityCard.expenses_amount = businessExpensesAmount;
+                        fidelityCard.usage_amount = (+fidelityCard.usage_amount) + 1;
+                        yield userFidelityCardRepository.update(fidelityCard, connection);
+                        return { fidelityCard, discount: true };
+                    }
+                    else if (fidelityCard.discount_countdown == 1) {
+                        // USING BONUS!
+                        fidelityCard.discount_countdown = businessExpensesAmount;
+                        fidelityCard.expenses_amount = businessExpensesAmount;
+                        fidelityCard.usage_amount = (+fidelityCard.usage_amount) + 1;
+                        yield userFidelityCardRepository.update(fidelityCard, connection);
+                        return { fidelityCard, discount: false };
+                    }
                 }
                 else if (fidelityCard.expenses_amount != businessExpensesAmount) {
                     const timesWentThereIncludedNow = fidelityCard.expenses_amount - (fidelityCard.discount_countdown - 1);

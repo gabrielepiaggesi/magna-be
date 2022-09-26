@@ -16,11 +16,19 @@ const Preconditions_1 = require("../../utils/Preconditions");
 const BusinessDiscount_1 = require("../model/BusinessDiscount");
 const BusinessDiscountRepository_1 = require("../repository/BusinessDiscountRepository");
 const UserDiscountRepository_1 = require("../repository/UserDiscountRepository");
+const UserFidelityCardRepository_1 = require("../repository/UserFidelityCardRepository");
+const BusinessFidelityCardService_1 = require("./BusinessFidelityCardService");
+const UserDiscountService_1 = require("./UserDiscountService");
+const UserReferralRepository_1 = require("../repository/UserReferralRepository");
 const LOG = new Logger_1.Logger("CompanyService.class");
 const db = require("../../connection");
 const businessDiscountRepository = new BusinessDiscountRepository_1.BusinessDiscountRepository();
 const userDiscountRepository = new UserDiscountRepository_1.UserDiscountRepository();
 const businessRepository = new BusinessRepository_1.BusinessRepository();
+const userFidelityCardRepository = new UserFidelityCardRepository_1.UserFidelityCardRepository();
+const businessFidelityCardService = new BusinessFidelityCardService_1.BusinessFidelityCardService();
+const userDiscountService = new UserDiscountService_1.UserDiscountService();
+const userReferralRepository = new UserReferralRepository_1.UserReferralRepository();
 class BusinessDiscountService {
     addBusinessDiscount(dto, businessId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -77,6 +85,13 @@ class BusinessDiscountService {
             yield Preconditions_1.Precondition.checkIfTrue(businessDiscount && businessDiscount.status == 'ACTIVE', 'BUSINESS DISCOUNT INVALID', connection, 403);
             yield connection.newTransaction();
             const business = yield this.updateUserDiscountStatus('USED', userDiscount.id, [businessId], connection);
+            if (userDiscount.referral_id) {
+                const referral = yield userReferralRepository.findById(userDiscount.referral_id, connection);
+                yield userDiscountService.addUserOriginDiscount(userDiscount.business_id, referral.user_id, 'REFERRAL', connection);
+            }
+            const userCards = yield userFidelityCardRepository.findActiveByUserIdAndBusinessId(userDiscount.user_id, userDiscount.business_id, connection);
+            if (userCards.length)
+                yield businessFidelityCardService.checkUserFidelityCardValidity(userCards[0].id, userDiscount.business_id);
             yield connection.commit();
             yield connection.release();
             return business;

@@ -6,12 +6,21 @@ import { BusinessDiscountApi } from "../integration/BusinessDiscountApi";
 import { BusinessDiscount } from "../model/BusinessDiscount";
 import { BusinessDiscountRepository } from "../repository/BusinessDiscountRepository";
 import { UserDiscountRepository } from "../repository/UserDiscountRepository";
+import { UserFidelityCard } from '../model/UserFidelityCard';
+import { UserFidelityCardRepository } from '../repository/UserFidelityCardRepository';
+import { BusinessFidelityCardService } from "./BusinessFidelityCardService";
+import { UserDiscountService } from "./UserDiscountService";
+import { UserReferralRepository } from '../repository/UserReferralRepository';
 
 const LOG = new Logger("CompanyService.class");
 const db = require("../../connection");
 const businessDiscountRepository = new BusinessDiscountRepository();
 const userDiscountRepository = new UserDiscountRepository();
 const businessRepository = new BusinessRepository();
+const userFidelityCardRepository = new UserFidelityCardRepository();
+const businessFidelityCardService = new BusinessFidelityCardService();
+const userDiscountService = new UserDiscountService();
+const userReferralRepository = new UserReferralRepository();
 
 export class BusinessDiscountService implements BusinessDiscountApi {
 
@@ -74,9 +83,16 @@ export class BusinessDiscountService implements BusinessDiscountApi {
         
         const businessDiscount = await businessDiscountRepository.findById(userDiscount.discount_id, connection);
         await Precondition.checkIfTrue(businessDiscount && businessDiscount.status == 'ACTIVE', 'BUSINESS DISCOUNT INVALID', connection, 403);
-
         await connection.newTransaction();
         const business = await this.updateUserDiscountStatus('USED', userDiscount.id, [businessId], connection);
+
+        if (userDiscount.referral_id) {
+            const referral = await userReferralRepository.findById(userDiscount.referral_id, connection);
+            await userDiscountService.addUserOriginDiscount(userDiscount.business_id, referral.user_id, 'REFERRAL', connection);
+        }
+
+        const userCards = await userFidelityCardRepository.findActiveByUserIdAndBusinessId(userDiscount.user_id, userDiscount.business_id, connection);
+        if (userCards.length) await businessFidelityCardService.checkUserFidelityCardValidity(userCards[0].id, userDiscount.business_id);
         await connection.commit();
         await connection.release();
 

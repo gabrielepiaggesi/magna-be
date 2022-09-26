@@ -6,29 +6,30 @@ import { UserDiscountApi } from "../integration/UserDiscountApi";
 import { UserDiscount } from "../model/UserDiscount";
 import { BusinessDiscountRepository } from "../repository/BusinessDiscountRepository";
 import { UserDiscountRepository } from "../repository/UserDiscountRepository";
+import { UserFidelityCardService } from "./UserFidelityCardService";
 
 const LOG = new Logger("CompanyService.class");
 const db = require("../../connection");
 const userDiscountRepository = new UserDiscountRepository();
 const businessRepository = new BusinessRepository();
 const businessDiscountRepository = new BusinessDiscountRepository();
+const userFidelityCardService = new UserFidelityCardService();
 export class UserDiscountService implements UserDiscountApi {
 
     public async addUserDiscount(dto: any, userId: number) {
         const connection = await db.connection();
         
         await connection.newTransaction();
-        const newUserDiscount = await this.createUserDiscount(dto, userId, connection);
+        const newUserDiscount = await this.createUserDiscount(dto, userId, null, connection);
         await connection.commit();
         await connection.release();
         
         return newUserDiscount;
     }
 
-    public async addUserOriginDiscount(businessId: number, userId: number, origin: 'FIDELITY_CARD'|'IG_POST', connection) {
+    public async addUserOriginDiscount(businessId: number, userId: number, origin: 'FIDELITY_CARD'|'IG_POST'|'REFERRAL', connection) {
         const businessDiscount = await businessDiscountRepository.findActiveByBusinessIdAndOrigin(businessId, origin, connection);
         if (!businessDiscount) {
-            await connection.release();
             return;
         }
 
@@ -36,8 +37,28 @@ export class UserDiscountService implements UserDiscountApi {
             business_id: businessId,
             discount_id: businessDiscount.id
         };
-        const newUserDiscount = await this.createUserDiscount(dto, userId, connection);
+        const newUserDiscount = await this.createUserDiscount(dto, userId, null, connection);
         return newUserDiscount;
+    }
+
+    public async addUserReferralDiscount(businessId: number, userId: number, referralId: number, connection) {
+        const businessDiscount = await businessDiscountRepository.findActiveByBusinessIdAndOrigin(businessId, 'REFERRAL', connection);
+        if (!businessDiscount) {
+            return;
+        }
+
+        const usersDiscount = await userDiscountRepository.findByUserIdAndBusinessId(userId, businessId, connection);
+        if (!usersDiscount.length) {
+            await userFidelityCardService.addUserFidelityCardInternal(businessId, userId, connection);
+            const dto = {
+                business_id: businessId,
+                discount_id: businessDiscount.id
+            };
+            const newUserDiscount = await this.createUserDiscount(dto, userId, referralId, connection);
+            return newUserDiscount;
+        } else {
+            return null;
+        }
     }
 
     public async updateUserDiscount(dto: any, userDiscountId: number) {
@@ -108,10 +129,11 @@ export class UserDiscountService implements UserDiscountApi {
         return business;
     }
 
-    private async createUserDiscount(discountDTO: any, userId: number, connection) {
+    private async createUserDiscount(discountDTO: any, userId: number, referralId: number = null, connection) {
         try {
             const newDiscount = new UserDiscount();
             newDiscount.user_id = userId;
+            if (referralId) newDiscount.referral_id = referralId;
             newDiscount.business_id = +discountDTO.business_id;
             newDiscount.discount_id = +discountDTO.discount_id;
             newDiscount.status = 'ACTIVE';

@@ -32,6 +32,16 @@ export class UserFidelityCardService implements UserFidelityCardApi {
         return newUserFidelityCard;
     }
 
+    public async addUserFidelityCardInternal(businessId: number, userId: number, connection) {
+        const userFidelityCard = await userFidelityCardRepository.findActiveByUserIdAndBusinessId(userId, businessId, connection);
+        if (userFidelityCard) {
+            return userFidelityCard;
+        }
+
+        const newUserFidelityCard = await this.createUserFidelityCard(businessId, userId, connection);
+        return newUserFidelityCard;
+    } 
+
     public async updateUserFidelityCard(dto: any, userFidelityCardId: number) {
         const connection = await db.connection();
         

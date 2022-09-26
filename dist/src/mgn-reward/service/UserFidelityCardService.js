@@ -36,6 +36,16 @@ class UserFidelityCardService {
             return newUserFidelityCard;
         });
     }
+    addUserFidelityCardInternal(businessId, userId, connection) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const userFidelityCard = yield userFidelityCardRepository.findActiveByUserIdAndBusinessId(userId, businessId, connection);
+            if (userFidelityCard) {
+                return userFidelityCard;
+            }
+            const newUserFidelityCard = yield this.createUserFidelityCard(businessId, userId, connection);
+            return newUserFidelityCard;
+        });
+    }
     updateUserFidelityCard(dto, userFidelityCardId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
