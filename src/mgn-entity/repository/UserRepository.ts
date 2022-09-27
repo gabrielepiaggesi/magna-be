@@ -32,7 +32,7 @@ export class UserRepository extends Repository<User> {
     public async findByEmail(email: string, conn = null,  query = null): Promise<User> {
         const c = conn;
         // tslint:disable-next-line:max-line-length
-        return c.query(query || `select * from ${this.table} where email = ${mysql2.escape(email)} limit 1`).then((results) => results[0]);
+        return c.query(query || `select * from ${this.table} where email = ${mysql2.escape(email)} and deleted_at is null limit 1`).then((results) => results[0]);
     }
 
     public async findTotalUsers( conn = null, query = null) {

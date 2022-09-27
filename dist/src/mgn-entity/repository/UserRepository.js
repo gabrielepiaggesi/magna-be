@@ -50,7 +50,7 @@ class UserRepository extends Repository_1.Repository {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;
             // tslint:disable-next-line:max-line-length
-            return c.query(query || `select * from ${this.table} where email = ${mysql2_1.default.escape(email)} limit 1`).then((results) => results[0]);
+            return c.query(query || `select * from ${this.table} where email = ${mysql2_1.default.escape(email)} and deleted_at is null limit 1`).then((results) => results[0]);
         });
     }
     findTotalUsers(conn = null, query = null) {
