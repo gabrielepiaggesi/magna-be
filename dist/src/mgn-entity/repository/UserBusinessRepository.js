@@ -15,29 +15,29 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Repository_1 = require("../../mgn-framework/repositories/Repository");
 const db = require("../../connection");
 const mysql2_1 = __importDefault(require("mysql2"));
-class BusinessRepository extends Repository_1.Repository {
+class UserBusinessRepository extends Repository_1.Repository {
     constructor() {
         super(...arguments);
-        this.table = "businesses";
+        this.table = "users_businesses";
     }
     // ${mysql2.escape(stripeId)}
-    whereBusinessesIdsIn(businessIds, conn = null, query = null) {
+    whereUserBusinessesIdsIn(UserBusinessIds, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!businessIds.length)
+            if (!UserBusinessIds.length)
                 return [];
             const c = conn;
             return c.query(query ||
                 `select * 
             from ${this.table} 
-            where id in (?) and deleted_at is null order by id asc`, [businessIds]).then((results) => results);
+            where id in (?) and deleted_at is null order by id asc`, [UserBusinessIds]).then((results) => results);
         });
     }
-    findByUserIdAndBusinessId(businessId, userId, conn = null, query = null) {
+    findByUserIdAndUserBusinessId(UserBusinessId, userId, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;
             // tslint:disable-next-line:max-line-length
             return c.query(query || `
-        select * from ${this.table} where user_id = ${mysql2_1.default.escape(userId)} and id = ${mysql2_1.default.escape(businessId)} and deleted_at is null limit 1`).then((results) => results[0]);
+        select * from ${this.table} where user_id = ${mysql2_1.default.escape(userId)} and id = ${mysql2_1.default.escape(UserBusinessId)} and deleted_at is null limit 1`).then((results) => results[0]);
         });
     }
     findByUserId(userId, conn = null, query = null) {
@@ -48,7 +48,23 @@ class BusinessRepository extends Repository_1.Repository {
         select * from ${this.table} where user_id = ${mysql2_1.default.escape(userId)} and deleted_at is null order by id desc`).then((results) => results);
         });
     }
-    findTotalBusinesses(conn = null, query = null) {
+    findByBusinessId(businessId, conn = null, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            // tslint:disable-next-line:max-line-length
+            return c.query(query || `
+        select * from ${this.table} where business_id = ${mysql2_1.default.escape(businessId)} and deleted_at is null order by id desc`).then((results) => results);
+        });
+    }
+    findByBusinessIdJoinUserEmail(businessId, conn = null, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            // tslint:disable-next-line:max-line-length
+            return c.query(query || `
+        select uB.*, u.email as user_email from ${this.table} uB join users u on u.id = uB.user_id and u.deleted_at is null where uB.business_id = ${mysql2_1.default.escape(businessId)} and uB.deleted_at is null order by uB.id desc`).then((results) => results);
+        });
+    }
+    findTotalUserBusinesses(conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;
             const q = `select * from ${this.table} and deleted_at is null`;
@@ -56,5 +72,5 @@ class BusinessRepository extends Repository_1.Repository {
         });
     }
 }
-exports.BusinessRepository = BusinessRepository;
-//# sourceMappingURL=BusinessRepository.js.map
+exports.UserBusinessRepository = UserBusinessRepository;
+//# sourceMappingURL=UserBusinessRepository.js.map

@@ -21,6 +21,13 @@ export class ReservationRepository extends Repository<Reservation> {
         select * from ${this.table} where user_id = ${mysql2.escape(userId)} and deleted_at is null order by id desc`).then((results) => results);
     }
 
+    public async findByUserIdJoinBusiness(userId: number, conn = null,  query = null): Promise<Reservation[]> {
+        const c = conn;
+        // tslint:disable-next-line:max-line-length
+        return c.query(query || `
+        select r.*, b.name as business_name from ${this.table} r join businesses b on b.id = r.business_id and b.deleted_at is null where r.user_id = ${mysql2.escape(userId)} and r.deleted_at is null order by r.id desc`).then((results) => results);
+    }
+
     public async findByBusinessId(businessId: number, conn = null,  query = null): Promise<Reservation[]> {
         const c = conn;
         // tslint:disable-next-line:max-line-length

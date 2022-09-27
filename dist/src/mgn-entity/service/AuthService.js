@@ -61,26 +61,27 @@ class AuthService {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.debug("signup...", userDTO);
             const userAge = Helpers_1.getDatesDiffIn(userDTO.birthdate, Date.now(), 'years');
-            yield Preconditions_1.Precondition.checkIfFalse((!userAge || userAge < 18 || userAge > 100), "Età Invalida! Sei troppo giovane, non puoi iscriverti");
+            yield Preconditions_1.Precondition.checkIfFalse((!userAge || userAge < 4 || userAge > 100), "Età Invalida! Sei troppo giovane, non puoi iscriverti");
             const connection = yield db.connection();
             const userWithThisEmail = yield userRepository.findByEmail(userDTO.email, connection);
             const password = shortid.generate();
             const passwordHashed = yield bcrypt_1.default.hash(password, 10);
             const emailTemplateId = 1;
             if (userWithThisEmail) {
-                yield this.updateUserPassword(userWithThisEmail, passwordHashed, connection);
-                const payload = { id: userWithThisEmail.id, type: 'IndroUser122828?' };
-                const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
-                EmailSender_1.EmailSender.sendSpecificEmail({
-                    templateId: emailTemplateId,
-                    email: userDTO.email,
-                    params: {
-                        email: userDTO.email,
-                        pwd: password,
-                        token
-                    }
-                });
-                return { msg: "ok" };
+                // await this.updateUserPassword(userWithThisEmail, passwordHashed, connection);
+                // const payload = { id: userWithThisEmail.id, type: 'IndroUser122828?' };
+                // const token = jwt.sign(payload, jwtConfig.secretOrKey);
+                // EmailSender.sendSpecificEmail({ 
+                //     templateId: emailTemplateId, 
+                //     email: userDTO.email, 
+                //     params: { 
+                //         email: userDTO.email, 
+                //         pwd: password,
+                //         token
+                //     } 
+                // });
+                yield connection.release();
+                return { msg: "user_exists" };
             }
             else {
                 yield Preconditions_1.Precondition.checkIfFalse((!!userWithThisEmail || !userDTO.email || !userDTO.hasAccepted), "General Error", connection);
@@ -88,7 +89,7 @@ class AuthService {
                 const newUser = yield this.saveNewUser(userDTO, connection);
                 const payload = { id: newUser.id, type: 'IndroUser122828?' };
                 const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
-                EmailSender_1.EmailSender.sendSpecificEmail({ templateId: emailTemplateId, email: userDTO.email, params: { token, email: userDTO.email, pwd: password } });
+                EmailSender_1.EmailSender.sendSpecificEmail({ templateId: emailTemplateId, email: userDTO.email, params: { email: userDTO.email, pwd: password } });
                 return { msg: "ok", token, user: newUser };
             }
         });

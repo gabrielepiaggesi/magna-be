@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const BusinessRepository_1 = require("../../mgn-entity/repository/BusinessRepository");
+const UserBusinessRepository_1 = require("../../mgn-entity/repository/UserBusinessRepository");
 const Logger_1 = require("../../mgn-framework/services/Logger");
 const IndroError_1 = require("../../utils/IndroError");
 const UserFidelityCard_1 = require("../model/UserFidelityCard");
@@ -19,7 +19,7 @@ const LOG = new Logger_1.Logger("CompanyService.class");
 const db = require("../../connection");
 const userFidelityCardRepository = new UserFidelityCardRepository_1.UserFidelityCardRepository();
 const businessFidelityCardRepository = new BusinessFidelityCardRepository_1.BusinessFidelityCardRepository();
-const businessRepository = new BusinessRepository_1.BusinessRepository();
+const userBusinessRepository = new UserBusinessRepository_1.UserBusinessRepository();
 class UserFidelityCardService {
     addUserFidelityCard(businessId, userId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -59,8 +59,8 @@ class UserFidelityCardService {
     suspendUserFidelityCard(userFidelityCardId, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const userBusinesses = yield businessRepository.findByUserId(loggedUserId, connection);
-            const businessesIds = userBusinesses.map(uB => uB.id);
+            const userBusinesses = yield userBusinessRepository.findByUserId(loggedUserId, connection);
+            const businessesIds = userBusinesses.map(uB => uB.business_id);
             yield connection.newTransaction();
             const business = yield this.updateUserFidelityCardStatus('SUSPENDED', userFidelityCardId, businessesIds, connection);
             yield connection.commit();
@@ -71,8 +71,8 @@ class UserFidelityCardService {
     activateUserFidelityCard(userFidelityCardId, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const userBusinesses = yield businessRepository.findByUserId(loggedUserId, connection);
-            const businessesIds = userBusinesses.map(uB => uB.id);
+            const userBusinesses = yield userBusinessRepository.findByUserId(loggedUserId, connection);
+            const businessesIds = userBusinesses.map(uB => uB.business_id);
             const fidelityCard = yield userFidelityCardRepository.findById(userFidelityCardId, connection);
             if (!fidelityCard || !businessesIds.includes(fidelityCard.business_id))
                 return fidelityCard;

@@ -1,4 +1,5 @@
 import { BusinessRepository } from "../../mgn-entity/repository/BusinessRepository";
+import { UserBusinessRepository } from "../../mgn-entity/repository/UserBusinessRepository";
 import { Logger } from "../../mgn-framework/services/Logger";
 import { IndroError } from "../../utils/IndroError";
 import { Precondition } from "../../utils/Preconditions";
@@ -9,7 +10,7 @@ import { ReservationRepository } from "../repository/reservationRepository";
 const LOG = new Logger("CompanyService.class");
 const db = require("../../connection");
 const reservationRepository = new ReservationRepository();
-const businessRepository = new BusinessRepository();
+const userBusinessRepository = new UserBusinessRepository();
 
 export class ReservationService implements ReservationApi {
     
@@ -25,7 +26,7 @@ export class ReservationService implements ReservationApi {
     public async getUserReservations(userId: number) {
         const connection = await db.connection();
 
-        const reservations = await reservationRepository.findByUserId(userId, connection);
+        const reservations = await reservationRepository.findByUserIdJoinBusiness(userId, connection);
         await connection.release();
         
         return reservations;
@@ -58,8 +59,8 @@ export class ReservationService implements ReservationApi {
 
     public async updateBusinessReservation(dto: { status: string, subStatus?: string, tableNumber?: number, businessDate?: string }, reservationId: number, userId: number) {
         const connection = await db.connection();
-        const userBusinesses = await businessRepository.findByUserId(userId, connection);
-        const businessesIds = userBusinesses.map(uB => uB.id);
+        const userBusinesses = await userBusinessRepository.findByUserId(userId, connection);
+        const businessesIds = userBusinesses.map(uB => uB.business_id);
 
         if (dto.subStatus && dto.subStatus === 'new_date' && dto.businessDate) {
             dto.businessDate = new Date(Date.now()).toISOString().substring(0,10) + ' ' + dto.businessDate;

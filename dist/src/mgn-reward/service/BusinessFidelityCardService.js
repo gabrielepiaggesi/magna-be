@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const BusinessRepository_1 = require("../../mgn-entity/repository/BusinessRepository");
+const UserBusinessRepository_1 = require("../../mgn-entity/repository/UserBusinessRepository");
 const Logger_1 = require("../../mgn-framework/services/Logger");
 const IndroError_1 = require("../../utils/IndroError");
 const Preconditions_1 = require("../../utils/Preconditions");
@@ -20,7 +20,7 @@ const UserDiscountService_1 = require("./UserDiscountService");
 const LOG = new Logger_1.Logger("CompanyService.class");
 const db = require("../../connection");
 const businessFidelityCardRepository = new BusinessFidelityCardRepository_1.BusinessFidelityCardRepository();
-const businessRepository = new BusinessRepository_1.BusinessRepository();
+const userBusinessRepository = new UserBusinessRepository_1.UserBusinessRepository();
 const userFidelityCardRepository = new UserFidelityCardRepository_1.UserFidelityCardRepository();
 const userDiscountService = new UserDiscountService_1.UserDiscountService();
 class BusinessFidelityCardService {
@@ -47,8 +47,8 @@ class BusinessFidelityCardService {
     suspendBusinessFidelityCard(businessFidelityCardId, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const userBusinesses = yield businessRepository.findByUserId(loggedUserId, connection);
-            const businessesIds = userBusinesses.map(uB => uB.id);
+            const userBusinesses = yield userBusinessRepository.findByUserId(loggedUserId, connection);
+            const businessesIds = userBusinesses.map(uB => uB.business_id);
             yield connection.newTransaction();
             const business = yield this.updateBusinessFidelityCardStatus('SUSPENDED', businessFidelityCardId, businessesIds, connection);
             yield connection.commit();
@@ -59,8 +59,8 @@ class BusinessFidelityCardService {
     activateBusinessFidelityCard(businessFidelityCardId, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const userBusinesses = yield businessRepository.findByUserId(loggedUserId, connection);
-            const businessesIds = userBusinesses.map(uB => uB.id);
+            const userBusinesses = yield userBusinessRepository.findByUserId(loggedUserId, connection);
+            const businessesIds = userBusinesses.map(uB => uB.business_id);
             yield connection.newTransaction();
             const business = yield this.updateBusinessFidelityCardStatus('ACTIVE', businessFidelityCardId, businessesIds, connection);
             yield connection.commit();
@@ -122,8 +122,8 @@ class BusinessFidelityCardService {
     deleteBusinessFidelityCard(businessFidelityCardId, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const userBusinesses = yield businessRepository.findByUserId(loggedUserId, connection);
-            const businessesIds = userBusinesses.map(uB => uB.id);
+            const userBusinesses = yield userBusinessRepository.findByUserId(loggedUserId, connection);
+            const businessesIds = userBusinesses.map(uB => uB.business_id);
             yield connection.newTransaction();
             const business = yield this.removeBusinessFidelityCard(businessFidelityCardId, businessesIds, connection);
             yield connection.commit();

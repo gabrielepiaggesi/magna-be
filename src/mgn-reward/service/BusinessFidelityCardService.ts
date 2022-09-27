@@ -1,4 +1,5 @@
 import { BusinessRepository } from "../../mgn-entity/repository/BusinessRepository";
+import { UserBusinessRepository } from "../../mgn-entity/repository/UserBusinessRepository";
 import { Logger } from "../../mgn-framework/services/Logger";
 import { IndroError } from "../../utils/IndroError";
 import { Precondition } from "../../utils/Preconditions";
@@ -11,7 +12,7 @@ import { UserDiscountService } from "./UserDiscountService";
 const LOG = new Logger("CompanyService.class");
 const db = require("../../connection");
 const businessFidelityCardRepository = new BusinessFidelityCardRepository();
-const businessRepository = new BusinessRepository();
+const userBusinessRepository = new UserBusinessRepository();
 const userFidelityCardRepository = new UserFidelityCardRepository();
 
 const userDiscountService = new UserDiscountService();
@@ -42,8 +43,8 @@ export class BusinessFidelityCardService implements BusinessFidelityCardApi {
 
     public async suspendBusinessFidelityCard(businessFidelityCardId: number, loggedUserId: number) {
         const connection = await db.connection();
-        const userBusinesses = await businessRepository.findByUserId(loggedUserId, connection);
-        const businessesIds = userBusinesses.map(uB => uB.id);
+        const userBusinesses = await userBusinessRepository.findByUserId(loggedUserId, connection);
+        const businessesIds = userBusinesses.map(uB => uB.business_id);
 
         await connection.newTransaction();
         const business = await this.updateBusinessFidelityCardStatus('SUSPENDED', businessFidelityCardId, businessesIds, connection);
@@ -55,8 +56,8 @@ export class BusinessFidelityCardService implements BusinessFidelityCardApi {
 
     public async activateBusinessFidelityCard(businessFidelityCardId: number, loggedUserId: number) {
         const connection = await db.connection();
-        const userBusinesses = await businessRepository.findByUserId(loggedUserId, connection);
-        const businessesIds = userBusinesses.map(uB => uB.id);
+        const userBusinesses = await userBusinessRepository.findByUserId(loggedUserId, connection);
+        const businessesIds = userBusinesses.map(uB => uB.business_id);
 
         await connection.newTransaction();
         const business = await this.updateBusinessFidelityCardStatus('ACTIVE', businessFidelityCardId, businessesIds, connection);
@@ -129,8 +130,8 @@ export class BusinessFidelityCardService implements BusinessFidelityCardApi {
 
     public async deleteBusinessFidelityCard(businessFidelityCardId: number, loggedUserId: number) {
         const connection = await db.connection();
-        const userBusinesses = await businessRepository.findByUserId(loggedUserId, connection);
-        const businessesIds = userBusinesses.map(uB => uB.id);
+        const userBusinesses = await userBusinessRepository.findByUserId(loggedUserId, connection);
+        const businessesIds = userBusinesses.map(uB => uB.business_id);
 
         await connection.newTransaction();
         const business = await this.removeBusinessFidelityCard(businessFidelityCardId, businessesIds, connection);

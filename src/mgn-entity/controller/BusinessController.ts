@@ -10,7 +10,7 @@ const businessService = new BusinessService();
 const LOG = new Logger("BusinessController.class");
 
 export class BusinessController implements BusinessApi {
-
+    
     @Post()
     @Path("/addBusiness")
     public async addBusiness(res: Response, req) {
@@ -21,6 +21,43 @@ export class BusinessController implements BusinessApi {
         } catch(e) {
             LOG.debug(e);
             return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Business.addBusiness.Error'});
+        }
+    }
+
+    @Post()
+    @Path("/addUserBusiness/:businessId/:userId")
+    public async addUserBusiness(res: Response, req) {
+        try {
+            const response = await businessService.addUserBusiness(parseInt(req.params.businessId, 10), parseInt(req.params.userId, 10));
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Business.addUserBusiness.Error'});
+        }
+    }
+
+    @Post()
+    @Path("/removeUserBusiness/:businessId/:userId")
+    public async removeUserBusiness(res: Response, req) {
+        try {
+            const loggedUserId = auth.getLoggedUserId(req);
+            const response = await businessService.removeUserBusiness(parseInt(req.params.businessId, 10), parseInt(req.params.userId, 10), loggedUserId);
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Business.removeUserBusiness.Error'});
+        }
+    }
+
+    @Get()
+    @Path("/getUserBusinesses/:businessId")
+    public async getUserBusinesses(res: Response, req) {
+        try {
+            const response = await businessService.getUserBusinesses(parseInt(req.params.businessId, 10));
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Business.getUserBusinesses.Error'});
         }
     }
 

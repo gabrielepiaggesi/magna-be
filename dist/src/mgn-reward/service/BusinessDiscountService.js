@@ -9,7 +9,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const BusinessRepository_1 = require("../../mgn-entity/repository/BusinessRepository");
 const Logger_1 = require("../../mgn-framework/services/Logger");
 const IndroError_1 = require("../../utils/IndroError");
 const Preconditions_1 = require("../../utils/Preconditions");
@@ -20,11 +19,12 @@ const UserFidelityCardRepository_1 = require("../repository/UserFidelityCardRepo
 const BusinessFidelityCardService_1 = require("./BusinessFidelityCardService");
 const UserDiscountService_1 = require("./UserDiscountService");
 const UserReferralRepository_1 = require("../repository/UserReferralRepository");
+const UserBusinessRepository_1 = require("../../mgn-entity/repository/UserBusinessRepository");
 const LOG = new Logger_1.Logger("CompanyService.class");
 const db = require("../../connection");
 const businessDiscountRepository = new BusinessDiscountRepository_1.BusinessDiscountRepository();
 const userDiscountRepository = new UserDiscountRepository_1.UserDiscountRepository();
-const businessRepository = new BusinessRepository_1.BusinessRepository();
+const userBusinessRepository = new UserBusinessRepository_1.UserBusinessRepository();
 const userFidelityCardRepository = new UserFidelityCardRepository_1.UserFidelityCardRepository();
 const businessFidelityCardService = new BusinessFidelityCardService_1.BusinessFidelityCardService();
 const userDiscountService = new UserDiscountService_1.UserDiscountService();
@@ -53,8 +53,8 @@ class BusinessDiscountService {
     suspendBusinessDiscount(businessDiscountId, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const userBusinesses = yield businessRepository.findByUserId(loggedUserId, connection);
-            const businessesIds = userBusinesses.map(uB => uB.id);
+            const userBusinesses = yield userBusinessRepository.findByUserId(loggedUserId, connection);
+            const businessesIds = userBusinesses.map(uB => uB.business_id);
             yield connection.newTransaction();
             const business = yield this.updateBusinessDiscountStatus('SUSPENDED', businessDiscountId, businessesIds, connection);
             yield connection.commit();
@@ -65,8 +65,8 @@ class BusinessDiscountService {
     activateBusinessDiscount(businessDiscountId, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const userBusinesses = yield businessRepository.findByUserId(loggedUserId, connection);
-            const businessesIds = userBusinesses.map(uB => uB.id);
+            const userBusinesses = yield userBusinessRepository.findByUserId(loggedUserId, connection);
+            const businessesIds = userBusinesses.map(uB => uB.business_id);
             yield connection.newTransaction();
             const business = yield this.updateBusinessDiscountStatus('ACTIVE', businessDiscountId, businessesIds, connection);
             yield connection.commit();
@@ -116,8 +116,8 @@ class BusinessDiscountService {
     deleteBusinessDiscount(businessDiscountId, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const userBusinesses = yield businessRepository.findByUserId(loggedUserId, connection);
-            const businessesIds = userBusinesses.map(uB => uB.id);
+            const userBusinesses = yield userBusinessRepository.findByUserId(loggedUserId, connection);
+            const businessesIds = userBusinesses.map(uB => uB.business_id);
             yield connection.newTransaction();
             const business = yield this.removeBusinessDiscount(businessDiscountId, businessesIds, connection);
             yield connection.commit();

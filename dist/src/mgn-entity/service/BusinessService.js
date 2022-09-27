@@ -14,9 +14,12 @@ const IndroError_1 = require("../../utils/IndroError");
 const Preconditions_1 = require("../../utils/Preconditions");
 const Business_1 = require("../model/Business");
 const BusinessRepository_1 = require("../repository/BusinessRepository");
+const UserBusiness_1 = require("../model/UserBusiness");
+const UserBusinessRepository_1 = require("../repository/UserBusinessRepository");
 const LOG = new Logger_1.Logger("CompanyService.class");
 const db = require("../../connection");
 const businessRepository = new BusinessRepository_1.BusinessRepository();
+const userBusinessRepository = new UserBusinessRepository_1.UserBusinessRepository();
 class BusinessService {
     addBusiness(dto, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -24,9 +27,56 @@ class BusinessService {
             const connection = yield db.connection();
             yield connection.newTransaction();
             const newBusiness = yield this.updateOrCreateBusiness(dto, null, loggedUserId, connection);
+            const newUserBusiness = yield this.createUserBusiness(newBusiness.id, newBusiness.user_id, connection);
             yield connection.commit();
             yield connection.release();
             return newBusiness;
+        });
+    }
+    getUserBusinesses(businessId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            const usersBusinessEmails = yield userBusinessRepository.findByBusinessIdJoinUserEmail(businessId, connection);
+            yield connection.release();
+            return usersBusinessEmails;
+        });
+    }
+    addUserBusiness(businessId, userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            const uBusiness = yield userBusinessRepository.findByUserIdAndUserBusinessId(userId, businessId, connection);
+            if (uBusiness) {
+                yield connection.release();
+                return uBusiness;
+            }
+            yield connection.newTransaction();
+            const newUserBusiness = yield this.createUserBusiness(businessId, userId, connection);
+            yield connection.commit();
+            yield connection.release();
+            return newUserBusiness;
+        });
+    }
+    removeUserBusiness(businessId, userId, loggedUserId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            const uBusiness = yield userBusinessRepository.findByUserIdAndUserBusinessId(userId, businessId, connection);
+            if (!uBusiness || uBusiness.user_id != userId || uBusiness.user_id === loggedUserId) {
+                yield connection.release();
+                throw new IndroError_1.IndroError("Cannot Delete User Business", 500, null, 'not_allowed');
+            }
+            yield connection.newTransaction();
+            try {
+                yield userBusinessRepository.delete(uBusiness, connection);
+                yield connection.commit();
+                yield connection.release();
+                return uBusiness;
+            }
+            catch (e) {
+                LOG.error(e);
+                yield connection.rollback();
+                yield connection.release();
+                throw new IndroError_1.IndroError("Cannot Delete User Business", 500, null, e);
+            }
         });
     }
     deleteBusiness(businessId, loggedUserId) {
@@ -60,7 +110,9 @@ class BusinessService {
     getUserBusinessesList(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const businesses = yield businessRepository.findByUserId(userId, connection);
+            const userBusinesses = yield userBusinessRepository.findByUserId(userId, connection);
+            const businessIds = userBusinesses.map(uB => uB.business_id);
+            const businesses = yield businessRepository.whereBusinessesIdsIn(businessIds, connection);
             yield connection.release();
             return businesses;
         });
@@ -70,8 +122,7 @@ class BusinessService {
             let newBusiness = new Business_1.Business();
             if (businessId) {
                 newBusiness = yield businessRepository.findById(businessId, connection);
-                if (newBusiness && newBusiness.user_id != loggedUserId)
-                    return null;
+                // if (newBusiness && newBusiness.user_id != loggedUserId) return null; // CHECK USER BUSINESS!
             }
             try {
                 newBusiness.name = newBusinessDTO.name || newBusiness.name;
@@ -90,11 +141,29 @@ class BusinessService {
             }
         });
     }
+    createUserBusiness(businessId, userId, connection) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let newBusiness = new UserBusiness_1.UserBusiness();
+                newBusiness.user_id = userId;
+                newBusiness.business_id = businessId;
+                const coInserted = yield userBusinessRepository.save(newBusiness, connection);
+                newBusiness.id = businessId ? newBusiness.id : coInserted.insertId;
+                !businessId && LOG.info("NEW USER BUSINESS", newBusiness.id);
+                return newBusiness;
+            }
+            catch (e) {
+                LOG.error(e);
+                yield connection.rollback();
+                yield connection.release();
+                throw new IndroError_1.IndroError("Cannot Create USER BUSINESS", 500, null, e);
+            }
+        });
+    }
     removeBusiness(businessId, loggedUserId, connection) {
         return __awaiter(this, void 0, void 0, function* () {
             const business = yield businessRepository.findById(businessId, connection);
-            if (!business || business.user_id != loggedUserId)
-                return business;
+            // if (!business || business.user_id != loggedUserId) return business; // CHECK USER BUSINESS!
             try {
                 yield businessRepository.delete(business, connection);
                 return business;

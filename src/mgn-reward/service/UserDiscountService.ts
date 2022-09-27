@@ -1,4 +1,5 @@
 import { BusinessRepository } from "../../mgn-entity/repository/BusinessRepository";
+import { UserBusinessRepository } from "../../mgn-entity/repository/UserBusinessRepository";
 import { Logger } from "../../mgn-framework/services/Logger";
 import { IndroError } from "../../utils/IndroError";
 import { Precondition } from "../../utils/Preconditions";
@@ -11,7 +12,7 @@ import { UserFidelityCardService } from "./UserFidelityCardService";
 const LOG = new Logger("CompanyService.class");
 const db = require("../../connection");
 const userDiscountRepository = new UserDiscountRepository();
-const businessRepository = new BusinessRepository();
+const userBusinessRepository = new UserBusinessRepository();
 const businessDiscountRepository = new BusinessDiscountRepository();
 const userFidelityCardService = new UserFidelityCardService();
 export class UserDiscountService implements UserDiscountApi {
@@ -74,8 +75,8 @@ export class UserDiscountService implements UserDiscountApi {
 
     public async suspendUserDiscount(userDiscountId: number, loggedUserId: number) {
         const connection = await db.connection();
-        const userBusinesses = await businessRepository.findByUserId(loggedUserId, connection);
-        const businessesIds = userBusinesses.map(uB => uB.id);
+        const userBusinesses = await userBusinessRepository.findByUserId(loggedUserId, connection);
+        const businessesIds = userBusinesses.map(uB => uB.business_id);
 
         await connection.newTransaction();
         const business = await this.updateUserDiscountStatus('SUSPENDED', userDiscountId, businessesIds, connection);
@@ -87,8 +88,8 @@ export class UserDiscountService implements UserDiscountApi {
 
     public async activateUserDiscount(businessDiscountId: number, loggedUserId: number) {
         const connection = await db.connection();
-        const userBusinesses = await businessRepository.findByUserId(loggedUserId, connection);
-        const businessesIds = userBusinesses.map(uB => uB.id);
+        const userBusinesses = await userBusinessRepository.findByUserId(loggedUserId, connection);
+        const businessesIds = userBusinesses.map(uB => uB.business_id);
 
         await connection.newTransaction();
         const business = await this.updateUserDiscountStatus('ACTIVE', businessDiscountId, businessesIds, connection);
@@ -118,8 +119,8 @@ export class UserDiscountService implements UserDiscountApi {
 
     public async deleteUserDiscount(userDiscountId: number, loggedUserId: number) {
         const connection = await db.connection();
-        const userBusinesses = await businessRepository.findByUserId(loggedUserId, connection);
-        const businessesIds = userBusinesses.map(uB => uB.id);
+        const userBusinesses = await userBusinessRepository.findByUserId(loggedUserId, connection);
+        const businessesIds = userBusinesses.map(uB => uB.business_id);
 
         await connection.newTransaction();
         const business = await this.removeUserDiscount(userDiscountId, businessesIds, connection);

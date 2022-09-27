@@ -37,6 +37,14 @@ class ReservationRepository extends Repository_1.Repository {
         select * from ${this.table} where user_id = ${mysql2_1.default.escape(userId)} and deleted_at is null order by id desc`).then((results) => results);
         });
     }
+    findByUserIdJoinBusiness(userId, conn = null, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            // tslint:disable-next-line:max-line-length
+            return c.query(query || `
+        select r.*, b.name as business_name from ${this.table} r join businesses b on b.id = r.business_id and b.deleted_at is null where r.user_id = ${mysql2_1.default.escape(userId)} and r.deleted_at is null order by r.id desc`).then((results) => results);
+        });
+    }
     findByBusinessId(businessId, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;

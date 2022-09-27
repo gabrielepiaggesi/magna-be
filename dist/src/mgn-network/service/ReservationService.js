@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const BusinessRepository_1 = require("../../mgn-entity/repository/BusinessRepository");
+const UserBusinessRepository_1 = require("../../mgn-entity/repository/UserBusinessRepository");
 const Logger_1 = require("../../mgn-framework/services/Logger");
 const IndroError_1 = require("../../utils/IndroError");
 const Preconditions_1 = require("../../utils/Preconditions");
@@ -18,7 +18,7 @@ const reservationRepository_1 = require("../repository/reservationRepository");
 const LOG = new Logger_1.Logger("CompanyService.class");
 const db = require("../../connection");
 const reservationRepository = new reservationRepository_1.ReservationRepository();
-const businessRepository = new BusinessRepository_1.BusinessRepository();
+const userBusinessRepository = new UserBusinessRepository_1.UserBusinessRepository();
 class ReservationService {
     getReservation(reservationId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -31,7 +31,7 @@ class ReservationService {
     getUserReservations(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const reservations = yield reservationRepository.findByUserId(userId, connection);
+            const reservations = yield reservationRepository.findByUserIdJoinBusiness(userId, connection);
             yield connection.release();
             return reservations;
         });
@@ -62,8 +62,8 @@ class ReservationService {
     updateBusinessReservation(dto, reservationId, userId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const userBusinesses = yield businessRepository.findByUserId(userId, connection);
-            const businessesIds = userBusinesses.map(uB => uB.id);
+            const userBusinesses = yield userBusinessRepository.findByUserId(userId, connection);
+            const businessesIds = userBusinesses.map(uB => uB.business_id);
             if (dto.subStatus && dto.subStatus === 'new_date' && dto.businessDate) {
                 dto.businessDate = new Date(Date.now()).toISOString().substring(0, 10) + ' ' + dto.businessDate;
             }

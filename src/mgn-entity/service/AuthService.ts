@@ -52,28 +52,32 @@ export class AuthService implements AuthApi {
     public async signup(userDTO: SignupDTO) {
         LOG.debug("signup...", userDTO);
         const userAge = getDatesDiffIn(userDTO.birthdate, Date.now(), 'years');
-        await Precondition.checkIfFalse((!userAge || userAge < 18 || userAge > 100), "Età Invalida! Sei troppo giovane, non puoi iscriverti");
+        await Precondition.checkIfFalse((!userAge || userAge < 4 || userAge > 100), "Età Invalida! Sei troppo giovane, non puoi iscriverti");
 
         const connection = await db.connection();
         const userWithThisEmail = await userRepository.findByEmail(userDTO.email, connection);
+
+
+
         const password = shortid.generate();
         const passwordHashed = await bcrypt.hash(password, 10);
         const emailTemplateId = 1;
 
         if (userWithThisEmail) {
-            await this.updateUserPassword(userWithThisEmail, passwordHashed, connection);
-            const payload = { id: userWithThisEmail.id, type: 'IndroUser122828?' };
-            const token = jwt.sign(payload, jwtConfig.secretOrKey);
-            EmailSender.sendSpecificEmail({ 
-                templateId: emailTemplateId, 
-                email: userDTO.email, 
-                params: { 
-                    email: userDTO.email, 
-                    pwd: password,
-                    token
-                } 
-            });
-            return { msg: "ok" };
+            // await this.updateUserPassword(userWithThisEmail, passwordHashed, connection);
+            // const payload = { id: userWithThisEmail.id, type: 'IndroUser122828?' };
+            // const token = jwt.sign(payload, jwtConfig.secretOrKey);
+            // EmailSender.sendSpecificEmail({ 
+            //     templateId: emailTemplateId, 
+            //     email: userDTO.email, 
+            //     params: { 
+            //         email: userDTO.email, 
+            //         pwd: password,
+            //         token
+            //     } 
+            // });
+            await connection.release();
+            return { msg: "user_exists" };
         } else {
             await Precondition.checkIfFalse((!!userWithThisEmail || !userDTO.email || !userDTO.hasAccepted), "General Error", connection);
             userDTO.password = passwordHashed;
@@ -81,7 +85,7 @@ export class AuthService implements AuthApi {
             const newUser = await this.saveNewUser(userDTO, connection);
             const payload = { id: newUser.id, type: 'IndroUser122828?' };
             const token = jwt.sign(payload, jwtConfig.secretOrKey);
-            EmailSender.sendSpecificEmail({ templateId: emailTemplateId, email: userDTO.email, params: { token, email: userDTO.email, pwd: password } });
+            EmailSender.sendSpecificEmail({ templateId: emailTemplateId, email: userDTO.email, params: { email: userDTO.email, pwd: password } });
             return { msg: "ok", token, user: newUser };
         }
     }

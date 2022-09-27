@@ -4,10 +4,13 @@ import { Precondition } from "../../utils/Preconditions";
 import { BusinessApi } from "../integration/BusinessApi";
 import { Business } from "../model/Business";
 import { BusinessRepository } from "../repository/BusinessRepository";
+import { UserBusiness } from '../model/UserBusiness';
+import { UserBusinessRepository } from "../repository/UserBusinessRepository";
 
 const LOG = new Logger("CompanyService.class");
 const db = require("../../connection");
 const businessRepository = new BusinessRepository();
+const userBusinessRepository = new UserBusinessRepository();
 
 export class BusinessService implements BusinessApi {
     
@@ -17,10 +20,57 @@ export class BusinessService implements BusinessApi {
         
         await connection.newTransaction();
         const newBusiness = await this.updateOrCreateBusiness(dto, null, loggedUserId, connection);
+        const newUserBusiness = await this.createUserBusiness(newBusiness.id, newBusiness.user_id, connection);
         await connection.commit();
         await connection.release();
         
         return newBusiness;
+    }
+
+    public async getUserBusinesses(businessId: number) {
+        const connection = await db.connection();
+        
+        const usersBusinessEmails = await userBusinessRepository.findByBusinessIdJoinUserEmail(businessId, connection);
+        await connection.release();
+        
+        return usersBusinessEmails;
+    }
+
+    public async addUserBusiness(businessId: number, userId: number) {
+        const connection = await db.connection();
+        const uBusiness = await userBusinessRepository.findByUserIdAndUserBusinessId(userId, businessId, connection);
+        if (uBusiness) {
+            await connection.release();
+            return uBusiness;
+        }
+        await connection.newTransaction();
+        const newUserBusiness = await this.createUserBusiness(businessId, userId, connection);
+        await connection.commit();
+        await connection.release();
+        
+        return newUserBusiness;
+    }
+
+    public async removeUserBusiness(businessId: number, userId: number, loggedUserId: number) {
+        const connection = await db.connection();
+        
+        const uBusiness = await userBusinessRepository.findByUserIdAndUserBusinessId(userId, businessId, connection);
+        if (!uBusiness || uBusiness.user_id != userId || uBusiness.user_id === loggedUserId) {
+            await connection.release();
+            throw new IndroError("Cannot Delete User Business", 500, null, 'not_allowed');
+        }
+        await connection.newTransaction();
+        try {
+            await userBusinessRepository.delete(uBusiness, connection);
+            await connection.commit();
+            await connection.release();
+            return uBusiness;
+        } catch (e) {
+            LOG.error(e);
+            await connection.rollback();
+            await connection.release();
+            throw new IndroError("Cannot Delete User Business", 500, null, e);
+        }
     }
 
     public async deleteBusiness(businessId: number, loggedUserId: number) {
@@ -57,7 +107,9 @@ export class BusinessService implements BusinessApi {
     public async getUserBusinessesList(userId: number) {
         const connection = await db.connection();
 
-        const businesses = await businessRepository.findByUserId(userId, connection);
+        const userBusinesses = await userBusinessRepository.findByUserId(userId, connection);
+        const businessIds = userBusinesses.map(uB => uB.business_id);
+        const businesses = await businessRepository.whereBusinessesIdsIn(businessIds, connection);
         await connection.release();
 
         return businesses;
@@ -67,7 +119,7 @@ export class BusinessService implements BusinessApi {
         let newBusiness = new Business();
         if (businessId) {
             newBusiness = await businessRepository.findById(businessId, connection);
-            if (newBusiness && newBusiness.user_id != loggedUserId) return null;
+            // if (newBusiness && newBusiness.user_id != loggedUserId) return null; // CHECK USER BUSINESS!
         }
 
         try {
@@ -87,9 +139,27 @@ export class BusinessService implements BusinessApi {
         }
     }
 
+    private async createUserBusiness(businessId: number, userId: number, connection) {
+        try {
+            let newBusiness = new UserBusiness();
+            newBusiness.user_id = userId;
+            newBusiness.business_id = businessId;
+
+            const coInserted = await userBusinessRepository.save(newBusiness, connection);
+            newBusiness.id = businessId ? newBusiness.id : coInserted.insertId;
+            !businessId && LOG.info("NEW USER BUSINESS", newBusiness.id);
+            return newBusiness;
+        } catch (e) {
+            LOG.error(e);
+            await connection.rollback();
+            await connection.release();
+            throw new IndroError("Cannot Create USER BUSINESS", 500, null, e);
+        }
+    }
+
     private async removeBusiness(businessId: number, loggedUserId: number, connection) {
         const business = await businessRepository.findById(businessId, connection);
-        if (!business || business.user_id != loggedUserId) return business;
+        // if (!business || business.user_id != loggedUserId) return business; // CHECK USER BUSINESS!
         try {
             await businessRepository.delete(business, connection);
             return business;

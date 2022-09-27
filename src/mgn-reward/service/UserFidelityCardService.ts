@@ -1,4 +1,5 @@
 import { BusinessRepository } from "../../mgn-entity/repository/BusinessRepository";
+import { UserBusinessRepository } from "../../mgn-entity/repository/UserBusinessRepository";
 import { Logger } from "../../mgn-framework/services/Logger";
 import { IndroError } from "../../utils/IndroError";
 import { Precondition } from "../../utils/Preconditions";
@@ -11,7 +12,7 @@ const LOG = new Logger("CompanyService.class");
 const db = require("../../connection");
 const userFidelityCardRepository = new UserFidelityCardRepository();
 const businessFidelityCardRepository = new BusinessFidelityCardRepository();
-const businessRepository = new BusinessRepository();
+const userBusinessRepository = new UserBusinessRepository();
 
 export class UserFidelityCardService implements UserFidelityCardApi {
 
@@ -55,8 +56,8 @@ export class UserFidelityCardService implements UserFidelityCardApi {
 
     public async suspendUserFidelityCard(userFidelityCardId: number, loggedUserId: number) {
         const connection = await db.connection();
-        const userBusinesses = await businessRepository.findByUserId(loggedUserId, connection);
-        const businessesIds = userBusinesses.map(uB => uB.id);
+        const userBusinesses = await userBusinessRepository.findByUserId(loggedUserId, connection);
+        const businessesIds = userBusinesses.map(uB => uB.business_id);
 
         await connection.newTransaction();
         const business = await this.updateUserFidelityCardStatus('SUSPENDED', userFidelityCardId, businessesIds, connection);
@@ -68,8 +69,8 @@ export class UserFidelityCardService implements UserFidelityCardApi {
 
     public async activateUserFidelityCard(userFidelityCardId: number, loggedUserId: number) {
         const connection = await db.connection();
-        const userBusinesses = await businessRepository.findByUserId(loggedUserId, connection);
-        const businessesIds = userBusinesses.map(uB => uB.id);
+        const userBusinesses = await userBusinessRepository.findByUserId(loggedUserId, connection);
+        const businessesIds = userBusinesses.map(uB => uB.business_id);
 
         const fidelityCard = await userFidelityCardRepository.findById(userFidelityCardId, connection);
         if (!fidelityCard || !businessesIds.includes(fidelityCard.business_id)) return fidelityCard;

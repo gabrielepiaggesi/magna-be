@@ -1,4 +1,5 @@
 import { BusinessRepository } from "../../mgn-entity/repository/BusinessRepository";
+import { UserBusinessRepository } from "../../mgn-entity/repository/UserBusinessRepository";
 import { Logger } from "../../mgn-framework/services/Logger";
 import { UserDiscountService } from "../../mgn-reward/service/UserDiscountService";
 import { IndroError } from "../../utils/IndroError";
@@ -10,7 +11,7 @@ import { UserSocialPostRepository } from "../repository/UserSocialPostRepository
 const LOG = new Logger("CompanyService.class");
 const db = require("../../connection");
 const userSocialPostRepository = new UserSocialPostRepository();
-const businessRepository = new BusinessRepository();
+const userBusinessRepository = new UserBusinessRepository();
 
 const userDiscountService = new UserDiscountService();
 
@@ -45,8 +46,8 @@ export class UserSocialPostService implements UserSocialPostApi {
 
     public async approveSocialPost(userSocialPostId: number, loggedUserId: number) {
         const connection = await db.connection();
-        const userBusinesses = await businessRepository.findByUserId(loggedUserId, connection);
-        const businessesIds = userBusinesses.map(uB => uB.id);
+        const userBusinesses = await userBusinessRepository.findByUserId(loggedUserId, connection);
+        const businessesIds = userBusinesses.map(uB => uB.business_id);
 
         const socialPost = await userSocialPostRepository.findById(userSocialPostId, connection);
         if (!socialPost || !businessesIds.includes(socialPost.business_id)) return socialPost;
@@ -62,8 +63,8 @@ export class UserSocialPostService implements UserSocialPostApi {
 
     public async discardSocialPost(userSocialPostId: number, loggedUserId: number) {
         const connection = await db.connection();
-        const userBusinesses = await businessRepository.findByUserId(loggedUserId, connection);
-        const businessesIds = userBusinesses.map(uB => uB.id);
+        const userBusinesses = await userBusinessRepository.findByUserId(loggedUserId, connection);
+        const businessesIds = userBusinesses.map(uB => uB.business_id);
 
         const socialPost = await userSocialPostRepository.findById(userSocialPostId, connection);
         if (!socialPost || !businessesIds.includes(socialPost.business_id)) return socialPost;

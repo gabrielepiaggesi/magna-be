@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const BusinessRepository_1 = require("../../mgn-entity/repository/BusinessRepository");
+const UserBusinessRepository_1 = require("../../mgn-entity/repository/UserBusinessRepository");
 const Logger_1 = require("../../mgn-framework/services/Logger");
 const UserDiscountService_1 = require("../../mgn-reward/service/UserDiscountService");
 const IndroError_1 = require("../../utils/IndroError");
@@ -19,7 +19,7 @@ const UserSocialPostRepository_1 = require("../repository/UserSocialPostReposito
 const LOG = new Logger_1.Logger("CompanyService.class");
 const db = require("../../connection");
 const userSocialPostRepository = new UserSocialPostRepository_1.UserSocialPostRepository();
-const businessRepository = new BusinessRepository_1.BusinessRepository();
+const userBusinessRepository = new UserBusinessRepository_1.UserBusinessRepository();
 const userDiscountService = new UserDiscountService_1.UserDiscountService();
 class UserSocialPostService {
     getBusinessSocialPosts(businessId) {
@@ -49,8 +49,8 @@ class UserSocialPostService {
     approveSocialPost(userSocialPostId, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const userBusinesses = yield businessRepository.findByUserId(loggedUserId, connection);
-            const businessesIds = userBusinesses.map(uB => uB.id);
+            const userBusinesses = yield userBusinessRepository.findByUserId(loggedUserId, connection);
+            const businessesIds = userBusinesses.map(uB => uB.business_id);
             const socialPost = yield userSocialPostRepository.findById(userSocialPostId, connection);
             if (!socialPost || !businessesIds.includes(socialPost.business_id))
                 return socialPost;
@@ -65,8 +65,8 @@ class UserSocialPostService {
     discardSocialPost(userSocialPostId, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const userBusinesses = yield businessRepository.findByUserId(loggedUserId, connection);
-            const businessesIds = userBusinesses.map(uB => uB.id);
+            const userBusinesses = yield userBusinessRepository.findByUserId(loggedUserId, connection);
+            const businessesIds = userBusinesses.map(uB => uB.business_id);
             const socialPost = yield userSocialPostRepository.findById(userSocialPostId, connection);
             if (!socialPost || !businessesIds.includes(socialPost.business_id))
                 return socialPost;
