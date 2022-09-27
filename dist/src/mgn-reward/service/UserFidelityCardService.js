@@ -25,9 +25,9 @@ class UserFidelityCardService {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
             const userFidelityCard = yield userFidelityCardRepository.findActiveByUserIdAndBusinessId(userId, businessId, connection);
-            if (userFidelityCard) {
+            if (userFidelityCard.length) {
                 yield connection.release();
-                return userFidelityCard;
+                return userFidelityCard[0];
             }
             yield connection.newTransaction();
             const newUserFidelityCard = yield this.createUserFidelityCard(businessId, userId, connection);
@@ -39,8 +39,8 @@ class UserFidelityCardService {
     addUserFidelityCardInternal(businessId, userId, connection) {
         return __awaiter(this, void 0, void 0, function* () {
             const userFidelityCard = yield userFidelityCardRepository.findActiveByUserIdAndBusinessId(userId, businessId, connection);
-            if (userFidelityCard) {
-                return userFidelityCard;
+            if (userFidelityCard.length) {
+                return userFidelityCard[0];
             }
             const newUserFidelityCard = yield this.createUserFidelityCard(businessId, userId, connection);
             return newUserFidelityCard;
@@ -77,12 +77,12 @@ class UserFidelityCardService {
             if (!fidelityCard || !businessesIds.includes(fidelityCard.business_id))
                 return fidelityCard;
             const userFidelityCard = yield userFidelityCardRepository.findActiveByUserIdAndBusinessId(fidelityCard.user_id, fidelityCard.business_id, connection);
-            if (userFidelityCard) {
+            if (userFidelityCard.length) {
                 yield connection.newTransaction();
                 yield this.removeUserFidelityCard(userFidelityCardId, loggedUserId, connection);
                 yield connection.commit();
                 yield connection.release();
-                return userFidelityCard;
+                return userFidelityCard[0];
             }
             yield connection.newTransaction();
             const business = yield this.updateUserFidelityCardStatus('ACTIVE', userFidelityCardId, businessesIds, connection);

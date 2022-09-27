@@ -20,9 +20,10 @@ export class UserFidelityCardService implements UserFidelityCardApi {
         const connection = await db.connection();
         
         const userFidelityCard = await userFidelityCardRepository.findActiveByUserIdAndBusinessId(userId, businessId, connection);
-        if (userFidelityCard) {
+        
+        if (userFidelityCard.length) {
             await connection.release();
-            return userFidelityCard;
+            return userFidelityCard[0];
         }
 
         await connection.newTransaction();
@@ -35,8 +36,8 @@ export class UserFidelityCardService implements UserFidelityCardApi {
 
     public async addUserFidelityCardInternal(businessId: number, userId: number, connection) {
         const userFidelityCard = await userFidelityCardRepository.findActiveByUserIdAndBusinessId(userId, businessId, connection);
-        if (userFidelityCard) {
-            return userFidelityCard;
+        if (userFidelityCard.length) {
+            return userFidelityCard[0];
         }
 
         const newUserFidelityCard = await this.createUserFidelityCard(businessId, userId, connection);
@@ -76,12 +77,12 @@ export class UserFidelityCardService implements UserFidelityCardApi {
         if (!fidelityCard || !businessesIds.includes(fidelityCard.business_id)) return fidelityCard;
 
         const userFidelityCard = await userFidelityCardRepository.findActiveByUserIdAndBusinessId(fidelityCard.user_id, fidelityCard.business_id, connection);
-        if (userFidelityCard) {
+        if (userFidelityCard.length) {
             await connection.newTransaction();
             await this.removeUserFidelityCard(userFidelityCardId, loggedUserId, connection);
             await connection.commit();
             await connection.release();
-            return userFidelityCard;
+            return userFidelityCard[0];
         }
 
         await connection.newTransaction();
