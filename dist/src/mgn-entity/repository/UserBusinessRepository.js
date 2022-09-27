@@ -21,23 +21,23 @@ class UserBusinessRepository extends Repository_1.Repository {
         this.table = "users_businesses";
     }
     // ${mysql2.escape(stripeId)}
-    whereUserBusinessesIdsIn(UserBusinessIds, conn = null, query = null) {
+    whereUserBusinessesIdsIn(businessIds, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!UserBusinessIds.length)
+            if (!businessIds.length)
                 return [];
             const c = conn;
             return c.query(query ||
                 `select * 
             from ${this.table} 
-            where id in (?) and deleted_at is null order by id asc`, [UserBusinessIds]).then((results) => results);
+            where id in (?) and deleted_at is null order by id asc`, [businessIds]).then((results) => results);
         });
     }
-    findByUserIdAndUserBusinessId(UserBusinessId, userId, conn = null, query = null) {
+    findByUserIdAndUserBusinessId(businessId, userId, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;
             // tslint:disable-next-line:max-line-length
             return c.query(query || `
-        select * from ${this.table} where user_id = ${mysql2_1.default.escape(userId)} and id = ${mysql2_1.default.escape(UserBusinessId)} and deleted_at is null limit 1`).then((results) => results[0]);
+        select * from ${this.table} where user_id = ${mysql2_1.default.escape(userId)} and business_id = ${mysql2_1.default.escape(businessId)} and deleted_at is null order by id desc limit 1`).then((results) => results[0] || null);
         });
     }
     findByUserId(userId, conn = null, query = null) {

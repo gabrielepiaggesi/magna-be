@@ -7,21 +7,21 @@ export class UserBusinessRepository extends Repository<UserBusiness> {
     public table = "users_businesses";
     // ${mysql2.escape(stripeId)}
 
-    public async whereUserBusinessesIdsIn(UserBusinessIds: number[], conn = null, query = null): Promise<UserBusiness[]> {
-        if (!UserBusinessIds.length) return [];
+    public async whereUserBusinessesIdsIn(businessIds: number[], conn = null, query = null): Promise<UserBusiness[]> {
+        if (!businessIds.length) return [];
         const c = conn;
         return c.query(query || 
             `select * 
             from ${this.table} 
-            where id in (?) and deleted_at is null order by id asc`, [UserBusinessIds]
+            where id in (?) and deleted_at is null order by id asc`, [businessIds]
         ).then((results) => results);
     }
 
-    public async findByUserIdAndUserBusinessId(UserBusinessId: number, userId: number, conn = null,  query = null): Promise<UserBusiness> {
+    public async findByUserIdAndUserBusinessId(businessId: number, userId: number, conn = null,  query = null): Promise<UserBusiness> {
         const c = conn;
         // tslint:disable-next-line:max-line-length
         return c.query(query || `
-        select * from ${this.table} where user_id = ${mysql2.escape(userId)} and id = ${mysql2.escape(UserBusinessId)} and deleted_at is null limit 1`).then((results) => results[0]);
+        select * from ${this.table} where user_id = ${mysql2.escape(userId)} and business_id = ${mysql2.escape(businessId)} and deleted_at is null order by id desc limit 1`).then((results) => results[0] || null);
     }
 
     public async findByUserId(userId: number, conn = null,  query = null): Promise<UserBusiness[]> {

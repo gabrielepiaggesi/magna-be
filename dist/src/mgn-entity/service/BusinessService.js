@@ -44,11 +44,13 @@ class BusinessService {
     addUserBusiness(businessId, userId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const uBusiness = yield userBusinessRepository.findByUserIdAndUserBusinessId(userId, businessId, connection);
+            const uBusiness = yield userBusinessRepository.findByUserIdAndUserBusinessId(businessId, userId, connection);
             if (uBusiness) {
+                LOG.info("GIA CE STA");
                 yield connection.release();
                 return uBusiness;
             }
+            LOG.info("NUOVO");
             yield connection.newTransaction();
             const newUserBusiness = yield this.createUserBusiness(businessId, userId, connection);
             yield connection.commit();
@@ -59,7 +61,7 @@ class BusinessService {
     removeUserBusiness(businessId, userId, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const uBusiness = yield userBusinessRepository.findByUserIdAndUserBusinessId(userId, businessId, connection);
+            const uBusiness = yield userBusinessRepository.findByUserIdAndUserBusinessId(businessId, userId, connection);
             if (!uBusiness || uBusiness.user_id != userId || uBusiness.user_id === loggedUserId) {
                 yield connection.release();
                 throw new IndroError_1.IndroError("Cannot Delete User Business", 500, null, 'not_allowed');

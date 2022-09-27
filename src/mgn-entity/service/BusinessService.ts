@@ -38,11 +38,13 @@ export class BusinessService implements BusinessApi {
 
     public async addUserBusiness(businessId: number, userId: number) {
         const connection = await db.connection();
-        const uBusiness = await userBusinessRepository.findByUserIdAndUserBusinessId(userId, businessId, connection);
+        const uBusiness = await userBusinessRepository.findByUserIdAndUserBusinessId(businessId, userId, connection);
         if (uBusiness) {
+            LOG.info("GIA CE STA");
             await connection.release();
             return uBusiness;
-        }
+        } 
+        LOG.info("NUOVO");
         await connection.newTransaction();
         const newUserBusiness = await this.createUserBusiness(businessId, userId, connection);
         await connection.commit();
@@ -54,7 +56,7 @@ export class BusinessService implements BusinessApi {
     public async removeUserBusiness(businessId: number, userId: number, loggedUserId: number) {
         const connection = await db.connection();
         
-        const uBusiness = await userBusinessRepository.findByUserIdAndUserBusinessId(userId, businessId, connection);
+        const uBusiness = await userBusinessRepository.findByUserIdAndUserBusinessId(businessId, userId, connection);
         if (!uBusiness || uBusiness.user_id != userId || uBusiness.user_id === loggedUserId) {
             await connection.release();
             throw new IndroError("Cannot Delete User Business", 500, null, 'not_allowed');
