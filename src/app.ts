@@ -6,7 +6,7 @@ import api from "./api";
 import { initMiddlewares } from ".";
 import { initJobs } from "./mgn-cron";
 
-
+process.env.TZ = 'Europe/Rome';
 
 process.on('uncaughtException', function (err) {
   console.log('Caught exception: ', err);

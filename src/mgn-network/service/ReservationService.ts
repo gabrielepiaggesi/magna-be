@@ -36,20 +36,27 @@ export class ReservationService implements ReservationApi {
         const connection = await db.connection();
 
         const today = new Date(Date.now()).toISOString().substring(0, 10) + ' 05:00:00';
-        console.log(today);
         const reservations = await reservationRepository.findByBusinessIdAndUserDateGreaterThan(businessId, today, connection);
         await connection.release();
+
+        const obj = {};
+        reservations.forEach((r: any) => {
+            const userDateRome = new Date(r.user_date).toLocaleString('sv', {timeZone: 'Europe/Rome'});
+            const localDate = userDateRome.substring(0, 10);
+            if (obj[localDate]) obj[localDate].push(r);
+            if (!obj[localDate]) obj[localDate] = [r];
+        });
         
-        return reservations;
+        return obj;
     }
 
-    public async addReservation(dto: { name: string, phoneNumber: string, userDate: string, peopleAmount: number, note?: string }, businessId: number, userId: number) {
+    public async addReservation(dto: { name: string, phoneNumber: string, userDate: string, peopleAmount: number, note?: string, type?: 'auto'|'manual', tableNumber?: number }, businessId: number, userId: number) {
         await Precondition.checkIfFalse((!dto.userDate), "Timing missing");
         await Precondition.checkIfFalse((!dto.peopleAmount), "People Amount missing");
         const connection = await db.connection();
         
         await connection.newTransaction();
-        dto.userDate = new Date(Date.now()).toISOString().substring(0,10) + ' ' + dto.userDate;
+        // dto.userDate = new Date(Date.now()).toISOString().substring(0,10) + ' ' + dto.userDate;
         const newUser = await this.createReservation(dto, businessId, userId, connection);
         await connection.commit();
         await connection.release();
@@ -62,11 +69,12 @@ export class ReservationService implements ReservationApi {
         const userBusinesses = await userBusinessRepository.findByUserId(userId, connection);
         const businessesIds = userBusinesses.map(uB => uB.business_id);
 
-        if (dto.subStatus && dto.subStatus === 'new_date' && dto.businessDate) {
-            dto.businessDate = new Date(Date.now()).toISOString().substring(0,10) + ' ' + dto.businessDate;
-        }
         const res = await reservationRepository.findById(reservationId, connection);
         if (!res || !businessesIds.includes(res.business_id)) return res;
+
+        if (dto.subStatus && dto.subStatus === 'new_date' && dto.businessDate) {
+            dto.businessDate = new Date(res.user_date).toLocaleString('sv', {timeZone: 'Europe/Rome'}).substring(0,10) + ' ' + dto.businessDate;
+        }
 
         await connection.newTransaction();
         const business = await this.updateReservation(dto, res, connection);
@@ -76,15 +84,17 @@ export class ReservationService implements ReservationApi {
         return business;
     }
 
-    private async createReservation(resDTO: { name: string, phoneNumber: string, userDate: string, peopleAmount: number, note?: string }, businessId: number, userId: number, connection) {
+    private async createReservation(resDTO: { name: string, phoneNumber: string, userDate: string, peopleAmount: number, note?: string, type?: 'auto'|'manual', tableNumber?: number }, businessId: number, userId: number, connection) {
         try {
             const newRes = new Reservation();
             newRes.name = resDTO.name;
             newRes.user_date = resDTO.userDate;
             newRes.phone_number = resDTO.phoneNumber;
             newRes.people_amount = resDTO.peopleAmount;
-            newRes.status = 'pending';
+            newRes.status = resDTO.type && resDTO.type === 'manual' ? 'accepted' : 'pending';
             if (resDTO.note) newRes.note = resDTO.note;
+            if (resDTO.type) newRes.type = resDTO.type;
+            if (resDTO.tableNumber) newRes.table_number = +resDTO.tableNumber;
             newRes.business_id = businessId;
             newRes.user_id = userId;
 

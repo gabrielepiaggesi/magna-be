@@ -10,6 +10,7 @@ const express_1 = __importDefault(require("express"));
 const api_1 = __importDefault(require("./api"));
 const _1 = require(".");
 const mgn_cron_1 = require("./mgn-cron");
+process.env.TZ = 'Europe/Rome';
 process.on('uncaughtException', function (err) {
     console.log('Caught exception: ', err);
 });
