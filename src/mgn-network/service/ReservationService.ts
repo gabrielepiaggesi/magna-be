@@ -1,6 +1,7 @@
 import { BusinessRepository } from "../../mgn-entity/repository/BusinessRepository";
 import { UserBusinessRepository } from "../../mgn-entity/repository/UserBusinessRepository";
 import { Logger } from "../../mgn-framework/services/Logger";
+import { isDateBeforeToday, isDateToday } from "../../utils/Helpers";
 import { IndroError } from "../../utils/IndroError";
 import { Precondition } from "../../utils/Preconditions";
 import { ReservationApi } from "../integration/ReservationApi";
@@ -11,6 +12,7 @@ const LOG = new Logger("CompanyService.class");
 const db = require("../../connection");
 const reservationRepository = new ReservationRepository();
 const userBusinessRepository = new UserBusinessRepository();
+const businessRepository = new BusinessRepository();
 
 export class ReservationService implements ReservationApi {
     
@@ -54,7 +56,26 @@ export class ReservationService implements ReservationApi {
         await Precondition.checkIfFalse((!dto.userDate), "Timing missing");
         await Precondition.checkIfFalse((!dto.peopleAmount), "People Amount missing");
         const connection = await db.connection();
-        
+
+        const business = await businessRepository.findById(businessId, connection);
+        if (!business.accept_reservations) {
+            await connection.release();
+            return { disabled_reservations: true };
+        }
+        if (business.disable_reservation_today && 
+            isDateToday(dto.userDate) && 
+            isDateToday(business.disable_reservation_today)) {
+            await connection.release();
+            return { disable_reservation_today: true };
+        }
+
+        const today = new Date(Date.now()).toISOString().substring(0, 10) + ' 05:00:00';
+        const reservations = await reservationRepository.findPendingByUserIdAndBusinessIdAndUserDateGreaterThan(userId, businessId, today, connection);
+        if (reservations.length) {
+            await connection.release();
+            return { ...reservations[0], old: true };
+        }
+
         await connection.newTransaction();
         // dto.userDate = new Date(Date.now()).toISOString().substring(0,10) + ' ' + dto.userDate;
         const newUser = await this.createReservation(dto, businessId, userId, connection);

@@ -125,9 +125,16 @@ export class BusinessService implements BusinessApi {
         }
 
         try {
+            const today = new Date(Date.now());
+            if (newBusinessDTO.phoneNumber && newBusinessDTO.phoneNumber != newBusiness.phone_number) newBusiness.phone_number = newBusinessDTO.phoneNumber;
             newBusiness.name = newBusinessDTO.name || newBusiness.name;
             newBusiness.status = businessId ? newBusiness.status : 'ACTIVE';
             newBusiness.user_id = businessId ? newBusiness.user_id : loggedUserId;
+            newBusiness.accept_reservations = newBusinessDTO.acceptReservations >= 0 ? newBusinessDTO.acceptReservations : newBusiness.accept_reservations;
+            newBusiness.disable_reservation_today = 
+                newBusinessDTO.disableReservationToday >= 0 ? 
+                    newBusinessDTO.disableReservationToday === 1 ? today.toISOString().substring(0, 10) + ' 20:00:00' : new Date(today.setDate(today.getDate() - 1)).toISOString().substring(0, 10) + ' 20:00:00'
+                : newBusiness.disable_reservation_today;
 
             const coInserted = businessId ? await businessRepository.update(newBusiness, connection) : await businessRepository.save(newBusiness, connection);
             newBusiness.id = businessId ? newBusiness.id : coInserted.insertId;

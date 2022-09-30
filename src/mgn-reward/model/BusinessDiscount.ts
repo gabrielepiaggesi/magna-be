@@ -8,6 +8,7 @@ export class BusinessDiscount extends Table {
     public amount: number;
     public monthly_limit: number;
     public minimum_expense: number;
+    public slogan: string;
 
     // tslint:disable-next-line:no-empty
     constructor() { super(); }

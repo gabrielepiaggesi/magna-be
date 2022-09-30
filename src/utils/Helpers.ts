@@ -34,3 +34,17 @@ export function routeFromController(object: any): Router {
     });
     return route;
 }
+
+
+export function isDateBeforeToday(date: string) {
+    if (!date) return false;
+    // new Date(Date.now()).toLocaleString('sv', {timeZone: 'Europe/Rome'});
+return new Date(date).toLocaleString('sv', {timeZone: 'Europe/Rome'}) < new Date(Date.now()).toLocaleString('sv', {timeZone: 'Europe/Rome'});
+}
+
+
+export function isDateToday(date: string) {
+    if (!date) return false;
+    // new Date(Date.now()).toLocaleString('sv', {timeZone: 'Europe/Rome'});
+    return date.substring(0, 10) == new Date(Date.now()).toLocaleString('sv', {timeZone: 'Europe/Rome'}).substring(0, 10);
+}

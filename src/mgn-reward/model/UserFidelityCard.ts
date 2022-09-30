@@ -9,6 +9,7 @@ export class UserFidelityCard extends Table {
     public usage_amount: number;
     public discount_countdown: number;
     public expenses_amount: number;
+    public last_scan: string;
 
     // tslint:disable-next-line:no-empty
     constructor() { super(); }

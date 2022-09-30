@@ -12,6 +12,7 @@ import { BusinessFidelityCardService } from "./BusinessFidelityCardService";
 import { UserDiscountService } from "./UserDiscountService";
 import { UserReferralRepository } from '../repository/UserReferralRepository';
 import { UserBusinessRepository } from "../../mgn-entity/repository/UserBusinessRepository";
+import { isDateToday } from "../../utils/Helpers";
 
 const LOG = new Logger("CompanyService.class");
 const db = require("../../connection");
@@ -81,6 +82,11 @@ export class BusinessDiscountService implements BusinessDiscountApi {
             userDiscount.business_id === +businessId && 
             userDiscount.status == 'ACTIVE', 'USER DISCOUNT INVALID', 
         connection, 403);
+
+        if (isDateToday(userDiscount.last_scan)) {
+            await connection.release();
+            return;
+        }
         
         const businessDiscount = await businessDiscountRepository.findById(userDiscount.discount_id, connection);
         await Precondition.checkIfTrue(businessDiscount && businessDiscount.status == 'ACTIVE', 'BUSINESS DISCOUNT INVALID', connection, 403);
@@ -93,7 +99,7 @@ export class BusinessDiscountService implements BusinessDiscountApi {
         }
 
         const userCards = await userFidelityCardRepository.findActiveByUserIdAndBusinessId(userDiscount.user_id, userDiscount.business_id, connection);
-        if (userCards.length) await businessFidelityCardService.checkUserFidelityCardValidity(userCards[0].id, userDiscount.business_id);
+        if (userCards.length) await businessFidelityCardService.checkUserFidelityCardValidityInternal(userCards[0].id, userDiscount.business_id, connection);
         await connection.commit();
         await connection.release();
 
@@ -164,6 +170,7 @@ export class BusinessDiscountService implements BusinessDiscountApi {
             if (discountDTO.monthly_limit) discount.monthly_limit = +discountDTO.monthly_limit || discount.monthly_limit;
             discount.minimum_expense = +discountDTO.minimum_expense || discount.minimum_expense;
             discount.status = 'ACTIVE';
+            if (discountDTO.slogan) discount.slogan = discountDTO.slogan || discount.slogan;
 
             await businessDiscountRepository.update(discount, connection);
             LOG.info("UPDATE BUSINESS DISCOUNT", discount.id);
@@ -208,7 +215,9 @@ export class BusinessDiscountService implements BusinessDiscountApi {
     private async updateUserDiscountStatus(status: string, userDiscountId: number, businessesIds: number[], connection) {
         const discount = await userDiscountRepository.findById(userDiscountId, connection);
         if (!discount || !businessesIds.includes(discount.business_id)) return discount;
+        const now = new Date(Date.now()).toLocaleString('sv', {timeZone: 'Europe/Rome'});
         try {
+            discount.last_scan = now;
             discount.status = status;
             await userDiscountRepository.update(discount, connection);
             return discount;

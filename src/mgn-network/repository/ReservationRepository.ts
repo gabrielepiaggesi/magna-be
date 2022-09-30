@@ -42,4 +42,19 @@ export class ReservationRepository extends Repository<Reservation> {
         return c.query(query || `
         select * from ${this.table} where business_id = ${mysql2.escape(businessId)} and user_date >= ${mysql2.escape(userDate)} and deleted_at is null order by id desc`).then((results) => results);
     }
+
+    public async findPendingByUserIdAndBusinessIdAndUserDateGreaterThan(userid: number, businessId: number, userDate: string, conn = null,  query = null): Promise<Reservation[]> {
+        const c = conn;
+        // tslint:disable-next-line:max-line-length
+        return c.query(query || `
+            select * 
+            from ${this.table} 
+            where business_id = ${mysql2.escape(businessId)} 
+            and user_id = ${mysql2.escape(userid)} 
+            and user_date >= ${mysql2.escape(userDate)} 
+            and status = 'pending' 
+            and deleted_at is null 
+            order by id desc
+        `).then((results) => results);
+    }
 }

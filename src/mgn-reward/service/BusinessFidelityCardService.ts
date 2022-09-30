@@ -1,6 +1,7 @@
 import { BusinessRepository } from "../../mgn-entity/repository/BusinessRepository";
 import { UserBusinessRepository } from "../../mgn-entity/repository/UserBusinessRepository";
 import { Logger } from "../../mgn-framework/services/Logger";
+import { isDateToday } from "../../utils/Helpers";
 import { IndroError } from "../../utils/IndroError";
 import { Precondition } from "../../utils/Preconditions";
 import { BusinessFidelityCardApi } from "../integration/BusinessFidelityCardApi";
@@ -67,6 +68,29 @@ export class BusinessFidelityCardService implements BusinessFidelityCardApi {
         return business;
     }
 
+    public async checkUserFidelityCardValidityInternal(userFidelityCardId: number, businessId: number, connection) {
+        const userFidelityCard = await userFidelityCardRepository.findById(userFidelityCardId, connection);
+        await Precondition.checkIfTrue(
+            userFidelityCard && 
+            userFidelityCard.business_id === +businessId && 
+            userFidelityCard.status == 'ACTIVE', 'USER FIDELITY CARD INVALID', 
+        connection, 403);
+
+        if (isDateToday(userFidelityCard.last_scan)) {
+            return;
+        }
+        
+        const businessFidelityCard = await businessFidelityCardRepository.findActiveByBusinessId(businessId, connection);
+        await Precondition.checkIfTrue(businessFidelityCard && businessFidelityCard.status == 'ACTIVE', 'BUSINESS FIDELITY CARD INVALID', connection, 403);
+
+        const newUserFidelityCard = await this.updateUserFidelityCardCountdown(userFidelityCard.id, [businessId], businessFidelityCard.expenses_amount, connection);
+        if (newUserFidelityCard.discount) {
+            await userDiscountService.addUserOriginDiscount(userFidelityCard.business_id, userFidelityCard.user_id, 'FIDELITY_CARD', connection);
+        }
+
+        return newUserFidelityCard.fidelityCard;
+    }
+
     public async checkUserFidelityCardValidity(userFidelityCardId: number, businessId: number) {
         const connection = await db.connection();
         const userFidelityCard = await userFidelityCardRepository.findById(userFidelityCardId, connection);
@@ -75,6 +99,11 @@ export class BusinessFidelityCardService implements BusinessFidelityCardApi {
             userFidelityCard.business_id === +businessId && 
             userFidelityCard.status == 'ACTIVE', 'USER FIDELITY CARD INVALID', 
         connection, 403);
+
+        if (isDateToday(userFidelityCard.last_scan)) {
+            await connection.release();
+            return;
+        }
         
         const businessFidelityCard = await businessFidelityCardRepository.findActiveByBusinessId(businessId, connection);
         await Precondition.checkIfTrue(businessFidelityCard && businessFidelityCard.status == 'ACTIVE', 'BUSINESS FIDELITY CARD INVALID', connection, 403);
@@ -210,6 +239,8 @@ export class BusinessFidelityCardService implements BusinessFidelityCardApi {
     private async updateUserFidelityCardCountdown(userFidelityCardId: number, businessesIds: number[], businessExpensesAmount: number, connection) {
         const fidelityCard = await userFidelityCardRepository.findById(userFidelityCardId, connection);
         if (!fidelityCard || !businessesIds.includes(fidelityCard.business_id)) return { fidelityCard, discount: false };
+        const now = new Date(Date.now()).toLocaleString('sv', {timeZone: 'Europe/Rome'});
+        fidelityCard.last_scan = now;
         try {
             if (fidelityCard.discount_countdown <= 0 || !fidelityCard.discount_countdown) {
                 LOG.error("HELP !!! COUNTDOWN LESS THAN ZERO! WTF", fidelityCard.id);
