@@ -18,7 +18,7 @@ export class UserDiscountRepository extends Repository<UserDiscount> {
         const c = conn;
         // tslint:disable-next-line:max-line-length
         return c.query(query || `
-            select ud.*, b.name as business_name, bd.amount as discount_amount, bd.monthly_limit as discount_monthly_limit, bd.minimum_expense as discount_minimum_expense, bd.type as discount_type 
+            select ud.*, b.name as business_name, bd.amount as discount_amount, bd.monthly_limit as discount_monthly_limit, bd.minimum_expense as discount_minimum_expense, bd.type as discount_type, bd.slogan as slogan  
             from ${this.table} ud 
             join businesses b on b.id = ud.business_id and b.deleted_at is null 
             join businesses_discounts bd on bd.id = ud.discount_id and bd.deleted_at is null and bd.status = 'ACTIVE' 
