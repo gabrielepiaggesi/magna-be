@@ -62,6 +62,22 @@ class ReservationRepository extends Repository_1.Repository {
         select * from ${this.table} where business_id = ${mysql2_1.default.escape(businessId)} and user_date >= ${mysql2_1.default.escape(userDate)} and deleted_at is null order by id desc`).then((results) => results);
         });
     }
+    findPendingByUserIdAndBusinessIdAndUserDateGreaterThan(userid, businessId, userDate, conn = null, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            // tslint:disable-next-line:max-line-length
+            return c.query(query || `
+            select * 
+            from ${this.table} 
+            where business_id = ${mysql2_1.default.escape(businessId)} 
+            and user_id = ${mysql2_1.default.escape(userid)} 
+            and user_date >= ${mysql2_1.default.escape(userDate)} 
+            and status = 'pending' 
+            and deleted_at is null 
+            order by id desc
+        `).then((results) => results);
+        });
+    }
 }
 exports.ReservationRepository = ReservationRepository;
 //# sourceMappingURL=reservationRepository.js.map

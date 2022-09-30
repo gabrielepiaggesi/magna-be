@@ -1,1 +1,1 @@
-{"version":3,"file":"UserDiscount.js","sourceRoot":"","sources":["../../../../src/mgn-reward/model/UserDiscount.ts"],"names":[],"mappings":";;AAAA,4DAAyD;AAEzD,MAAa,YAAa,SAAQ,aAAK;IAOnC,oCAAoC;IACpC,gBAAgB,KAAK,EAAE,CAAC,CAAC,CAAC;CAC7B;AATD,oCASC"}
+{"version":3,"file":"UserDiscount.js","sourceRoot":"","sources":["../../../../src/mgn-reward/model/UserDiscount.ts"],"names":[],"mappings":";;AAAA,4DAAyD;AAEzD,MAAa,YAAa,SAAQ,aAAK;IAQnC,oCAAoC;IACpC,gBAAgB,KAAK,EAAE,CAAC,CAAC,CAAC;CAC7B;AAVD,oCAUC"}

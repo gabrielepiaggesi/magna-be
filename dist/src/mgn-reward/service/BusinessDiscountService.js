@@ -20,6 +20,7 @@ const BusinessFidelityCardService_1 = require("./BusinessFidelityCardService");
 const UserDiscountService_1 = require("./UserDiscountService");
 const UserReferralRepository_1 = require("../repository/UserReferralRepository");
 const UserBusinessRepository_1 = require("../../mgn-entity/repository/UserBusinessRepository");
+const Helpers_1 = require("../../utils/Helpers");
 const LOG = new Logger_1.Logger("CompanyService.class");
 const db = require("../../connection");
 const businessDiscountRepository = new BusinessDiscountRepository_1.BusinessDiscountRepository();
@@ -81,6 +82,10 @@ class BusinessDiscountService {
             yield Preconditions_1.Precondition.checkIfTrue(userDiscount &&
                 userDiscount.business_id === +businessId &&
                 userDiscount.status == 'ACTIVE', 'USER DISCOUNT INVALID', connection, 403);
+            if (Helpers_1.isDateToday(userDiscount.last_scan)) {
+                yield connection.release();
+                return;
+            }
             const businessDiscount = yield businessDiscountRepository.findById(userDiscount.discount_id, connection);
             yield Preconditions_1.Precondition.checkIfTrue(businessDiscount && businessDiscount.status == 'ACTIVE', 'BUSINESS DISCOUNT INVALID', connection, 403);
             yield connection.newTransaction();
@@ -91,7 +96,7 @@ class BusinessDiscountService {
             }
             const userCards = yield userFidelityCardRepository.findActiveByUserIdAndBusinessId(userDiscount.user_id, userDiscount.business_id, connection);
             if (userCards.length)
-                yield businessFidelityCardService.checkUserFidelityCardValidity(userCards[0].id, userDiscount.business_id);
+                yield businessFidelityCardService.checkUserFidelityCardValidityInternal(userCards[0].id, userDiscount.business_id, connection);
             yield connection.commit();
             yield connection.release();
             return business;
@@ -162,6 +167,8 @@ class BusinessDiscountService {
                     discount.monthly_limit = +discountDTO.monthly_limit || discount.monthly_limit;
                 discount.minimum_expense = +discountDTO.minimum_expense || discount.minimum_expense;
                 discount.status = 'ACTIVE';
+                if (discountDTO.slogan)
+                    discount.slogan = discountDTO.slogan || discount.slogan;
                 yield businessDiscountRepository.update(discount, connection);
                 LOG.info("UPDATE BUSINESS DISCOUNT", discount.id);
                 return discount;
@@ -214,7 +221,9 @@ class BusinessDiscountService {
             const discount = yield userDiscountRepository.findById(userDiscountId, connection);
             if (!discount || !businessesIds.includes(discount.business_id))
                 return discount;
+            const now = new Date(Date.now()).toLocaleString('sv', { timeZone: 'Europe/Rome' });
             try {
+                discount.last_scan = now;
                 discount.status = status;
                 yield userDiscountRepository.update(discount, connection);
                 return discount;

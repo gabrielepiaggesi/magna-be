@@ -49,4 +49,18 @@ function routeFromController(object) {
     return route;
 }
 exports.routeFromController = routeFromController;
+function isDateBeforeToday(date) {
+    if (!date)
+        return false;
+    // new Date(Date.now()).toLocaleString('sv', {timeZone: 'Europe/Rome'});
+    return new Date(date).toLocaleString('sv', { timeZone: 'Europe/Rome' }) < new Date(Date.now()).toLocaleString('sv', { timeZone: 'Europe/Rome' });
+}
+exports.isDateBeforeToday = isDateBeforeToday;
+function isDateToday(date) {
+    if (!date)
+        return false;
+    // new Date(Date.now()).toLocaleString('sv', {timeZone: 'Europe/Rome'});
+    return date.substring(0, 10) == new Date(Date.now()).toLocaleString('sv', { timeZone: 'Europe/Rome' }).substring(0, 10);
+}
+exports.isDateToday = isDateToday;
 //# sourceMappingURL=Helpers.js.map

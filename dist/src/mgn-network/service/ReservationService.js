@@ -9,8 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const BusinessRepository_1 = require("../../mgn-entity/repository/BusinessRepository");
 const UserBusinessRepository_1 = require("../../mgn-entity/repository/UserBusinessRepository");
 const Logger_1 = require("../../mgn-framework/services/Logger");
+const Helpers_1 = require("../../utils/Helpers");
 const IndroError_1 = require("../../utils/IndroError");
 const Preconditions_1 = require("../../utils/Preconditions");
 const Reservation_1 = require("../model/Reservation");
@@ -19,6 +21,7 @@ const LOG = new Logger_1.Logger("CompanyService.class");
 const db = require("../../connection");
 const reservationRepository = new reservationRepository_1.ReservationRepository();
 const userBusinessRepository = new UserBusinessRepository_1.UserBusinessRepository();
+const businessRepository = new BusinessRepository_1.BusinessRepository();
 class ReservationService {
     getReservation(reservationId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -59,6 +62,24 @@ class ReservationService {
             yield Preconditions_1.Precondition.checkIfFalse((!dto.userDate), "Timing missing");
             yield Preconditions_1.Precondition.checkIfFalse((!dto.peopleAmount), "People Amount missing");
             const connection = yield db.connection();
+            const business = yield businessRepository.findById(businessId, connection);
+            if (!business.accept_reservations) {
+                LOG.info('business.accept_reservations', business.accept_reservations + '');
+                yield connection.release();
+                return { disabled_reservations: true };
+            }
+            if (business.disable_reservation_today &&
+                Helpers_1.isDateToday(dto.userDate) &&
+                Helpers_1.isDateToday(business.disable_reservation_today)) {
+                yield connection.release();
+                return { disable_reservation_today: true };
+            }
+            const today = new Date(Date.now()).toISOString().substring(0, 10) + ' 05:00:00';
+            const reservations = yield reservationRepository.findPendingByUserIdAndBusinessIdAndUserDateGreaterThan(userId, businessId, today, connection);
+            if (reservations.length) {
+                yield connection.release();
+                return Object.assign(Object.assign({}, reservations[0]), { old: true });
+            }
             yield connection.newTransaction();
             // dto.userDate = new Date(Date.now()).toISOString().substring(0,10) + ' ' + dto.userDate;
             const newUser = yield this.createReservation(dto, businessId, userId, connection);

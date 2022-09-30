@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const UserBusinessRepository_1 = require("../../mgn-entity/repository/UserBusinessRepository");
 const Logger_1 = require("../../mgn-framework/services/Logger");
+const Helpers_1 = require("../../utils/Helpers");
 const IndroError_1 = require("../../utils/IndroError");
 const Preconditions_1 = require("../../utils/Preconditions");
 const BusinessFidelityCard_1 = require("../model/BusinessFidelityCard");
@@ -68,6 +69,24 @@ class BusinessFidelityCardService {
             return business;
         });
     }
+    checkUserFidelityCardValidityInternal(userFidelityCardId, businessId, connection) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const userFidelityCard = yield userFidelityCardRepository.findById(userFidelityCardId, connection);
+            yield Preconditions_1.Precondition.checkIfTrue(userFidelityCard &&
+                userFidelityCard.business_id === +businessId &&
+                userFidelityCard.status == 'ACTIVE', 'USER FIDELITY CARD INVALID', connection, 403);
+            if (Helpers_1.isDateToday(userFidelityCard.last_scan)) {
+                return;
+            }
+            const businessFidelityCard = yield businessFidelityCardRepository.findActiveByBusinessId(businessId, connection);
+            yield Preconditions_1.Precondition.checkIfTrue(businessFidelityCard && businessFidelityCard.status == 'ACTIVE', 'BUSINESS FIDELITY CARD INVALID', connection, 403);
+            const newUserFidelityCard = yield this.updateUserFidelityCardCountdown(userFidelityCard.id, [businessId], businessFidelityCard.expenses_amount, connection);
+            if (newUserFidelityCard.discount) {
+                yield userDiscountService.addUserOriginDiscount(userFidelityCard.business_id, userFidelityCard.user_id, 'FIDELITY_CARD', connection);
+            }
+            return newUserFidelityCard.fidelityCard;
+        });
+    }
     checkUserFidelityCardValidity(userFidelityCardId, businessId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
@@ -75,6 +94,10 @@ class BusinessFidelityCardService {
             yield Preconditions_1.Precondition.checkIfTrue(userFidelityCard &&
                 userFidelityCard.business_id === +businessId &&
                 userFidelityCard.status == 'ACTIVE', 'USER FIDELITY CARD INVALID', connection, 403);
+            if (Helpers_1.isDateToday(userFidelityCard.last_scan)) {
+                yield connection.release();
+                return;
+            }
             const businessFidelityCard = yield businessFidelityCardRepository.findActiveByBusinessId(businessId, connection);
             yield Preconditions_1.Precondition.checkIfTrue(businessFidelityCard && businessFidelityCard.status == 'ACTIVE', 'BUSINESS FIDELITY CARD INVALID', connection, 403);
             yield connection.newTransaction();
@@ -212,6 +235,8 @@ class BusinessFidelityCardService {
             const fidelityCard = yield userFidelityCardRepository.findById(userFidelityCardId, connection);
             if (!fidelityCard || !businessesIds.includes(fidelityCard.business_id))
                 return { fidelityCard, discount: false };
+            const now = new Date(Date.now()).toLocaleString('sv', { timeZone: 'Europe/Rome' });
+            fidelityCard.last_scan = now;
             try {
                 if (fidelityCard.discount_countdown <= 0 || !fidelityCard.discount_countdown) {
                     LOG.error("HELP !!! COUNTDOWN LESS THAN ZERO! WTF", fidelityCard.id);

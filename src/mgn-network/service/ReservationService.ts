@@ -59,6 +59,7 @@ export class ReservationService implements ReservationApi {
 
         const business = await businessRepository.findById(businessId, connection);
         if (!business.accept_reservations) {
+            LOG.info('business.accept_reservations', business.accept_reservations + '');
             await connection.release();
             return { disabled_reservations: true };
         }
