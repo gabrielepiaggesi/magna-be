@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const BusinessRepository_1 = require("../../mgn-entity/repository/BusinessRepository");
 const UserBusinessRepository_1 = require("../../mgn-entity/repository/UserBusinessRepository");
 const Logger_1 = require("../../mgn-framework/services/Logger");
+const PushNotificationSender_1 = require("../../mgn-framework/services/PushNotificationSender");
 const Helpers_1 = require("../../utils/Helpers");
 const IndroError_1 = require("../../utils/IndroError");
 const Preconditions_1 = require("../../utils/Preconditions");
@@ -93,17 +94,23 @@ class ReservationService {
             const connection = yield db.connection();
             const userBusinesses = yield userBusinessRepository.findByUserId(userId, connection);
             const businessesIds = userBusinesses.map(uB => uB.business_id);
-            const res = yield reservationRepository.findById(reservationId, connection);
+            let res = yield reservationRepository.findById(reservationId, connection);
             if (!res || !businessesIds.includes(res.business_id))
                 return res;
             if (dto.subStatus && dto.subStatus === 'new_date' && dto.businessDate) {
                 dto.businessDate = new Date(res.user_date).toLocaleString('sv', { timeZone: 'Europe/Rome' }).substring(0, 10) + ' ' + dto.businessDate;
             }
             yield connection.newTransaction();
-            const business = yield this.updateReservation(dto, res, connection);
+            const newRes = yield this.updateReservation(dto, res, connection);
             yield connection.commit();
             yield connection.release();
-            return business;
+            let msg = 'Prenotazione Processata';
+            if (newRes.status === 'accepted')
+                msg = 'Prenotazione Accettata';
+            if (newRes.status === 'declined')
+                msg = 'Prenotazione Rifiutata';
+            PushNotificationSender_1.PushNotificationSender.sendToUser(res.user_id, msg);
+            return newRes;
         });
     }
     createReservation(resDTO, businessId, userId, connection) {

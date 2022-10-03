@@ -1,6 +1,7 @@
 import { BusinessRepository } from "../../mgn-entity/repository/BusinessRepository";
 import { UserBusinessRepository } from "../../mgn-entity/repository/UserBusinessRepository";
 import { Logger } from "../../mgn-framework/services/Logger";
+import { PushNotificationSender } from "../../mgn-framework/services/PushNotificationSender";
 import { isDateBeforeToday, isDateToday } from "../../utils/Helpers";
 import { IndroError } from "../../utils/IndroError";
 import { Precondition } from "../../utils/Preconditions";
@@ -91,7 +92,7 @@ export class ReservationService implements ReservationApi {
         const userBusinesses = await userBusinessRepository.findByUserId(userId, connection);
         const businessesIds = userBusinesses.map(uB => uB.business_id);
 
-        const res = await reservationRepository.findById(reservationId, connection);
+        let res = await reservationRepository.findById(reservationId, connection);
         if (!res || !businessesIds.includes(res.business_id)) return res;
 
         if (dto.subStatus && dto.subStatus === 'new_date' && dto.businessDate) {
@@ -99,11 +100,16 @@ export class ReservationService implements ReservationApi {
         }
 
         await connection.newTransaction();
-        const business = await this.updateReservation(dto, res, connection);
+        const newRes = await this.updateReservation(dto, res, connection);
         await connection.commit();
         await connection.release();
 
-        return business;
+        let msg = 'Prenotazione Processata';
+        if (newRes.status === 'accepted') msg = 'Prenotazione Accettata';
+        if (newRes.status === 'declined') msg = 'Prenotazione Rifiutata';
+        PushNotificationSender.sendToUser(res.user_id, msg);
+
+        return newRes;
     }
 
     private async createReservation(resDTO: { name: string, phoneNumber: string, userDate: string, peopleAmount: number, note?: string, type?: 'auto'|'manual', tableNumber?: number }, businessId: number, userId: number, connection) {
