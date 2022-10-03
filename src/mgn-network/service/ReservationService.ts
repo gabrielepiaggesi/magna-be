@@ -93,6 +93,7 @@ export class ReservationService implements ReservationApi {
         const businessesIds = userBusinesses.map(uB => uB.business_id);
 
         let res = await reservationRepository.findById(reservationId, connection);
+        const business = await businessRepository.findById(res.business_id, connection);
         if (!res || !businessesIds.includes(res.business_id)) return res;
 
         if (dto.subStatus && dto.subStatus === 'new_date' && dto.businessDate) {
@@ -107,7 +108,7 @@ export class ReservationService implements ReservationApi {
         let msg = 'Prenotazione Processata';
         if (newRes.status === 'accepted') msg = 'Prenotazione Accettata';
         if (newRes.status === 'declined') msg = 'Prenotazione Rifiutata';
-        PushNotificationSender.sendToUser(res.user_id, msg);
+        PushNotificationSender.sendToUser(res.user_id, business.name.substring(0,20), msg);
 
         return newRes;
     }

@@ -5,10 +5,38 @@ const request = require('request');
 const db = require("../../connection");
 const LOG = new Logger_1.Logger("PushNotificationSender.class");
 class PushNotificationSender {
-    static sendToUser(userId, msg) {
-        this.send(userId, msg);
+    static sendToUser(userId, title, msg) {
+        this.send({
+            app_id: process.env.ONESIGNAL_APP_ID,
+            include_external_user_ids: [userId + ''],
+            channel_for_external_user_ids: "push",
+            contents: {
+                en: msg,
+                it: msg,
+            },
+            headings: {
+                en: title,
+                it: title,
+            }
+        });
     }
-    static send(userId, message, params = {}) {
+    static sendToClients(businessId, title, msg) {
+        this.send({
+            app_id: process.env.ONESIGNAL_APP_ID,
+            contents: {
+                en: msg,
+                it: msg,
+            },
+            headings: {
+                en: title,
+                it: title,
+            },
+            filters: [
+                { field: "tag", key: "business_id_" + businessId, relation: "=", value: businessId }
+            ]
+        });
+    }
+    static send(body) {
         var options = {
             'method': 'POST',
             'url': 'https://onesignal.com/api/v1/notifications',
@@ -17,15 +45,7 @@ class PushNotificationSender {
                 'accept': 'application/json',
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                app_id: process.env.ONESIGNAL_APP_ID,
-                include_external_user_ids: [userId + ''],
-                channel_for_external_user_ids: "push",
-                contents: {
-                    en: message,
-                    it: message,
-                }
-            })
+            body: JSON.stringify(body)
         };
         request(options, (error, response, body) => {
             if (error) {

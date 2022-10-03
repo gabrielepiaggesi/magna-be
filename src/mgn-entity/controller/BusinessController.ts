@@ -49,6 +49,19 @@ export class BusinessController implements BusinessApi {
         }
     }
 
+    @Post()
+    @Path("/sendNotificationToClients/:businessId")
+    public async sendNotificationToClients(res: Response, req) {
+        try {
+            const loggedUserId = auth.getLoggedUserId(req);
+            const response = await businessService.sendNotificationToClients(parseInt(req.params.businessId, 10), loggedUserId, req.body);
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Business.sendNotificationToClients.Error'});
+        }
+    }
+
     @Get()
     @Path("/getUserBusinesses/:businessId")
     public async getUserBusinesses(res: Response, req) {

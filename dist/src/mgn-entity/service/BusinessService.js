@@ -16,6 +16,7 @@ const Business_1 = require("../model/Business");
 const BusinessRepository_1 = require("../repository/BusinessRepository");
 const UserBusiness_1 = require("../model/UserBusiness");
 const UserBusinessRepository_1 = require("../repository/UserBusinessRepository");
+const PushNotificationSender_1 = require("../../mgn-framework/services/PushNotificationSender");
 const LOG = new Logger_1.Logger("CompanyService.class");
 const db = require("../../connection");
 const businessRepository = new BusinessRepository_1.BusinessRepository();
@@ -106,6 +107,20 @@ class BusinessService {
             const connection = yield db.connection();
             const business = yield businessRepository.findById(businessId, connection);
             yield connection.release();
+            return business;
+        });
+    }
+    sendNotificationToClients(businessId, userId, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            const uBusiness = yield userBusinessRepository.findByUserIdAndUserBusinessId(businessId, userId, connection);
+            if (!uBusiness) {
+                yield connection.release();
+                return null;
+            }
+            const business = yield businessRepository.findById(businessId, connection);
+            yield connection.release();
+            PushNotificationSender_1.PushNotificationSender.sendToClients(businessId, business.name.substring(0, 20), dto.msg.substring(0, 30));
             return business;
         });
     }

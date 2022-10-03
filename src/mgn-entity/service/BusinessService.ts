@@ -6,6 +6,7 @@ import { Business } from "../model/Business";
 import { BusinessRepository } from "../repository/BusinessRepository";
 import { UserBusiness } from '../model/UserBusiness';
 import { UserBusinessRepository } from "../repository/UserBusinessRepository";
+import { PushNotificationSender } from "../../mgn-framework/services/PushNotificationSender";
 
 const LOG = new Logger("CompanyService.class");
 const db = require("../../connection");
@@ -103,6 +104,21 @@ export class BusinessService implements BusinessApi {
         const business = await businessRepository.findById(businessId, connection);
         await connection.release();
 
+        return business;
+    }
+
+    public async sendNotificationToClients(businessId: number, userId: number, dto: { msg: string }) {
+        const connection = await db.connection();
+        const uBusiness = await userBusinessRepository.findByUserIdAndUserBusinessId(businessId, userId, connection);
+        if (!uBusiness) {
+            await connection.release();
+            return null;
+        }
+
+        const business = await businessRepository.findById(businessId, connection);
+        await connection.release();
+        
+        PushNotificationSender.sendToClients(businessId, business.name.substring(0, 20), dto.msg.substring(0, 30));
         return business;
     }
 

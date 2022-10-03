@@ -95,6 +95,7 @@ class ReservationService {
             const userBusinesses = yield userBusinessRepository.findByUserId(userId, connection);
             const businessesIds = userBusinesses.map(uB => uB.business_id);
             let res = yield reservationRepository.findById(reservationId, connection);
+            const business = yield businessRepository.findById(res.business_id, connection);
             if (!res || !businessesIds.includes(res.business_id))
                 return res;
             if (dto.subStatus && dto.subStatus === 'new_date' && dto.businessDate) {
@@ -109,7 +110,7 @@ class ReservationService {
                 msg = 'Prenotazione Accettata';
             if (newRes.status === 'declined')
                 msg = 'Prenotazione Rifiutata';
-            PushNotificationSender_1.PushNotificationSender.sendToUser(res.user_id, msg);
+            PushNotificationSender_1.PushNotificationSender.sendToUser(res.user_id, business.name.substring(0, 20), msg);
             return newRes;
         });
     }

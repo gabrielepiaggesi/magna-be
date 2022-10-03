@@ -61,6 +61,19 @@ class BusinessController {
             }
         });
     }
+    sendNotificationToClients(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const loggedUserId = __1.auth.getLoggedUserId(req);
+                const response = yield businessService.sendNotificationToClients(parseInt(req.params.businessId, 10), loggedUserId, req.body);
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Business.sendNotificationToClients.Error' }));
+            }
+        });
+    }
     getUserBusinesses(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -136,6 +149,10 @@ __decorate([
     Decorator_1.Post(),
     Decorator_1.Path("/removeUserBusiness/:businessId/:userId")
 ], BusinessController.prototype, "removeUserBusiness", null);
+__decorate([
+    Decorator_1.Post(),
+    Decorator_1.Path("/sendNotificationToClients/:businessId")
+], BusinessController.prototype, "sendNotificationToClients", null);
 __decorate([
     Decorator_1.Get(),
     Decorator_1.Path("/getUserBusinesses/:businessId")
