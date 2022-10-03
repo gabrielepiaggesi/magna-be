@@ -26,6 +26,7 @@ class BusinessService {
         return __awaiter(this, void 0, void 0, function* () {
             yield Preconditions_1.Precondition.checkIfFalse((!dto.name), "Incomplete Data");
             const connection = yield db.connection();
+            //MISSING REFERRAL CODE!
             yield connection.newTransaction();
             const newBusiness = yield this.updateOrCreateBusiness(dto, null, loggedUserId, connection);
             const newUserBusiness = yield this.createUserBusiness(newBusiness.id, newBusiness.user_id, connection);

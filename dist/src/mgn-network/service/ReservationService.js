@@ -105,12 +105,14 @@ class ReservationService {
             const newRes = yield this.updateReservation(dto, res, connection);
             yield connection.commit();
             yield connection.release();
-            let msg = 'Prenotazione Processata';
-            if (newRes.status === 'accepted')
-                msg = 'Prenotazione Accettata';
-            if (newRes.status === 'declined')
-                msg = 'Prenotazione Rifiutata';
-            PushNotificationSender_1.PushNotificationSender.sendToUser(res.user_id, business.name.substring(0, 20), msg);
+            if (newRes.status === 'accepted' || newRes.status === 'declined') {
+                let msg = 'Prenotazione Processata';
+                if (newRes.status === 'accepted')
+                    msg = 'Prenotazione Accettata';
+                if (newRes.status === 'declined')
+                    msg = 'Prenotazione Rifiutata';
+                PushNotificationSender_1.PushNotificationSender.sendToUser(res.user_id, business.name.substring(0, 20), msg);
+            }
             return newRes;
         });
     }

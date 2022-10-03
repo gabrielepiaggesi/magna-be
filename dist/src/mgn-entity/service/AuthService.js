@@ -102,6 +102,7 @@ class AuthService {
                 newUser.email = dto.email;
                 newUser.status = 'ACTIVE';
                 newUser.password = dto.password;
+                newUser.referral_code = shortid.generate();
                 newUser.name = dto.name;
                 newUser.lastname = dto.lastname;
                 newUser.birthday = dto.birthdate;

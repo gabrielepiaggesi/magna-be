@@ -105,11 +105,12 @@ export class ReservationService implements ReservationApi {
         await connection.commit();
         await connection.release();
 
-        let msg = 'Prenotazione Processata';
-        if (newRes.status === 'accepted') msg = 'Prenotazione Accettata';
-        if (newRes.status === 'declined') msg = 'Prenotazione Rifiutata';
-        PushNotificationSender.sendToUser(res.user_id, business.name.substring(0,20), msg);
-
+        if (newRes.status === 'accepted' || newRes.status === 'declined') {
+            let msg = 'Prenotazione Processata';
+            if (newRes.status === 'accepted') msg = 'Prenotazione Accettata';
+            if (newRes.status === 'declined') msg = 'Prenotazione Rifiutata';
+            PushNotificationSender.sendToUser(res.user_id, business.name.substring(0,20), msg);
+        }
         return newRes;
     }
 

@@ -18,7 +18,7 @@ export class BusinessService implements BusinessApi {
     public async addBusiness(dto: any, loggedUserId: number) {
         await Precondition.checkIfFalse((!dto.name), "Incomplete Data");
         const connection = await db.connection();
-        
+        //MISSING REFERRAL CODE!
         await connection.newTransaction();
         const newBusiness = await this.updateOrCreateBusiness(dto, null, loggedUserId, connection);
         const newUserBusiness = await this.createUserBusiness(newBusiness.id, newBusiness.user_id, connection);
