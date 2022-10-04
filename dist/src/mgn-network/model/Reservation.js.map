@@ -1,1 +1,1 @@
-{"version":3,"file":"Reservation.js","sourceRoot":"","sources":["../../../../src/mgn-network/model/Reservation.ts"],"names":[],"mappings":";;AAAA,4DAAyD;AAEzD,MAAa,WAAY,SAAQ,aAAK;IAclC,oCAAoC;IACpC,gBAAgB,KAAK,EAAE,CAAC,CAAC,CAAC;CAC7B;AAhBD,kCAgBC"}
+{"version":3,"file":"Reservation.js","sourceRoot":"","sources":["../../../../src/mgn-network/model/Reservation.ts"],"names":[],"mappings":";;AAAA,4DAAyD;AAEzD,MAAa,WAAY,SAAQ,aAAK;IAelC,oCAAoC;IACpC,gBAAgB,KAAK,EAAE,CAAC,CAAC,CAAC;CAC7B;AAjBD,kCAiBC"}

@@ -87,7 +87,7 @@ export class ReservationService implements ReservationApi {
         return newUser;
     }
 
-    public async updateBusinessReservation(dto: { status: string, subStatus?: string, tableNumber?: number, businessDate?: string }, reservationId: number, userId: number) {
+    public async updateBusinessReservation(dto: { status: string, subStatus?: string, tableNumber?: number, businessDate?: string, businessMessage?: string }, reservationId: number, userId: number) {
         const connection = await db.connection();
         const userBusinesses = await userBusinessRepository.findByUserId(userId, connection);
         const businessesIds = userBusinesses.map(uB => uB.business_id);
@@ -140,12 +140,13 @@ export class ReservationService implements ReservationApi {
         }
     }
 
-    private async updateReservation(dto: { status: string, subStatus?: string, tableNumber?: number, businessDate?: string }, res: Reservation, connection) {
+    private async updateReservation(dto: { status: string, subStatus?: string, tableNumber?: number, businessDate?: string, businessMessage?: string }, res: Reservation, connection) {
         try {
             res.status = dto.status || res.status;
             if (dto.subStatus) res.sub_status = dto.subStatus;
             if (dto.tableNumber) res.table_number = +dto.tableNumber;
             if (dto.businessDate) res.business_date = dto.businessDate;
+            if (dto.businessMessage) res.business_message = dto.businessMessage;
             await reservationRepository.update(res, connection);
             return res;
         } catch (e) {

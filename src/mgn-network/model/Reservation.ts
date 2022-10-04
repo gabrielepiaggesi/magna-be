@@ -13,6 +13,7 @@ export class Reservation extends Table {
     public name: string;
     public phone_number: string;
     public type: string;
+    public business_message: string;
 
     // tslint:disable-next-line:no-empty
     constructor() { super(); }

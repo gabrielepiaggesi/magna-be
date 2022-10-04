@@ -156,6 +156,8 @@ class ReservationService {
                     res.table_number = +dto.tableNumber;
                 if (dto.businessDate)
                     res.business_date = dto.businessDate;
+                if (dto.businessMessage)
+                    res.business_message = dto.businessMessage;
                 yield reservationRepository.update(res, connection);
                 return res;
             }
