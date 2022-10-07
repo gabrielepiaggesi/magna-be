@@ -72,9 +72,9 @@ class EmailSender {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                sender: { email: 'magnaappweb@gmail.com', name: 'MAGNA APP' },
+                sender: { email: 'comebackwebapp@gmail.com', name: 'COMEBACK APP' },
                 to: [{ email: email }],
-                replyTo: { email: 'magnaappweb@gmail.com' },
+                replyTo: { email: 'comebackwebapp@gmail.com' },
                 params: Object.assign({ default: 'ciao' }, params),
                 templateId: templateId
             })
