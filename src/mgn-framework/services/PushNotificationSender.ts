@@ -10,6 +10,7 @@ export class PushNotificationSender {
     public static sendToUser(userId: number, title: string, msg: string) {
         this.send({
             app_id: process.env.ONESIGNAL_APP_ID,
+            android_channel_id: '87068eb6-ac5b-411c-9006-07090917b28c',
             include_external_user_ids: [userId+''],
             channel_for_external_user_ids: "push",
             contents: {
@@ -27,6 +28,7 @@ export class PushNotificationSender {
         const userIdsString = userIds.map(id => id+'');
         this.send({
             app_id: process.env.ONESIGNAL_APP_ID,
+            android_channel_id: '87068eb6-ac5b-411c-9006-07090917b28c',
             include_external_user_ids: userIdsString,
             channel_for_external_user_ids: "push",
             contents: {
@@ -43,6 +45,7 @@ export class PushNotificationSender {
     public static sendToClients(businessId: number, title: string, msg: string) {
         this.send({
             app_id: process.env.ONESIGNAL_APP_ID,
+            android_channel_id: '87068eb6-ac5b-411c-9006-07090917b28c',
             contents: {
                 en: msg,
                 it: msg,
