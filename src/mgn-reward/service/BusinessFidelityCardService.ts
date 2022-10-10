@@ -1,6 +1,7 @@
 import { BusinessRepository } from "../../mgn-entity/repository/BusinessRepository";
 import { UserBusinessRepository } from "../../mgn-entity/repository/UserBusinessRepository";
 import { Logger } from "../../mgn-framework/services/Logger";
+import { PushNotificationSender } from "../../mgn-framework/services/PushNotificationSender";
 import { isDateToday } from "../../utils/Helpers";
 import { IndroError } from "../../utils/IndroError";
 import { Precondition } from "../../utils/Preconditions";
@@ -116,6 +117,7 @@ export class BusinessFidelityCardService implements BusinessFidelityCardApi {
         await connection.commit();
         await connection.release();
 
+        PushNotificationSender.sendToUser(userFidelityCard.user_id, 'Carta Fedeltà', 'Timbrata con successo!');
         return newUserFidelityCard.fidelityCard;
     }
 

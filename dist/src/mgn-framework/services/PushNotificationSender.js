@@ -20,6 +20,22 @@ class PushNotificationSender {
             }
         });
     }
+    static sendToUsers(userIds, title, msg) {
+        const userIdsString = userIds.map(id => id + '');
+        this.send({
+            app_id: process.env.ONESIGNAL_APP_ID,
+            include_external_user_ids: userIdsString,
+            channel_for_external_user_ids: "push",
+            contents: {
+                en: msg,
+                it: msg,
+            },
+            headings: {
+                en: title,
+                it: title,
+            }
+        });
+    }
     static sendToClients(businessId, title, msg) {
         this.send({
             app_id: process.env.ONESIGNAL_APP_ID,

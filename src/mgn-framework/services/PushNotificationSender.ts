@@ -23,6 +23,23 @@ export class PushNotificationSender {
         });
     }
 
+    public static sendToUsers(userIds: number[], title: string, msg: string) {
+        const userIdsString = userIds.map(id => id+'');
+        this.send({
+            app_id: process.env.ONESIGNAL_APP_ID,
+            include_external_user_ids: userIdsString,
+            channel_for_external_user_ids: "push",
+            contents: {
+                en: msg,
+                it: msg,
+            },
+            headings: {
+                en: title,
+                it: title,
+            }
+        });
+    }
+
     public static sendToClients(businessId: number, title: string, msg: string) {
         this.send({
             app_id: process.env.ONESIGNAL_APP_ID,

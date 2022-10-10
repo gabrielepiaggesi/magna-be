@@ -1,6 +1,7 @@
 import { BusinessRepository } from "../../mgn-entity/repository/BusinessRepository";
 import { UserBusinessRepository } from "../../mgn-entity/repository/UserBusinessRepository";
 import { Logger } from "../../mgn-framework/services/Logger";
+import { PushNotificationSender } from "../../mgn-framework/services/PushNotificationSender";
 import { IndroError } from "../../utils/IndroError";
 import { Precondition } from "../../utils/Preconditions";
 import { UserDiscountApi } from "../integration/UserDiscountApi";
@@ -39,6 +40,7 @@ export class UserDiscountService implements UserDiscountApi {
             discount_id: businessDiscount.id
         };
         const newUserDiscount = await this.createUserDiscount(dto, userId, null, connection);
+        PushNotificationSender.sendToUser(newUserDiscount.user_id, 'PREMIO', 'Hai un nuovo premio!');
         return newUserDiscount;
     }
 

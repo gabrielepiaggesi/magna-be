@@ -147,6 +147,7 @@ class BusinessService {
                 if (newBusinessDTO.phoneNumber && newBusinessDTO.phoneNumber != newBusiness.phone_number)
                     newBusiness.phone_number = newBusinessDTO.phoneNumber;
                 newBusiness.name = newBusinessDTO.name || newBusiness.name;
+                newBusiness.address = newBusinessDTO.address || newBusiness.address;
                 newBusiness.status = businessId ? newBusiness.status : 'ACTIVE';
                 newBusiness.user_id = businessId ? newBusiness.user_id : loggedUserId;
                 newBusiness.accept_reservations = newBusinessDTO.acceptReservations >= 0 ? newBusinessDTO.acceptReservations : newBusiness.accept_reservations;

@@ -2,6 +2,7 @@ import { Table } from "../../mgn-framework/models/Table";
 
 export class Business extends Table {
     public name: string;
+    public address: string;
     public user_id: number;
     public status: string;
     public phone_number: string;

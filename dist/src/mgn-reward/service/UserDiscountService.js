@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const UserBusinessRepository_1 = require("../../mgn-entity/repository/UserBusinessRepository");
 const Logger_1 = require("../../mgn-framework/services/Logger");
+const PushNotificationSender_1 = require("../../mgn-framework/services/PushNotificationSender");
 const IndroError_1 = require("../../utils/IndroError");
 const UserDiscount_1 = require("../model/UserDiscount");
 const BusinessDiscountRepository_1 = require("../repository/BusinessDiscountRepository");
@@ -44,6 +45,7 @@ class UserDiscountService {
                 discount_id: businessDiscount.id
             };
             const newUserDiscount = yield this.createUserDiscount(dto, userId, null, connection);
+            PushNotificationSender_1.PushNotificationSender.sendToUser(newUserDiscount.user_id, 'PREMIO', 'Hai un nuovo premio!');
             return newUserDiscount;
         });
     }

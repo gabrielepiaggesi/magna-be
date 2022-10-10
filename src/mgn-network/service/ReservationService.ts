@@ -78,12 +78,15 @@ export class ReservationService implements ReservationApi {
             return { ...reservations[0], old: true };
         }
 
+        const userBusinesses = await userBusinessRepository.findByBusinessId(business.id, connection);
         await connection.newTransaction();
         // dto.userDate = new Date(Date.now()).toISOString().substring(0,10) + ' ' + dto.userDate;
         const newUser = await this.createReservation(dto, businessId, userId, connection);
         await connection.commit();
         await connection.release();
-        
+
+        const employees = userBusinesses.map(uB => uB.user_id);
+        PushNotificationSender.sendToUsers([business.user_id, ...employees], business.name.substring(0,20), "Nuova Prenotazione");
         return newUser;
     }
 
@@ -105,11 +108,13 @@ export class ReservationService implements ReservationApi {
         await connection.commit();
         await connection.release();
 
-        if (newRes.status === 'accepted' || newRes.status === 'declined') {
+        if (newRes.status === 'accepted' || (newRes.status === 'declined' && newRes.sub_status != 'user_canceled')) {
             let msg = 'Prenotazione Processata';
             if (newRes.status === 'accepted') msg = 'Prenotazione Accettata';
             if (newRes.status === 'declined') msg = 'Prenotazione Rifiutata';
             PushNotificationSender.sendToUser(res.user_id, business.name.substring(0,20), msg);
+        } else if (newRes.status === 'declined' && newRes.sub_status == 'user_canceled') {
+            PushNotificationSender.sendToUsers([business.user_id, ...userBusinesses.map(uB => uB.user_id)], business.name.substring(0,20), "1 Prenotazione Annullata");
         }
         return newRes;
     }
