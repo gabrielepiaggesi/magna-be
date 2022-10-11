@@ -59,7 +59,8 @@ export class AuthService implements AuthApi {
 
 
 
-        const password = shortid.generate();
+        // const password = shortid.generate();
+        const password = userDTO.password || shortid.generate();
         const passwordHashed = await bcrypt.hash(password, 10);
         const emailTemplateId = 1;
 

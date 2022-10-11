@@ -64,7 +64,8 @@ class AuthService {
             yield Preconditions_1.Precondition.checkIfFalse((!userAge || userAge < 4 || userAge > 100), "Età Invalida! Sei troppo giovane, non puoi iscriverti");
             const connection = yield db.connection();
             const userWithThisEmail = yield userRepository.findByEmail(userDTO.email, connection);
-            const password = shortid.generate();
+            // const password = shortid.generate();
+            const password = userDTO.password || shortid.generate();
             const passwordHashed = yield bcrypt_1.default.hash(password, 10);
             const emailTemplateId = 1;
             if (userWithThisEmail) {
