@@ -60,8 +60,8 @@ class AuthService {
     signup(userDTO) {
         return __awaiter(this, void 0, void 0, function* () {
             LOG.debug("signup...", userDTO);
-            const userAge = Helpers_1.getDatesDiffIn(userDTO.birthdate, Date.now(), 'years');
-            yield Preconditions_1.Precondition.checkIfFalse((!userAge || userAge < 4 || userAge > 100), "Età Invalida! Sei troppo giovane, non puoi iscriverti");
+            // const userAge = getDatesDiffIn(userDTO.birthdate, Date.now(), 'years');
+            // await Precondition.checkIfFalse((!userAge || userAge < 4 || userAge > 100), "Età Invalida! Sei troppo giovane, non puoi iscriverti");
             const connection = yield db.connection();
             const userWithThisEmail = yield userRepository.findByEmail(userDTO.email, connection);
             // const password = shortid.generate();
@@ -107,7 +107,7 @@ class AuthService {
                 newUser.name = dto.name;
                 newUser.lastname = dto.lastname;
                 newUser.birthday = dto.birthdate;
-                newUser.age = Helpers_1.getDatesDiffIn(dto.birthdate, Date.now(), 'years');
+                newUser.age = dto.birthdate ? Helpers_1.getDatesDiffIn(dto.birthdate, Date.now(), 'years') : 0;
                 newUser.accept_terms_and_condition = (dto.hasAccepted) ? 1 : 0;
                 const userInserted = yield userRepository.save(newUser, connection);
                 newUser.id = userInserted.insertId;

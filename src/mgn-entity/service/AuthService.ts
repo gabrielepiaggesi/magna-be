@@ -51,8 +51,8 @@ export class AuthService implements AuthApi {
 
     public async signup(userDTO: SignupDTO) {
         LOG.debug("signup...", userDTO);
-        const userAge = getDatesDiffIn(userDTO.birthdate, Date.now(), 'years');
-        await Precondition.checkIfFalse((!userAge || userAge < 4 || userAge > 100), "Età Invalida! Sei troppo giovane, non puoi iscriverti");
+        // const userAge = getDatesDiffIn(userDTO.birthdate, Date.now(), 'years');
+        // await Precondition.checkIfFalse((!userAge || userAge < 4 || userAge > 100), "Età Invalida! Sei troppo giovane, non puoi iscriverti");
 
         const connection = await db.connection();
         const userWithThisEmail = await userRepository.findByEmail(userDTO.email, connection);
@@ -102,7 +102,7 @@ export class AuthService implements AuthApi {
             newUser.name = dto.name;
             newUser.lastname = dto.lastname;
             newUser.birthday = dto.birthdate;
-            newUser.age = getDatesDiffIn(dto.birthdate, Date.now(), 'years');
+            newUser.age = dto.birthdate ? getDatesDiffIn(dto.birthdate, Date.now(), 'years') : 0;
             newUser.accept_terms_and_condition = (dto.hasAccepted) ? 1 : 0;
 
             const userInserted = await userRepository.save(newUser, connection);
