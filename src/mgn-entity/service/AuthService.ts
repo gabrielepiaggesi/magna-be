@@ -109,7 +109,6 @@ export class AuthService implements AuthApi {
             newUser.id = userInserted.insertId;
             LOG.debug("NEW USER ", newUser.id);
             auth.setLoggedId(newUser.id);
-
             await connection.commit();
             await connection.release();
             return newUser;
