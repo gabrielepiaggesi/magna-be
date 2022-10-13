@@ -108,7 +108,7 @@ class ReservationService {
             const newRes = yield this.updateReservation(dto, res, connection);
             yield connection.commit();
             yield connection.release();
-            if (res.status != newRes.status && (newRes.status === 'accepted' || (newRes.status === 'declined' && newRes.sub_status != 'user_canceled'))) {
+            if (newRes.status === 'accepted' || (newRes.status === 'declined' && newRes.sub_status != 'user_canceled')) {
                 let msg = 'Prenotazione Processata';
                 if (newRes.status === 'accepted')
                     msg = 'Prenotazione Accettata';
