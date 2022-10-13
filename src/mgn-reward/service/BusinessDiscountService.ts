@@ -77,13 +77,23 @@ export class BusinessDiscountService implements BusinessDiscountApi {
     public async checkUserDiscountValidity(userDiscountId: number, businessId: number) {
         const connection = await db.connection();
         const userDiscount = await userDiscountRepository.findById(userDiscountId, connection);
+        const userCards = await userFidelityCardRepository.findActiveByUserIdAndBusinessId(userDiscount.user_id, userDiscount.business_id, connection);
+        if (!userCards.length) {
+            LOG.error('Premio senza carta!', userDiscount.id);
+            await connection.release();
+            return;
+        }
+        const userFidelityCard = userCards[0];
+        
         await Precondition.checkIfTrue(
             userDiscount && 
+            !isDateToday(userDiscount.last_scan) && 
+            !isDateToday(userFidelityCard.last_scan) && 
             userDiscount.business_id === +businessId && 
             userDiscount.status == 'ACTIVE', 'USER DISCOUNT INVALID', 
         connection, 403);
 
-        if (isDateToday(userDiscount.last_scan)) {
+        if (isDateToday(userDiscount.last_scan) || isDateToday(userFidelityCard.last_scan)) {
             await connection.release();
             return;
         }
@@ -98,8 +108,7 @@ export class BusinessDiscountService implements BusinessDiscountApi {
             await userDiscountService.addUserOriginDiscount(userDiscount.business_id, referral.user_id, 'REFERRAL', connection);
         }
 
-        const userCards = await userFidelityCardRepository.findActiveByUserIdAndBusinessId(userDiscount.user_id, userDiscount.business_id, connection);
-        if (userCards.length) await businessFidelityCardService.checkUserFidelityCardValidityInternal(userCards[0].id, userDiscount.business_id, connection);
+        await businessFidelityCardService.checkUserFidelityCardValidityInternal(userFidelityCard.id, userDiscount.business_id, connection);
         await connection.commit();
         await connection.release();
 

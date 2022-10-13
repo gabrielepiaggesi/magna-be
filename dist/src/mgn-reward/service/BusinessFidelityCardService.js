@@ -74,6 +74,7 @@ class BusinessFidelityCardService {
         return __awaiter(this, void 0, void 0, function* () {
             const userFidelityCard = yield userFidelityCardRepository.findById(userFidelityCardId, connection);
             yield Preconditions_1.Precondition.checkIfTrue(userFidelityCard &&
+                !Helpers_1.isDateToday(userFidelityCard.last_scan) &&
                 userFidelityCard.business_id === +businessId &&
                 userFidelityCard.status == 'ACTIVE', 'USER FIDELITY CARD INVALID', connection, 403);
             if (Helpers_1.isDateToday(userFidelityCard.last_scan)) {
@@ -93,6 +94,7 @@ class BusinessFidelityCardService {
             const connection = yield db.connection();
             const userFidelityCard = yield userFidelityCardRepository.findById(userFidelityCardId, connection);
             yield Preconditions_1.Precondition.checkIfTrue(userFidelityCard &&
+                !Helpers_1.isDateToday(userFidelityCard.last_scan) &&
                 userFidelityCard.business_id === +businessId &&
                 userFidelityCard.status == 'ACTIVE', 'USER FIDELITY CARD INVALID', connection, 403);
             if (Helpers_1.isDateToday(userFidelityCard.last_scan)) {

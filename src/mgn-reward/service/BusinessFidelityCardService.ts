@@ -73,6 +73,7 @@ export class BusinessFidelityCardService implements BusinessFidelityCardApi {
         const userFidelityCard = await userFidelityCardRepository.findById(userFidelityCardId, connection);
         await Precondition.checkIfTrue(
             userFidelityCard && 
+            !isDateToday(userFidelityCard.last_scan) && 
             userFidelityCard.business_id === +businessId && 
             userFidelityCard.status == 'ACTIVE', 'USER FIDELITY CARD INVALID', 
         connection, 403);
@@ -97,6 +98,7 @@ export class BusinessFidelityCardService implements BusinessFidelityCardApi {
         const userFidelityCard = await userFidelityCardRepository.findById(userFidelityCardId, connection);
         await Precondition.checkIfTrue(
             userFidelityCard && 
+            !isDateToday(userFidelityCard.last_scan) && 
             userFidelityCard.business_id === +businessId && 
             userFidelityCard.status == 'ACTIVE', 'USER FIDELITY CARD INVALID', 
         connection, 403);

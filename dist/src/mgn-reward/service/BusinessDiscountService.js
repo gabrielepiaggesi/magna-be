@@ -79,10 +79,19 @@ class BusinessDiscountService {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
             const userDiscount = yield userDiscountRepository.findById(userDiscountId, connection);
+            const userCards = yield userFidelityCardRepository.findActiveByUserIdAndBusinessId(userDiscount.user_id, userDiscount.business_id, connection);
+            if (!userCards.length) {
+                LOG.error('Premio senza carta!', userDiscount.id);
+                yield connection.release();
+                return;
+            }
+            const userFidelityCard = userCards[0];
             yield Preconditions_1.Precondition.checkIfTrue(userDiscount &&
+                !Helpers_1.isDateToday(userDiscount.last_scan) &&
+                !Helpers_1.isDateToday(userFidelityCard.last_scan) &&
                 userDiscount.business_id === +businessId &&
                 userDiscount.status == 'ACTIVE', 'USER DISCOUNT INVALID', connection, 403);
-            if (Helpers_1.isDateToday(userDiscount.last_scan)) {
+            if (Helpers_1.isDateToday(userDiscount.last_scan) || Helpers_1.isDateToday(userFidelityCard.last_scan)) {
                 yield connection.release();
                 return;
             }
@@ -94,9 +103,7 @@ class BusinessDiscountService {
                 const referral = yield userReferralRepository.findById(userDiscount.referral_id, connection);
                 yield userDiscountService.addUserOriginDiscount(userDiscount.business_id, referral.user_id, 'REFERRAL', connection);
             }
-            const userCards = yield userFidelityCardRepository.findActiveByUserIdAndBusinessId(userDiscount.user_id, userDiscount.business_id, connection);
-            if (userCards.length)
-                yield businessFidelityCardService.checkUserFidelityCardValidityInternal(userCards[0].id, userDiscount.business_id, connection);
+            yield businessFidelityCardService.checkUserFidelityCardValidityInternal(userFidelityCard.id, userDiscount.business_id, connection);
             yield connection.commit();
             yield connection.release();
             return business;
