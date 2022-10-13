@@ -140,6 +140,8 @@ class BusinessDiscountService {
                 newDiscount.amount = +discountDTO.amount;
                 if (discountDTO.monthly_limit)
                     newDiscount.monthly_limit = +discountDTO.monthly_limit;
+                if (discountDTO.slogan)
+                    newDiscount.slogan = discountDTO.slogan;
                 newDiscount.minimum_expense = +discountDTO.minimum_expense;
                 newDiscount.status = 'ACTIVE';
                 const coInserted = yield businessDiscountRepository.save(newDiscount, connection);

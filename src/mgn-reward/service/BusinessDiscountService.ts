@@ -145,6 +145,7 @@ export class BusinessDiscountService implements BusinessDiscountApi {
             newDiscount.origin = discountDTO.origin;
             newDiscount.amount = +discountDTO.amount;
             if (discountDTO.monthly_limit) newDiscount.monthly_limit = +discountDTO.monthly_limit;
+            if (discountDTO.slogan) newDiscount.slogan = discountDTO.slogan;
             newDiscount.minimum_expense = +discountDTO.minimum_expense;
             newDiscount.status = 'ACTIVE';
 
