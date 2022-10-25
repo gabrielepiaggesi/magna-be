@@ -145,7 +145,7 @@ class BusinessService {
             yield this.createNotification(business.id, dto.title, dto.msg, connection);
             yield connection.commit();
             yield connection.release();
-            PushNotificationSender_1.PushNotificationSender.sendToClients(businessId, business.name, dto.msg, 'promotion');
+            PushNotificationSender_1.PushNotificationSender.sendToClients(businessId, business.name, dto.title, 'promotion');
             return business;
         });
     }

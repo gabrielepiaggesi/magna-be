@@ -145,7 +145,7 @@ export class BusinessService implements BusinessApi {
         await connection.commit();
         await connection.release();
         
-        PushNotificationSender.sendToClients(businessId, business.name, dto.msg, 'promotion');
+        PushNotificationSender.sendToClients(businessId, business.name, dto.title, 'promotion');
         return business;
     }
 
