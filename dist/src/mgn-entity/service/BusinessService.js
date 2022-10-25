@@ -17,9 +17,12 @@ const BusinessRepository_1 = require("../repository/BusinessRepository");
 const UserBusiness_1 = require("../model/UserBusiness");
 const UserBusinessRepository_1 = require("../repository/UserBusinessRepository");
 const PushNotificationSender_1 = require("../../mgn-framework/services/PushNotificationSender");
+const NotificationRepository_1 = require("../repository/NotificationRepository");
+const Notification_1 = require("../model/Notification");
 const LOG = new Logger_1.Logger("CompanyService.class");
 const db = require("../../connection");
 const businessRepository = new BusinessRepository_1.BusinessRepository();
+const notificationRepository = new NotificationRepository_1.NotificationRepository();
 const userBusinessRepository = new UserBusinessRepository_1.UserBusinessRepository();
 class BusinessService {
     addBusiness(dto, loggedUserId) {
@@ -41,6 +44,14 @@ class BusinessService {
             const usersBusinessEmails = yield userBusinessRepository.findByBusinessIdJoinUserEmail(businessId, connection);
             yield connection.release();
             return usersBusinessEmails;
+        });
+    }
+    getBusinessNotifications(businessId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            const nots = yield notificationRepository.findByBusinessId(businessId, connection);
+            yield connection.release();
+            return nots;
         });
     }
     addUserBusiness(businessId, userId) {
@@ -93,6 +104,16 @@ class BusinessService {
             return business;
         });
     }
+    deleteNotification(notificationId, loggedUserId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            yield connection.newTransaction();
+            const business = yield this.removeNotification(notificationId, loggedUserId, connection);
+            yield connection.commit();
+            yield connection.release();
+            return business;
+        });
+    }
     updateBusiness(businessId, dto, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
@@ -120,8 +141,11 @@ class BusinessService {
                 return null;
             }
             const business = yield businessRepository.findById(businessId, connection);
+            yield connection.newTransaction();
+            yield this.createNotification(business.id, business.name, dto.msg, connection);
+            yield connection.commit();
             yield connection.release();
-            PushNotificationSender_1.PushNotificationSender.sendToClients(businessId, business.name.substring(0, 20), dto.msg.substring(0, 30));
+            PushNotificationSender_1.PushNotificationSender.sendToClients(businessId, business.name, dto.msg, 'promotion');
             return business;
         });
     }
@@ -187,6 +211,26 @@ class BusinessService {
             }
         });
     }
+    createNotification(businessId, title, body, connection) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let newNot = new Notification_1.Notification();
+                newNot.title = title;
+                newNot.body = body;
+                newNot.business_id = businessId;
+                const coInserted = yield notificationRepository.save(newNot, connection);
+                newNot.id = coInserted.insertId;
+                LOG.info("NEW NOTIFICATION", newNot.id);
+                return newNot;
+            }
+            catch (e) {
+                LOG.error(e);
+                yield connection.rollback();
+                yield connection.release();
+                throw new IndroError_1.IndroError("Cannot Create NOTIFICATION", 500, null, e);
+            }
+        });
+    }
     removeBusiness(businessId, loggedUserId, connection) {
         return __awaiter(this, void 0, void 0, function* () {
             const business = yield businessRepository.findById(businessId, connection);
@@ -200,6 +244,22 @@ class BusinessService {
                 yield connection.rollback();
                 yield connection.release();
                 throw new IndroError_1.IndroError("Cannot Delete Business", 500, null, e);
+            }
+        });
+    }
+    removeNotification(notificationId, loggedUserId, connection) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const business = yield notificationRepository.findById(notificationId, connection);
+            // if (!business || business.user_id != loggedUserId) return business; // CHECK USER BUSINESS!
+            try {
+                yield notificationRepository.delete(business, connection);
+                return business;
+            }
+            catch (e) {
+                LOG.error(e);
+                yield connection.rollback();
+                yield connection.release();
+                throw new IndroError_1.IndroError("Cannot Delete Notification", 500, null, e);
             }
         });
     }

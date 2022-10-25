@@ -7,10 +7,13 @@ import { BusinessRepository } from "../repository/BusinessRepository";
 import { UserBusiness } from '../model/UserBusiness';
 import { UserBusinessRepository } from "../repository/UserBusinessRepository";
 import { PushNotificationSender } from "../../mgn-framework/services/PushNotificationSender";
+import { NotificationRepository } from "../repository/NotificationRepository";
+import { Notification } from "../model/Notification";
 
 const LOG = new Logger("CompanyService.class");
 const db = require("../../connection");
 const businessRepository = new BusinessRepository();
+const notificationRepository = new NotificationRepository();
 const userBusinessRepository = new UserBusinessRepository();
 
 export class BusinessService implements BusinessApi {
@@ -35,6 +38,15 @@ export class BusinessService implements BusinessApi {
         await connection.release();
         
         return usersBusinessEmails;
+    }
+
+    public async getBusinessNotifications(businessId: number) {
+        const connection = await db.connection();
+        
+        const nots = await notificationRepository.findByBusinessId(businessId, connection);
+        await connection.release();
+        
+        return nots;
     }
 
     public async addUserBusiness(businessId: number, userId: number) {
@@ -87,6 +99,17 @@ export class BusinessService implements BusinessApi {
         return business;
     }
 
+    public async deleteNotification(notificationId: number, loggedUserId: number) {
+        const connection = await db.connection();
+
+        await connection.newTransaction();
+        const business = await this.removeNotification(notificationId, loggedUserId, connection);
+        await connection.commit();
+        await connection.release();
+
+        return business;
+    }
+
     public async updateBusiness(businessId: number, dto: any, loggedUserId: number) {
         const connection = await db.connection();
 
@@ -116,9 +139,13 @@ export class BusinessService implements BusinessApi {
         }
 
         const business = await businessRepository.findById(businessId, connection);
+
+        await connection.newTransaction();
+        await this.createNotification(business.id, business.name, dto.msg, connection);
+        await connection.commit();
         await connection.release();
         
-        PushNotificationSender.sendToClients(businessId, business.name.substring(0, 20), dto.msg.substring(0, 30));
+        PushNotificationSender.sendToClients(businessId, business.name, dto.msg, 'promotion');
         return business;
     }
 
@@ -183,6 +210,25 @@ export class BusinessService implements BusinessApi {
         }
     }
 
+    private async createNotification(businessId: number, title: string, body: string, connection) {
+        try {
+            let newNot = new Notification();
+            newNot.title = title;
+            newNot.body = body;
+            newNot.business_id = businessId;
+
+            const coInserted = await notificationRepository.save(newNot, connection);
+            newNot.id = coInserted.insertId;
+            LOG.info("NEW NOTIFICATION", newNot.id);
+            return newNot;
+        } catch (e) {
+            LOG.error(e);
+            await connection.rollback();
+            await connection.release();
+            throw new IndroError("Cannot Create NOTIFICATION", 500, null, e);
+        }
+    }
+
     private async removeBusiness(businessId: number, loggedUserId: number, connection) {
         const business = await businessRepository.findById(businessId, connection);
         // if (!business || business.user_id != loggedUserId) return business; // CHECK USER BUSINESS!
@@ -194,6 +240,20 @@ export class BusinessService implements BusinessApi {
             await connection.rollback();
             await connection.release();
             throw new IndroError("Cannot Delete Business", 500, null, e);
+        }
+    }
+
+    private async removeNotification(notificationId: number, loggedUserId: number, connection) {
+        const business = await notificationRepository.findById(notificationId, connection);
+        // if (!business || business.user_id != loggedUserId) return business; // CHECK USER BUSINESS!
+        try {
+            await notificationRepository.delete(business, connection);
+            return business;
+        } catch (e) {
+            LOG.error(e);
+            await connection.rollback();
+            await connection.release();
+            throw new IndroError("Cannot Delete Notification", 500, null, e);
         }
     }
 

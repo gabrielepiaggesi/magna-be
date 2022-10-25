@@ -45,7 +45,7 @@ class UserDiscountService {
                 discount_id: businessDiscount.id
             };
             const newUserDiscount = yield this.createUserDiscount(dto, userId, null, connection);
-            PushNotificationSender_1.PushNotificationSender.sendToUser(newUserDiscount.user_id, 'PREMIO', 'Hai un nuovo premio!');
+            PushNotificationSender_1.PushNotificationSender.sendToUser(newUserDiscount.user_id, 'PREMIO', 'Hai un nuovo premio!', 'user-discount');
             return newUserDiscount;
         });
     }

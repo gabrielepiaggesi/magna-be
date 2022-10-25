@@ -40,7 +40,7 @@ export class UserDiscountService implements UserDiscountApi {
             discount_id: businessDiscount.id
         };
         const newUserDiscount = await this.createUserDiscount(dto, userId, null, connection);
-        PushNotificationSender.sendToUser(newUserDiscount.user_id, 'PREMIO', 'Hai un nuovo premio!');
+        PushNotificationSender.sendToUser(newUserDiscount.user_id, 'PREMIO', 'Hai un nuovo premio!', 'user-discount');
         return newUserDiscount;
     }
 

@@ -10,13 +10,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Logger_1 = require("../../mgn-framework/services/Logger");
+const UserFidelityCardRepository_1 = require("../../mgn-reward/repository/UserFidelityCardRepository");
 const IndroError_1 = require("../../utils/IndroError");
 const Preconditions_1 = require("../../utils/Preconditions");
 const User_1 = require("../model/User");
+const NotificationRepository_1 = require("../repository/NotificationRepository");
 const UserRepository_1 = require("../repository/UserRepository");
 const LOG = new Logger_1.Logger("CompanyService.class");
 const db = require("../../connection");
 const userRepository = new UserRepository_1.UserRepository();
+const notificationRepository = new NotificationRepository_1.NotificationRepository();
+const userFidelityCardRepository = new UserFidelityCardRepository_1.UserFidelityCardRepository();
 class UserService {
     getLoggedUser(userId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -36,6 +40,16 @@ class UserService {
             yield connection.commit();
             yield connection.release();
             return newUser;
+        });
+    }
+    getUserNotifications(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            const userFidelityCards = yield userFidelityCardRepository.findActiveByUserIdJoinBusiness(userId, connection);
+            const businessIds = userFidelityCards.map(c => c.business_id);
+            const nots = yield notificationRepository.whereBusinessesIdsIn(businessIds, connection);
+            yield connection.release();
+            return nots;
         });
     }
     deleteUser(loggedUserId) {

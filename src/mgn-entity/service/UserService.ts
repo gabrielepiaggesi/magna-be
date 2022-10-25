@@ -1,13 +1,17 @@
 import { Logger } from "../../mgn-framework/services/Logger";
+import { UserFidelityCardRepository } from "../../mgn-reward/repository/UserFidelityCardRepository";
 import { IndroError } from "../../utils/IndroError";
 import { Precondition } from "../../utils/Preconditions";
 import { UserApi } from "../integration/UserApi";
 import { User } from "../model/User";
+import { NotificationRepository } from "../repository/NotificationRepository";
 import { UserRepository } from "../repository/UserRepository";
 
 const LOG = new Logger("CompanyService.class");
 const db = require("../../connection");
 const userRepository = new UserRepository();
+const notificationRepository = new NotificationRepository();
+const userFidelityCardRepository = new UserFidelityCardRepository();
 
 export class UserService implements UserApi {
     
@@ -29,6 +33,17 @@ export class UserService implements UserApi {
         await connection.release();
         
         return newUser;
+    }
+
+    public async getUserNotifications(userId: number) {
+        const connection = await db.connection();
+        
+        const userFidelityCards = await userFidelityCardRepository.findActiveByUserIdJoinBusiness(userId, connection);
+        const businessIds = userFidelityCards.map(c => c.business_id);
+        const nots = await notificationRepository.whereBusinessesIdsIn(businessIds, connection);
+        await connection.release();
+        
+        return nots;
     }
 
     public async deleteUser(loggedUserId: number) {

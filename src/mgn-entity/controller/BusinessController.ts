@@ -74,6 +74,18 @@ export class BusinessController implements BusinessApi {
         }
     }
 
+    @Get()
+    @Path("/getBusinessNotifications/:businessId")
+    public async getBusinessNotifications(res: Response, req) {
+        try {
+            const response = await businessService.getBusinessNotifications(parseInt(req.params.businessId, 10));
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Business.getBusinessNotifications.Error'});
+        }
+    }
+
     @Post()
     @Path("/deleteBusiness/:businessId")
     public async deleteBusiness(res: Response, req) {
@@ -84,6 +96,19 @@ export class BusinessController implements BusinessApi {
         } catch(e) {
             LOG.debug(e);
             return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Business.deleteBusiness.Error'});
+        }
+    }
+
+    @Post()
+    @Path("/deleteNotification/:notificationId")
+    public async deleteNotification(res: Response, req) {
+        try {
+            const loggedUserId = auth.getLoggedUserId(req);
+            const response = await businessService.deleteNotification(parseInt(req.params.notificationId, 10), loggedUserId);
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Business.deleteNotification.Error'});
         }
     }
 

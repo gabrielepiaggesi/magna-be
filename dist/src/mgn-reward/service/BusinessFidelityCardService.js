@@ -110,7 +110,7 @@ class BusinessFidelityCardService {
             }
             yield connection.commit();
             yield connection.release();
-            PushNotificationSender_1.PushNotificationSender.sendToUser(userFidelityCard.user_id, 'Carta Fedeltà', 'Timbrata con successo!');
+            PushNotificationSender_1.PushNotificationSender.sendToUser(userFidelityCard.user_id, 'Carta Fedeltà', 'Timbrata con successo!', 'user-card');
             return newUserFidelityCard.fidelityCard;
         });
     }

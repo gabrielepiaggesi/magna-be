@@ -119,7 +119,7 @@ export class BusinessFidelityCardService implements BusinessFidelityCardApi {
         await connection.commit();
         await connection.release();
 
-        PushNotificationSender.sendToUser(userFidelityCard.user_id, 'Carta Fedeltà', 'Timbrata con successo!');
+        PushNotificationSender.sendToUser(userFidelityCard.user_id, 'Carta Fedeltà', 'Timbrata con successo!', 'user-card');
         return newUserFidelityCard.fidelityCard;
     }
 

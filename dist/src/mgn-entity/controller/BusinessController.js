@@ -86,6 +86,18 @@ class BusinessController {
             }
         });
     }
+    getBusinessNotifications(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield businessService.getBusinessNotifications(parseInt(req.params.businessId, 10));
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Business.getBusinessNotifications.Error' }));
+            }
+        });
+    }
     deleteBusiness(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -96,6 +108,19 @@ class BusinessController {
             catch (e) {
                 LOG.debug(e);
                 return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Business.deleteBusiness.Error' }));
+            }
+        });
+    }
+    deleteNotification(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const loggedUserId = __1.auth.getLoggedUserId(req);
+                const response = yield businessService.deleteNotification(parseInt(req.params.notificationId, 10), loggedUserId);
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Business.deleteNotification.Error' }));
             }
         });
     }
@@ -158,9 +183,17 @@ __decorate([
     Decorator_1.Path("/getUserBusinesses/:businessId")
 ], BusinessController.prototype, "getUserBusinesses", null);
 __decorate([
+    Decorator_1.Get(),
+    Decorator_1.Path("/getBusinessNotifications/:businessId")
+], BusinessController.prototype, "getBusinessNotifications", null);
+__decorate([
     Decorator_1.Post(),
     Decorator_1.Path("/deleteBusiness/:businessId")
 ], BusinessController.prototype, "deleteBusiness", null);
+__decorate([
+    Decorator_1.Post(),
+    Decorator_1.Path("/deleteNotification/:notificationId")
+], BusinessController.prototype, "deleteNotification", null);
 __decorate([
     Decorator_1.Post(),
     Decorator_1.Path("/updateBusiness/:businessId")

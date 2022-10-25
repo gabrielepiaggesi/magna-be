@@ -86,7 +86,7 @@ export class ReservationService implements ReservationApi {
         await connection.release();
 
         const employees = userBusinesses.map(uB => uB.user_id);
-        PushNotificationSender.sendToUsers([business.user_id, ...employees], business.name.substring(0,20), "Nuova Prenotazione");
+        PushNotificationSender.sendToUsers([business.user_id, ...employees], business.name.substring(0,20), "Nuova Prenotazione", 'business-reservation');
         return newUser;
     }
 
@@ -112,9 +112,9 @@ export class ReservationService implements ReservationApi {
             let msg = 'Prenotazione Processata';
             if (newRes.status === 'accepted') msg = 'Prenotazione Accettata';
             if (newRes.status === 'declined') msg = 'Prenotazione Rifiutata';
-            PushNotificationSender.sendToUser(res.user_id, business.name.substring(0,20), msg);
+            PushNotificationSender.sendToUser(res.user_id, business.name.substring(0,20), msg, 'user-reservation');
         } else if (newRes.status === 'declined' && newRes.sub_status == 'user_canceled') {
-            PushNotificationSender.sendToUsers([business.user_id, ...userBusinesses.map(uB => uB.user_id)], business.name.substring(0,20), "1 Prenotazione Annullata");
+            PushNotificationSender.sendToUsers([business.user_id, ...userBusinesses.map(uB => uB.user_id)], business.name.substring(0,20), "1 Prenotazione Annullata", 'business-reservation');
         }
         return newRes;
     }

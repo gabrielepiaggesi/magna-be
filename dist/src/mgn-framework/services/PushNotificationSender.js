@@ -5,12 +5,13 @@ const request = require('request');
 const db = require("../../connection");
 const LOG = new Logger_1.Logger("PushNotificationSender.class");
 class PushNotificationSender {
-    static sendToUser(userId, title, msg) {
+    static sendToUser(userId, title, msg, type = 'general') {
         this.send({
             app_id: process.env.ONESIGNAL_APP_ID,
             android_channel_id: '87068eb6-ac5b-411c-9006-07090917b28c',
             include_external_user_ids: [userId + ''],
             channel_for_external_user_ids: "push",
+            name: type,
             contents: {
                 en: msg,
                 it: msg,
@@ -21,13 +22,14 @@ class PushNotificationSender {
             }
         });
     }
-    static sendToUsers(userIds, title, msg) {
+    static sendToUsers(userIds, title, msg, type = 'general') {
         const userIdsString = userIds.map(id => id + '');
         this.send({
             app_id: process.env.ONESIGNAL_APP_ID,
             android_channel_id: '87068eb6-ac5b-411c-9006-07090917b28c',
             include_external_user_ids: userIdsString,
             channel_for_external_user_ids: "push",
+            name: type,
             contents: {
                 en: msg,
                 it: msg,
@@ -38,10 +40,11 @@ class PushNotificationSender {
             }
         });
     }
-    static sendToClients(businessId, title, msg) {
+    static sendToClients(businessId, title, msg, type = 'general') {
         this.send({
             app_id: process.env.ONESIGNAL_APP_ID,
             android_channel_id: '87068eb6-ac5b-411c-9006-07090917b28c',
+            name: type,
             contents: {
                 en: msg,
                 it: msg,

@@ -88,7 +88,7 @@ class ReservationService {
             yield connection.commit();
             yield connection.release();
             const employees = userBusinesses.map(uB => uB.user_id);
-            PushNotificationSender_1.PushNotificationSender.sendToUsers([business.user_id, ...employees], business.name.substring(0, 20), "Nuova Prenotazione");
+            PushNotificationSender_1.PushNotificationSender.sendToUsers([business.user_id, ...employees], business.name.substring(0, 20), "Nuova Prenotazione", 'business-reservation');
             return newUser;
         });
     }
@@ -114,10 +114,10 @@ class ReservationService {
                     msg = 'Prenotazione Accettata';
                 if (newRes.status === 'declined')
                     msg = 'Prenotazione Rifiutata';
-                PushNotificationSender_1.PushNotificationSender.sendToUser(res.user_id, business.name.substring(0, 20), msg);
+                PushNotificationSender_1.PushNotificationSender.sendToUser(res.user_id, business.name.substring(0, 20), msg, 'user-reservation');
             }
             else if (newRes.status === 'declined' && newRes.sub_status == 'user_canceled') {
-                PushNotificationSender_1.PushNotificationSender.sendToUsers([business.user_id, ...userBusinesses.map(uB => uB.user_id)], business.name.substring(0, 20), "1 Prenotazione Annullata");
+                PushNotificationSender_1.PushNotificationSender.sendToUsers([business.user_id, ...userBusinesses.map(uB => uB.user_id)], business.name.substring(0, 20), "1 Prenotazione Annullata", 'business-reservation');
             }
             return newRes;
         });

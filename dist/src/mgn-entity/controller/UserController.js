@@ -36,6 +36,19 @@ class UserController {
             }
         });
     }
+    getUserNotifications(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const loggedUserId = __1.auth.getLoggedUserId(req);
+                const response = yield userService.getUserNotifications(loggedUserId);
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'User.getUserNotifications.Error' }));
+            }
+        });
+    }
     updateUser(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -67,6 +80,10 @@ __decorate([
     Decorator_1.Get(),
     Decorator_1.Path("/getLoggedUser")
 ], UserController.prototype, "getLoggedUser", null);
+__decorate([
+    Decorator_1.Get(),
+    Decorator_1.Path("/getUserNotifications")
+], UserController.prototype, "getUserNotifications", null);
 __decorate([
     Decorator_1.Post(),
     Decorator_1.Path("/updateUser")
