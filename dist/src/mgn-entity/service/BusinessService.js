@@ -142,7 +142,7 @@ class BusinessService {
             }
             const business = yield businessRepository.findById(businessId, connection);
             yield connection.newTransaction();
-            yield this.createNotification(business.id, business.name, dto.msg, connection);
+            yield this.createNotification(business.id, dto.title, dto.msg, connection);
             yield connection.commit();
             yield connection.release();
             PushNotificationSender_1.PushNotificationSender.sendToClients(businessId, business.name, dto.msg, 'promotion');
@@ -216,7 +216,8 @@ class BusinessService {
             try {
                 let newNot = new Notification_1.Notification();
                 newNot.title = title;
-                newNot.body = body;
+                if (body)
+                    newNot.body = body;
                 newNot.business_id = businessId;
                 const coInserted = yield notificationRepository.save(newNot, connection);
                 newNot.id = coInserted.insertId;

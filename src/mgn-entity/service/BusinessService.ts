@@ -130,7 +130,7 @@ export class BusinessService implements BusinessApi {
         return business;
     }
 
-    public async sendNotificationToClients(businessId: number, userId: number, dto: { msg: string }) {
+    public async sendNotificationToClients(businessId: number, userId: number, dto: { title: string, msg?: string }) {
         const connection = await db.connection();
         const uBusiness = await userBusinessRepository.findByUserIdAndUserBusinessId(businessId, userId, connection);
         if (!uBusiness) {
@@ -141,7 +141,7 @@ export class BusinessService implements BusinessApi {
         const business = await businessRepository.findById(businessId, connection);
 
         await connection.newTransaction();
-        await this.createNotification(business.id, business.name, dto.msg, connection);
+        await this.createNotification(business.id, dto.title, dto.msg, connection);
         await connection.commit();
         await connection.release();
         
@@ -214,7 +214,7 @@ export class BusinessService implements BusinessApi {
         try {
             let newNot = new Notification();
             newNot.title = title;
-            newNot.body = body;
+            if (body) newNot.body = body;
             newNot.business_id = businessId;
 
             const coInserted = await notificationRepository.save(newNot, connection);
