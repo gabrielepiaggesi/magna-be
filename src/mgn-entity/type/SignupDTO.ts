@@ -10,6 +10,8 @@ export class SignupDTO {
     public jobOfferUUID: string;
     public examUUID: string;
 
+    public lang?: string;
+
     // tslint:disable-next-line:no-empty
     constructor() {}
 }

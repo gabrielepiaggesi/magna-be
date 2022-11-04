@@ -48,6 +48,14 @@ class BusinessRepository extends Repository_1.Repository {
         select * from ${this.table} where user_id = ${mysql2_1.default.escape(userId)} and deleted_at is null order by id desc`).then((results) => results);
         });
     }
+    findByCap(cap, conn = null, query = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const c = conn;
+            // tslint:disable-next-line:max-line-length
+            return c.query(query || `
+        select * from ${this.table} where cap = ${mysql2_1.default.escape(cap)} and deleted_at is null order by id desc`).then((results) => results);
+        });
+    }
     findTotalBusinesses(conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;

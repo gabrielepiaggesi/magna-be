@@ -110,10 +110,36 @@ class BusinessFidelityCardController {
             }
         });
     }
+    getClientsFidelityCards(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield businessFidelityCardService.getClientsFidelityCards(parseInt(req.params.businessId, 10));
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'BusinessFidelityCard.getClientsFidelityCards.Error' }));
+            }
+        });
+    }
+    checkUserFidelityCardValidityNEW(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let pointsToAdd = req.params.pointsToAdd ? parseInt(req.params.pointsToAdd, 10) : 1;
+                const response = yield businessFidelityCardService.checkUserFidelityCardValidity(parseInt(req.params.userFidelityCardId, 10), parseInt(req.params.businessId, 10), pointsToAdd);
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'BusinessFidelityCard.checkUserFidelityCardValidity.Error' }));
+            }
+        });
+    }
     checkUserFidelityCardValidity(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const response = yield businessFidelityCardService.checkUserFidelityCardValidity(parseInt(req.params.userFidelityCardId, 10), parseInt(req.params.businessId, 10));
+                let pointsToAdd = 1;
+                const response = yield businessFidelityCardService.checkUserFidelityCardValidity(parseInt(req.params.userFidelityCardId, 10), parseInt(req.params.businessId, 10), pointsToAdd);
                 return res.status(200).json(response);
             }
             catch (e) {
@@ -163,6 +189,14 @@ __decorate([
     Decorator_1.Get(),
     Decorator_1.Path("/getBusinessFidelityCards/:businessId")
 ], BusinessFidelityCardController.prototype, "getBusinessFidelityCards", null);
+__decorate([
+    Decorator_1.Get(),
+    Decorator_1.Path("/getClientsFidelityCards/:businessId")
+], BusinessFidelityCardController.prototype, "getClientsFidelityCards", null);
+__decorate([
+    Decorator_1.Post(),
+    Decorator_1.Path("/checkUserFidelityCardValidity/:userFidelityCardId/:businessId/:pointsToAdd")
+], BusinessFidelityCardController.prototype, "checkUserFidelityCardValidityNEW", null);
 __decorate([
     Decorator_1.Post(),
     Decorator_1.Path("/checkUserFidelityCardValidity/:userFidelityCardId/:businessId")

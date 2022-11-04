@@ -102,6 +102,7 @@ export class AuthService implements AuthApi {
             newUser.name = dto.name;
             newUser.lastname = dto.lastname;
             newUser.birthday = dto.birthdate;
+            if (dto.lang) newUser.lang = dto.lang;
             newUser.age = dto.birthdate ? getDatesDiffIn(dto.birthdate, Date.now(), 'years') : 0;
             newUser.accept_terms_and_condition = (dto.hasAccepted) ? 1 : 0;
 

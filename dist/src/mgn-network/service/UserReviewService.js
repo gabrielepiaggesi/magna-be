@@ -14,9 +14,13 @@ const IndroError_1 = require("../../utils/IndroError");
 const Preconditions_1 = require("../../utils/Preconditions");
 const UserReview_1 = require("../model/UserReview");
 const UserReviewRepository_1 = require("../repository/UserReviewRepository");
+const UserDiscountService_1 = require("../../mgn-reward/service/UserDiscountService");
+const BusinessRepository_1 = require("../../mgn-entity/repository/BusinessRepository");
 const LOG = new Logger_1.Logger("CompanyService.class");
 const db = require("../../connection");
 const userReviewRepository = new UserReviewRepository_1.UserReviewRepository();
+const businessRepository = new BusinessRepository_1.BusinessRepository();
+const userDiscountService = new UserDiscountService_1.UserDiscountService();
 class UserReviewService {
     getBusinessReviews(businessId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -38,8 +42,13 @@ class UserReviewService {
         return __awaiter(this, void 0, void 0, function* () {
             yield Preconditions_1.Precondition.checkIfFalse((!dto.text), "Text Missing");
             const connection = yield db.connection();
+            const userReviewsHere = yield userReviewRepository.findByUserIdAndBusinessId(businessId, loggedUserId, connection);
+            const business = yield businessRepository.findById(businessId, connection);
             yield connection.newTransaction();
             const newUser = yield this.createUserReview(dto, businessId, loggedUserId, connection);
+            if (business.discount_on_first_review && userReviewsHere && !userReviewsHere.length) {
+                yield userDiscountService.addUserOriginDiscount(businessId, loggedUserId, 'FIRST_ACTION', connection);
+            }
             yield connection.commit();
             yield connection.release();
             return newUser;
@@ -60,6 +69,8 @@ class UserReviewService {
             try {
                 const newReview = new UserReview_1.UserReview();
                 newReview.text = reviewDTO.text;
+                if (reviewDTO.rating)
+                    newReview.rating = +reviewDTO.rating;
                 newReview.business_id = businessId;
                 newReview.user_id = loggedUserId;
                 const coInserted = yield userReviewRepository.save(newReview, connection);

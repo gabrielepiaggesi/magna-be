@@ -132,6 +132,7 @@ class UserFidelityCardService {
                 newFidelityCard.status = 'ACTIVE';
                 newFidelityCard.usage_amount = 0;
                 newFidelityCard.discount_countdown = businessFidelityCard.expenses_amount;
+                newFidelityCard.type = businessFidelityCard.type;
                 const coInserted = yield userFidelityCardRepository.save(newFidelityCard, connection);
                 newFidelityCard.id = coInserted.insertId;
                 LOG.info("NEW USER FIDELITY CARD", newFidelityCard.id);

@@ -8,12 +8,14 @@ import { Precondition } from "../../utils/Preconditions";
 import { ReservationApi } from "../integration/ReservationApi";
 import { Reservation } from "../model/Reservation";
 import { ReservationRepository } from "../repository/reservationRepository";
+import { UserDiscountService } from '../../mgn-reward/service/UserDiscountService';
 
 const LOG = new Logger("CompanyService.class");
 const db = require("../../connection");
 const reservationRepository = new ReservationRepository();
 const userBusinessRepository = new UserBusinessRepository();
 const businessRepository = new BusinessRepository();
+const userDiscountService = new UserDiscountService();
 
 export class ReservationService implements ReservationApi {
     
@@ -72,10 +74,10 @@ export class ReservationService implements ReservationApi {
         }
 
         const today = new Date(Date.now()).toISOString().substring(0, 10) + ' 05:00:00';
-        const reservations = await reservationRepository.findPendingByUserIdAndBusinessIdAndUserDateGreaterThan(userId, businessId, today, connection);
-        if (reservations.length) {
+        const pendingReservations = await reservationRepository.findPendingByUserIdAndBusinessIdAndUserDateGreaterThan(userId, businessId, today, connection);
+        if (pendingReservations.length) {
             await connection.release();
-            return { ...reservations[0], old: true };
+            return { ...pendingReservations[0], old: true };
         }
 
         const userBusinesses = await userBusinessRepository.findByBusinessId(business.id, connection);
@@ -105,6 +107,12 @@ export class ReservationService implements ReservationApi {
 
         await connection.newTransaction();
         const newRes = await this.updateReservation(dto, res, connection);
+        if (newRes.status == 'completed') {
+            const allReservations = await reservationRepository.findByUserIdAndBusinessId(newRes.user_id, business.id, connection);
+            if (business.discount_on_first_reservation && allReservations && allReservations.length === 1) {
+                await userDiscountService.addUserOriginDiscount(business.id, userId, 'FIRST_ACTION', connection);
+            }
+        }
         await connection.commit();
         await connection.release();
 

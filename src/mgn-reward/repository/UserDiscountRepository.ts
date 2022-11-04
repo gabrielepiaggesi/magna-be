@@ -43,6 +43,13 @@ export class UserDiscountRepository extends Repository<UserDiscount> {
         select * from ${this.table} where user_id = ${mysql2.escape(userId)} and business_id = ${mysql2.escape(businessId)} and deleted_at is null order by id desc`).then((results) => results);
     }
 
+    public async findByUserIdAndDiscountId(userId: number, discountId: number, conn = null,  query = null): Promise<UserDiscount[]> {
+        const c = conn;
+        // tslint:disable-next-line:max-line-length
+        return c.query(query || `
+        select * from ${this.table} where user_id = ${mysql2.escape(userId)} and discount_id = ${mysql2.escape(discountId)} and deleted_at is null order by id desc`).then((results) => results);
+    }
+
     public async findActiveByUserIdAndBusinessId(userId: number, businessId: number, conn = null,  query = null): Promise<UserDiscount[]> {
         const c = conn;
         // tslint:disable-next-line:max-line-length

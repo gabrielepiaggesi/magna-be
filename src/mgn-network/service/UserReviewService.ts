@@ -4,10 +4,14 @@ import { Precondition } from "../../utils/Preconditions";
 import { UserReviewApi } from "../integration/UserReviewApi";
 import { UserReview } from "../model/UserReview";
 import { UserReviewRepository } from "../repository/UserReviewRepository";
+import { UserDiscountService } from '../../mgn-reward/service/UserDiscountService';
+import { BusinessRepository } from '../../mgn-entity/repository/BusinessRepository';
 
 const LOG = new Logger("CompanyService.class");
 const db = require("../../connection");
 const userReviewRepository = new UserReviewRepository();
+const businessRepository = new BusinessRepository();
+const userDiscountService = new UserDiscountService();
 
 export class UserReviewService implements UserReviewApi {
 
@@ -33,8 +37,14 @@ export class UserReviewService implements UserReviewApi {
         await Precondition.checkIfFalse((!dto.text), "Text Missing");
         const connection = await db.connection();
         
+        const userReviewsHere = await userReviewRepository.findByUserIdAndBusinessId(businessId, loggedUserId, connection);
+        const business = await businessRepository.findById(businessId, connection);
+
         await connection.newTransaction();
         const newUser = await this.createUserReview(dto, businessId, loggedUserId, connection);
+        if (business.discount_on_first_review && userReviewsHere && !userReviewsHere.length) {
+            await userDiscountService.addUserOriginDiscount(businessId, loggedUserId, 'FIRST_ACTION', connection);
+        }
         await connection.commit();
         await connection.release();
         
@@ -56,6 +66,7 @@ export class UserReviewService implements UserReviewApi {
         try {
             const newReview = new UserReview();
             newReview.text = reviewDTO.text;
+            if (reviewDTO.rating) newReview.rating = +reviewDTO.rating;
             newReview.business_id = businessId;
             newReview.user_id = loggedUserId;
 

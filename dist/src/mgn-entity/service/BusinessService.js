@@ -46,6 +46,14 @@ class BusinessService {
             return usersBusinessEmails;
         });
     }
+    getBusinessesByCap(cap) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            const businesses = yield businessRepository.findByCap(cap, connection);
+            yield connection.release();
+            return businesses;
+        });
+    }
     getBusinessNotifications(businessId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
@@ -170,6 +178,18 @@ class BusinessService {
                 const today = new Date(Date.now());
                 if (newBusinessDTO.phoneNumber && newBusinessDTO.phoneNumber != newBusiness.phone_number)
                     newBusiness.phone_number = newBusinessDTO.phoneNumber;
+                if (newBusinessDTO.secondPhoneNumber && newBusinessDTO.secondPhoneNumber != newBusiness.second_phone_number)
+                    newBusiness.second_phone_number = newBusinessDTO.secondPhoneNumber;
+                if (newBusinessDTO.secondPhoneNumber && newBusinessDTO.website != newBusiness.website)
+                    newBusiness.website = newBusinessDTO.website;
+                if (newBusinessDTO.menuLink && newBusinessDTO.menuLink != newBusiness.menu_link)
+                    newBusiness.menu_link = newBusinessDTO.menuLink;
+                if (newBusinessDTO.instagramPage && newBusinessDTO.instagramPage != newBusiness.instagram_page)
+                    newBusiness.instagram_page = newBusinessDTO.instagramPage;
+                if (newBusinessDTO.cap && newBusinessDTO.cap != newBusiness.cap)
+                    newBusiness.cap = newBusinessDTO.cap;
+                if (newBusinessDTO.description && newBusinessDTO.description != newBusiness.description)
+                    newBusiness.description = newBusinessDTO.description;
                 newBusiness.name = newBusinessDTO.name || newBusiness.name;
                 newBusiness.address = newBusinessDTO.address || newBusiness.address;
                 newBusiness.status = businessId ? newBusiness.status : 'ACTIVE';
@@ -179,6 +199,9 @@ class BusinessService {
                     newBusinessDTO.disableReservationToday >= 0 ?
                         newBusinessDTO.disableReservationToday === 1 ? today.toISOString().substring(0, 10) + ' 20:00:00' : new Date(today.setDate(today.getDate() - 1)).toISOString().substring(0, 10) + ' 20:00:00'
                         : newBusiness.disable_reservation_today;
+                newBusiness.discount_on_first_card = newBusinessDTO.discountOnFirstCard >= 0 ? newBusinessDTO.discountOnFirstCard : newBusiness.discount_on_first_card;
+                newBusiness.discount_on_first_reservation = newBusinessDTO.discountOnFirstReservation >= 0 ? newBusinessDTO.discountOnFirstReservation : newBusiness.discount_on_first_reservation;
+                newBusiness.discount_on_first_review = newBusinessDTO.discountOnFirstReview >= 0 ? newBusinessDTO.discountOnFirstReview : newBusiness.discount_on_first_review;
                 const coInserted = businessId ? yield businessRepository.update(newBusiness, connection) : yield businessRepository.save(newBusiness, connection);
                 newBusiness.id = businessId ? newBusiness.id : coInserted.insertId;
                 !businessId && LOG.info("NEW BUSINESS", newBusiness.id);

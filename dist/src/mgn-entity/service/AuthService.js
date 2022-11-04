@@ -107,6 +107,8 @@ class AuthService {
                 newUser.name = dto.name;
                 newUser.lastname = dto.lastname;
                 newUser.birthday = dto.birthdate;
+                if (dto.lang)
+                    newUser.lang = dto.lang;
                 newUser.age = dto.birthdate ? Helpers_1.getDatesDiffIn(dto.birthdate, Date.now(), 'years') : 0;
                 newUser.accept_terms_and_condition = (dto.hasAccepted) ? 1 : 0;
                 const userInserted = yield userRepository.save(newUser, connection);

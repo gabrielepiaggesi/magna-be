@@ -98,11 +98,37 @@ export class BusinessFidelityCardController implements BusinessFidelityCardApi {
         }
     }
 
+    @Get()
+    @Path("/getClientsFidelityCards/:businessId")
+    public async getClientsFidelityCards(res: Response, req) {
+        try {
+            const response = await businessFidelityCardService.getClientsFidelityCards(parseInt(req.params.businessId, 10));
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'BusinessFidelityCard.getClientsFidelityCards.Error'});
+        }
+    }
+
+    @Post()
+    @Path("/checkUserFidelityCardValidity/:userFidelityCardId/:businessId/:pointsToAdd")
+    public async checkUserFidelityCardValidityNEW(res: Response, req) {
+        try {
+            let pointsToAdd = req.params.pointsToAdd ? parseInt(req.params.pointsToAdd, 10) : 1;
+            const response = await businessFidelityCardService.checkUserFidelityCardValidity(parseInt(req.params.userFidelityCardId, 10), parseInt(req.params.businessId, 10), pointsToAdd);
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e); 
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'BusinessFidelityCard.checkUserFidelityCardValidity.Error'});
+        }
+    }
+
     @Post()
     @Path("/checkUserFidelityCardValidity/:userFidelityCardId/:businessId")
     public async checkUserFidelityCardValidity(res: Response, req) {
         try {
-            const response = await businessFidelityCardService.checkUserFidelityCardValidity(parseInt(req.params.userFidelityCardId, 10), parseInt(req.params.businessId, 10));
+            let pointsToAdd = 1;
+            const response = await businessFidelityCardService.checkUserFidelityCardValidity(parseInt(req.params.userFidelityCardId, 10), parseInt(req.params.businessId, 10), pointsToAdd);
             return res.status(200).json(response);
         } catch(e) {
             LOG.debug(e); 

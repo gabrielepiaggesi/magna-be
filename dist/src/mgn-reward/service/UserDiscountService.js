@@ -40,6 +40,11 @@ class UserDiscountService {
             if (!businessDiscount) {
                 return;
             }
+            if (businessDiscount.origin === 'FIRST_ACTION') { // first review/reservation
+                const alreadyHad = yield userDiscountRepository.findByUserIdAndDiscountId(userId, businessDiscount.id, connection);
+                if (alreadyHad && alreadyHad.length)
+                    return;
+            }
             const dto = {
                 business_id: businessId,
                 discount_id: businessDiscount.id

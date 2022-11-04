@@ -1,1 +1,1 @@
-{"version":3,"file":"SignupDTO.js","sourceRoot":"","sources":["../../../../src/mgn-entity/type/SignupDTO.ts"],"names":[],"mappings":";;AAAA,MAAa,SAAS;IAYlB,oCAAoC;IACpC;QAPO,gBAAW,GAAY,KAAK,CAAC;QAC7B,QAAG,GAAW,IAAI,CAAC;IAMX,CAAC;CACnB;AAdD,8BAcC"}
+{"version":3,"file":"SignupDTO.js","sourceRoot":"","sources":["../../../../src/mgn-entity/type/SignupDTO.ts"],"names":[],"mappings":";;AAAA,MAAa,SAAS;IAclB,oCAAoC;IACpC;QATO,gBAAW,GAAY,KAAK,CAAC;QAC7B,QAAG,GAAW,IAAI,CAAC;IAQX,CAAC;CACnB;AAhBD,8BAgBC"}

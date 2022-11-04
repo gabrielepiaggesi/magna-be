@@ -18,11 +18,13 @@ const IndroError_1 = require("../../utils/IndroError");
 const Preconditions_1 = require("../../utils/Preconditions");
 const Reservation_1 = require("../model/Reservation");
 const reservationRepository_1 = require("../repository/reservationRepository");
+const UserDiscountService_1 = require("../../mgn-reward/service/UserDiscountService");
 const LOG = new Logger_1.Logger("CompanyService.class");
 const db = require("../../connection");
 const reservationRepository = new reservationRepository_1.ReservationRepository();
 const userBusinessRepository = new UserBusinessRepository_1.UserBusinessRepository();
 const businessRepository = new BusinessRepository_1.BusinessRepository();
+const userDiscountService = new UserDiscountService_1.UserDiscountService();
 class ReservationService {
     getReservation(reservationId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -76,10 +78,10 @@ class ReservationService {
                 return { disable_reservation_today: true };
             }
             const today = new Date(Date.now()).toISOString().substring(0, 10) + ' 05:00:00';
-            const reservations = yield reservationRepository.findPendingByUserIdAndBusinessIdAndUserDateGreaterThan(userId, businessId, today, connection);
-            if (reservations.length) {
+            const pendingReservations = yield reservationRepository.findPendingByUserIdAndBusinessIdAndUserDateGreaterThan(userId, businessId, today, connection);
+            if (pendingReservations.length) {
                 yield connection.release();
-                return Object.assign(Object.assign({}, reservations[0]), { old: true });
+                return Object.assign(Object.assign({}, pendingReservations[0]), { old: true });
             }
             const userBusinesses = yield userBusinessRepository.findByBusinessId(business.id, connection);
             yield connection.newTransaction();
@@ -106,6 +108,12 @@ class ReservationService {
             }
             yield connection.newTransaction();
             const newRes = yield this.updateReservation(dto, res, connection);
+            if (newRes.status == 'completed') {
+                const allReservations = yield reservationRepository.findByUserIdAndBusinessId(newRes.user_id, business.id, connection);
+                if (business.discount_on_first_reservation && allReservations && allReservations.length === 1) {
+                    yield userDiscountService.addUserOriginDiscount(business.id, userId, 'FIRST_ACTION', connection);
+                }
+            }
             yield connection.commit();
             yield connection.release();
             if (newRes.status === 'accepted' || (newRes.status === 'declined' && newRes.sub_status != 'user_canceled')) {

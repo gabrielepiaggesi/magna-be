@@ -21,12 +21,12 @@ class ReservationRepository extends Repository_1.Repository {
         this.table = "reservations";
     }
     // ${mysql2.escape(stripeId)}
-    findByUserIdAndBusinessId(businessId, userId, conn = null, query = null) {
+    findByUserIdAndBusinessId(userId, businessId, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;
             // tslint:disable-next-line:max-line-length
             return c.query(query || `
-        select * from ${this.table} where user_id = ${mysql2_1.default.escape(userId)} and id = ${mysql2_1.default.escape(businessId)} and deleted_at is null order by id desc`).then((results) => results);
+        select * from ${this.table} where user_id = ${mysql2_1.default.escape(userId)} and business_id = ${mysql2_1.default.escape(businessId)} and deleted_at is null order by id desc`).then((results) => results);
         });
     }
     findByUserId(userId, conn = null, query = null) {

@@ -86,6 +86,18 @@ class BusinessController {
             }
         });
     }
+    getBusinessesByCap(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield businessService.getBusinessesByCap(req.params.cap + '');
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Business.getBusinessesByCap.Error' }));
+            }
+        });
+    }
     getBusinessNotifications(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -182,6 +194,10 @@ __decorate([
     Decorator_1.Get(),
     Decorator_1.Path("/getUserBusinesses/:businessId")
 ], BusinessController.prototype, "getUserBusinesses", null);
+__decorate([
+    Decorator_1.Get(),
+    Decorator_1.Path("/getBusinessesByCap/:cap")
+], BusinessController.prototype, "getBusinessesByCap", null);
 __decorate([
     Decorator_1.Get(),
     Decorator_1.Path("/getBusinessNotifications/:businessId")

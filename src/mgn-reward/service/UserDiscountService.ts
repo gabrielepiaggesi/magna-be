@@ -29,10 +29,18 @@ export class UserDiscountService implements UserDiscountApi {
         return newUserDiscount;
     }
 
-    public async addUserOriginDiscount(businessId: number, userId: number, origin: 'FIDELITY_CARD'|'IG_POST'|'REFERRAL', connection) {
+    public async addUserOriginDiscount(businessId: number, userId: number, 
+        origin: 'FIDELITY_CARD'|'IG_POST'|'REFERRAL'|'FIRST_ACTION', 
+        connection) {
+
         const businessDiscount = await businessDiscountRepository.findActiveByBusinessIdAndOrigin(businessId, origin, connection);
         if (!businessDiscount) {
             return;
+        }
+
+        if (businessDiscount.origin === 'FIRST_ACTION') { // first review/reservation
+            const alreadyHad = await userDiscountRepository.findByUserIdAndDiscountId(userId, businessDiscount.id, connection);
+            if (alreadyHad && alreadyHad.length) return;
         }
 
         const dto = {

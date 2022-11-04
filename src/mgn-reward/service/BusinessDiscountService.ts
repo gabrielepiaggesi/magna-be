@@ -88,12 +88,17 @@ export class BusinessDiscountService implements BusinessDiscountApi {
         await Precondition.checkIfTrue(
             userDiscount && 
             !isDateToday(userDiscount.last_scan) && 
-            !isDateToday(userFidelityCard.last_scan) && 
+            // !isDateToday(userFidelityCard.last_scan) && 
             userDiscount.business_id === +businessId && 
             userDiscount.status == 'ACTIVE', 'USER DISCOUNT INVALID', 
         connection, 403);
 
-        if (isDateToday(userDiscount.last_scan) || isDateToday(userFidelityCard.last_scan)) {
+        // if (isDateToday(userDiscount.last_scan) || isDateToday(userFidelityCard.last_scan)) {
+        //     await connection.release();
+        //     return;
+        // }
+
+        if (isDateToday(userDiscount.last_scan)) {
             await connection.release();
             return;
         }

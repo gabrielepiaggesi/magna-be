@@ -7,11 +7,11 @@ export class ReservationRepository extends Repository<Reservation> {
     public table = "reservations";
     // ${mysql2.escape(stripeId)}
 
-    public async findByUserIdAndBusinessId(businessId: number, userId: number, conn = null,  query = null): Promise<Reservation[]> {
+    public async findByUserIdAndBusinessId(userId: number, businessId: number, conn = null,  query = null): Promise<Reservation[]> {
         const c = conn;
         // tslint:disable-next-line:max-line-length
         return c.query(query || `
-        select * from ${this.table} where user_id = ${mysql2.escape(userId)} and id = ${mysql2.escape(businessId)} and deleted_at is null order by id desc`).then((results) => results);
+        select * from ${this.table} where user_id = ${mysql2.escape(userId)} and business_id = ${mysql2.escape(businessId)} and deleted_at is null order by id desc`).then((results) => results);
     }
 
     public async findByUserId(userId: number, conn = null,  query = null): Promise<Reservation[]> {

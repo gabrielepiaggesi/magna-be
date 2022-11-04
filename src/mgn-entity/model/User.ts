@@ -16,6 +16,7 @@ export class User extends Table {
     public accept_terms_and_condition: number;
     public last_session: string;
     public referral_code: string;
+    public lang: string;
 
     // tslint:disable-next-line:no-empty
     constructor() { super(); }

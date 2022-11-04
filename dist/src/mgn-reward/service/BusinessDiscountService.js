@@ -88,10 +88,14 @@ class BusinessDiscountService {
             const userFidelityCard = userCards[0];
             yield Preconditions_1.Precondition.checkIfTrue(userDiscount &&
                 !Helpers_1.isDateToday(userDiscount.last_scan) &&
-                !Helpers_1.isDateToday(userFidelityCard.last_scan) &&
+                // !isDateToday(userFidelityCard.last_scan) && 
                 userDiscount.business_id === +businessId &&
                 userDiscount.status == 'ACTIVE', 'USER DISCOUNT INVALID', connection, 403);
-            if (Helpers_1.isDateToday(userDiscount.last_scan) || Helpers_1.isDateToday(userFidelityCard.last_scan)) {
+            // if (isDateToday(userDiscount.last_scan) || isDateToday(userFidelityCard.last_scan)) {
+            //     await connection.release();
+            //     return;
+            // }
+            if (Helpers_1.isDateToday(userDiscount.last_scan)) {
                 yield connection.release();
                 return;
             }

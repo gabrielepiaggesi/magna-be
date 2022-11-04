@@ -7,6 +7,7 @@ import { UserFidelityCardApi } from "../integration/UserFidelityCardApi";
 import { UserFidelityCard } from "../model/UserFidelityCard";
 import { BusinessFidelityCardRepository } from "../repository/BusinessFidelityCardRepository";
 import { UserFidelityCardRepository } from "../repository/UserFidelityCardRepository";
+import { UserDiscountService } from './UserDiscountService';
 
 const LOG = new Logger("CompanyService.class");
 const db = require("../../connection");
@@ -135,6 +136,7 @@ export class UserFidelityCardService implements UserFidelityCardApi {
             newFidelityCard.status = 'ACTIVE';
             newFidelityCard.usage_amount = 0;
             newFidelityCard.discount_countdown = businessFidelityCard.expenses_amount;
+            newFidelityCard.type = businessFidelityCard.type;
 
             const coInserted = await userFidelityCardRepository.save(newFidelityCard, connection);
             newFidelityCard.id = coInserted.insertId;

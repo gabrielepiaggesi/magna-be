@@ -31,6 +31,13 @@ export class BusinessRepository extends Repository<Business> {
         select * from ${this.table} where user_id = ${mysql2.escape(userId)} and deleted_at is null order by id desc`).then((results) => results);
     }
 
+    public async findByCap(cap: string, conn = null,  query = null): Promise<Business[]> {
+        const c = conn;
+        // tslint:disable-next-line:max-line-length
+        return c.query(query || `
+        select * from ${this.table} where cap = ${mysql2.escape(cap)} and deleted_at is null order by id desc`).then((results) => results);
+    }
+
     public async findTotalBusinesses( conn = null, query = null) {
         const c = conn;
         const q = `select * from ${this.table} and deleted_at is null`;

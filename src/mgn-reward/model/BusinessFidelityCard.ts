@@ -5,6 +5,7 @@ export class BusinessFidelityCard extends Table {
     public discount_id: number;
     public status: string;
     public expenses_amount: number;
+    public type: string;
 
     // tslint:disable-next-line:no-empty
     constructor() { super(); }
