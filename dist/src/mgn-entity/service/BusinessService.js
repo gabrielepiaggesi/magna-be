@@ -38,6 +38,14 @@ class BusinessService {
             return newBusiness;
         });
     }
+    getBusinessInfo(businessId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            const businessInfo = yield businessRepository.findInfoByBusinessId(businessId, connection);
+            yield connection.release();
+            return businessInfo;
+        });
+    }
     getUserBusinesses(businessId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();

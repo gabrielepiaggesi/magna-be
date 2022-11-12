@@ -31,6 +31,13 @@ export class BusinessService implements BusinessApi {
         return newBusiness;
     }
 
+    public async getBusinessInfo(businessId: number) {
+        const connection = await db.connection();
+        const businessInfo = await businessRepository.findInfoByBusinessId(businessId, connection);
+        await connection.release();
+        return businessInfo;
+    }
+
     public async getUserBusinesses(businessId: number) {
         const connection = await db.connection();
         
