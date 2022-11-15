@@ -9,12 +9,14 @@ import { UserBusinessRepository } from "../repository/UserBusinessRepository";
 import { PushNotificationSender } from "../../mgn-framework/services/PushNotificationSender";
 import { NotificationRepository } from "../repository/NotificationRepository";
 import { Notification } from "../model/Notification";
+import { ReservationRepository } from "../../mgn-network/repository/reservationRepository";
 
 const LOG = new Logger("CompanyService.class");
 const db = require("../../connection");
 const businessRepository = new BusinessRepository();
 const notificationRepository = new NotificationRepository();
 const userBusinessRepository = new UserBusinessRepository();
+const reservationRepository = new ReservationRepository();
 
 export class BusinessService implements BusinessApi {
     
@@ -47,12 +49,26 @@ export class BusinessService implements BusinessApi {
         return usersBusinessEmails;
     }
 
-    public async getBusinessesByCap(cap: string) {
+    public async getBusinessesByCaps(caps: string[], businessesIds: number[], userId: number) {
         const connection = await db.connection();
         
-        const businesses = await businessRepository.findByCap(cap, connection);
-        await connection.release();
+        caps = caps.length ? caps : ['00174', '00175'];
+        businessesIds = businessesIds.length ? businessesIds : [0];
+        let businesses = await businessRepository.findByCap(caps, businessesIds, connection);
         
+        const businessesIdsForCheckReservations = businesses.filter(b => !!b['business_discount_on_first_reservation']).map(b => b['business_id']) as number[];
+        if (businessesIdsForCheckReservations.length) {
+            const allReservations = await reservationRepository.findByUserIdAndBusinessIdIn(userId, businessesIdsForCheckReservations, connection);
+            businesses = businesses.map(bus => {
+                bus['discount_on_first_user_reservation'] = false;
+                if (businessesIdsForCheckReservations.includes(bus.id)) {
+                    const foundReservation = allReservations.some(res => res.business_id == bus.id);
+                    bus['discount_on_first_user_reservation'] = !foundReservation;
+                }
+                return bus;
+            });
+        }
+        await connection.release();
         return businesses;
     }
 

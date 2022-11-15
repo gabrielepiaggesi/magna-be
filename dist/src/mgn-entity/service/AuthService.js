@@ -24,6 +24,7 @@ const IndroError_1 = require("../../utils/IndroError");
 const Helpers_1 = require("../../utils/Helpers");
 const EmailSender_1 = require("../../mgn-framework/services/EmailSender");
 const AppVersionRepository_1 = require("../repository/AppVersionRepository");
+const PushNotificationSender_1 = require("../../mgn-framework/services/PushNotificationSender");
 const LOG = new Logger_1.Logger("AuthService.class");
 const userRepository = new UserRepository_1.UserRepository();
 const appVersionRepository = new AppVersionRepository_1.AppVersionRepository();
@@ -91,6 +92,7 @@ class AuthService {
                 const payload = { id: newUser.id, type: 'IndroUser122828?' };
                 const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
                 EmailSender_1.EmailSender.sendSpecificEmail({ templateId: emailTemplateId, email: userDTO.email, params: { email: userDTO.email, pwd: password } });
+                PushNotificationSender_1.PushNotificationSender.sendToUser(1, 'Nuovo Utente!', newUser.id + '', 'general');
                 return { msg: "ok", token, user: newUser };
             }
         });

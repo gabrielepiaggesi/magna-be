@@ -22,6 +22,18 @@ export class UserService implements UserApi {
         await connection.release();
         return user;
     }
+
+    public async updateUserCap(cap: string, userId: number) {
+        const connection = await db.connection();
+
+        await connection.newTransaction();
+        const user = await this.updateCap(cap, userId, connection);
+        delete user.password;
+        await connection.commit();
+        await connection.release();
+
+        return user;
+    }
     
     public async addUser(dto: any, loggedUserId: number) {
         await Precondition.checkIfFalse((!dto.name), "Incomplete Data");
@@ -76,6 +88,21 @@ export class UserService implements UserApi {
         await connection.release();
 
         return business;
+    }
+
+    private async updateCap(cap: string, loggedUserId: number, connection) {
+        let newUser = await userRepository.findById(loggedUserId, connection);
+        try {
+            newUser.cap = cap;
+            await userRepository.update(newUser, connection);
+            !loggedUserId && LOG.info("UPDATE USER CAP", newUser.id);
+            return newUser;
+        } catch (e) {
+            LOG.error(e);
+            await connection.rollback();
+            await connection.release();
+            throw new IndroError("Cannot UPDATE USER CAP", 500, null, e);
+        }
     }
 
     private async updateOrCreateUser(newUserDTO: any, loggedUserId: number, connection) {

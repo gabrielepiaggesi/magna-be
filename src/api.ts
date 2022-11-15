@@ -13,6 +13,7 @@ import { routeFromController } from "./utils/Helpers";
 import { ReservationController } from './mgn-network/controller/ReservationController';
 import { UserReferralController } from "./mgn-reward/controller/UserReferralController";
 import { PublicController } from "./mgn-entity/controller/PublicController";
+import { MenuController } from "./mgn-network/controller/MenuController";
 const routes = express.Router();
 
 routes.use("/auth", routeFromController(new AuthController()));
@@ -21,6 +22,7 @@ routes.use("/user", auth.isUser, routeFromController(new UserController()));
 routes.use("/business", auth.isUser, routeFromController(new BusinessController()));
 
 routes.use("/reservation", auth.isUser, routeFromController(new ReservationController()));
+routes.use("/menuInfo", auth.isUser, routeFromController(new MenuController()));
 routes.use("/userReview", auth.isUser, routeFromController(new UserReviewController()));
 routes.use("/userSocialPost", auth.isUser, routeFromController(new UserSocialPostController()));
 

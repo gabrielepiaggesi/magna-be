@@ -86,15 +86,18 @@ export class BusinessController implements BusinessApi {
         }
     }
 
-    @Get()
-    @Path("/getBusinessesByCap/:cap")
-    public async getBusinessesByCap(res: Response, req) {
+    @Post()
+    @Path("/getBusinessesByCaps")
+    public async getBusinessesByCaps(res: Response, req) {
         try {
-            const response = await businessService.getBusinessesByCap(req.params.cap+'');
+            const loggedUserId = auth.getLoggedUserId(req);
+            const caps = req.body.caps || [];
+            const businessesIds = req.body.businessesIds || [];
+            const response = await businessService.getBusinessesByCaps(caps, businessesIds, loggedUserId);
             return res.status(200).json(response);
         } catch(e) {
             LOG.debug(e);
-            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Business.getBusinessesByCap.Error'});
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Business.getBusinessesByCaps.Error'});
         }
     }
 

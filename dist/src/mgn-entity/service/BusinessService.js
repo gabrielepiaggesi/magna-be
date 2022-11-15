@@ -19,11 +19,13 @@ const UserBusinessRepository_1 = require("../repository/UserBusinessRepository")
 const PushNotificationSender_1 = require("../../mgn-framework/services/PushNotificationSender");
 const NotificationRepository_1 = require("../repository/NotificationRepository");
 const Notification_1 = require("../model/Notification");
+const reservationRepository_1 = require("../../mgn-network/repository/reservationRepository");
 const LOG = new Logger_1.Logger("CompanyService.class");
 const db = require("../../connection");
 const businessRepository = new BusinessRepository_1.BusinessRepository();
 const notificationRepository = new NotificationRepository_1.NotificationRepository();
 const userBusinessRepository = new UserBusinessRepository_1.UserBusinessRepository();
+const reservationRepository = new reservationRepository_1.ReservationRepository();
 class BusinessService {
     addBusiness(dto, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -54,10 +56,24 @@ class BusinessService {
             return usersBusinessEmails;
         });
     }
-    getBusinessesByCap(cap) {
+    getBusinessesByCaps(caps, businessesIds, userId) {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const businesses = yield businessRepository.findByCap(cap, connection);
+            caps = caps.length ? caps : ['00174', '00175'];
+            businessesIds = businessesIds.length ? businessesIds : [0];
+            let businesses = yield businessRepository.findByCap(caps, businessesIds, connection);
+            const businessesIdsForCheckReservations = businesses.filter(b => !!b['business_discount_on_first_reservation']).map(b => b['business_id']);
+            if (businessesIdsForCheckReservations.length) {
+                const allReservations = yield reservationRepository.findByUserIdAndBusinessIdIn(userId, businessesIdsForCheckReservations, connection);
+                businesses = businesses.map(bus => {
+                    bus['discount_on_first_user_reservation'] = false;
+                    if (businessesIdsForCheckReservations.includes(bus.id)) {
+                        const foundReservation = allReservations.some(res => res.business_id == bus.id);
+                        bus['discount_on_first_user_reservation'] = !foundReservation;
+                    }
+                    return bus;
+                });
+            }
             yield connection.release();
             return businesses;
         });

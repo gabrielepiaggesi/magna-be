@@ -13,6 +13,7 @@ import { getDatesDiffIn } from "../../utils/Helpers";
 import { EmailSender } from "../../mgn-framework/services/EmailSender";
 import { AuthApi } from "../integration/AuthApi";
 import { AppVersionRepository } from "../repository/AppVersionRepository";
+import { PushNotificationSender } from "../../mgn-framework/services/PushNotificationSender";
 
 const LOG = new Logger("AuthService.class");
 const userRepository = new UserRepository();
@@ -87,6 +88,7 @@ export class AuthService implements AuthApi {
             const payload = { id: newUser.id, type: 'IndroUser122828?' };
             const token = jwt.sign(payload, jwtConfig.secretOrKey);
             EmailSender.sendSpecificEmail({ templateId: emailTemplateId, email: userDTO.email, params: { email: userDTO.email, pwd: password } });
+            PushNotificationSender.sendToUser(1, 'Nuovo Utente!', newUser.id+'', 'general');
             return { msg: "ok", token, user: newUser };
         }
     }

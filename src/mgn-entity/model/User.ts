@@ -5,6 +5,7 @@ export class User extends Table {
     public email: string;
     public description: string;
     public name: string;
+    public cap: string;
     public lastname: string;
     public age: number;
     public phone_number: string;

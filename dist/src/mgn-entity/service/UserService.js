@@ -31,6 +31,17 @@ class UserService {
             return user;
         });
     }
+    updateUserCap(cap, userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            yield connection.newTransaction();
+            const user = yield this.updateCap(cap, userId, connection);
+            delete user.password;
+            yield connection.commit();
+            yield connection.release();
+            return user;
+        });
+    }
     addUser(dto, loggedUserId) {
         return __awaiter(this, void 0, void 0, function* () {
             yield Preconditions_1.Precondition.checkIfFalse((!dto.name), "Incomplete Data");
@@ -79,6 +90,23 @@ class UserService {
             yield Preconditions_1.Precondition.checkIfTrue((!!business), "Company does not exist", connection);
             yield connection.release();
             return business;
+        });
+    }
+    updateCap(cap, loggedUserId, connection) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let newUser = yield userRepository.findById(loggedUserId, connection);
+            try {
+                newUser.cap = cap;
+                yield userRepository.update(newUser, connection);
+                !loggedUserId && LOG.info("UPDATE USER CAP", newUser.id);
+                return newUser;
+            }
+            catch (e) {
+                LOG.error(e);
+                yield connection.rollback();
+                yield connection.release();
+                throw new IndroError_1.IndroError("Cannot UPDATE USER CAP", 500, null, e);
+            }
         });
     }
     updateOrCreateUser(newUserDTO, loggedUserId, connection) {

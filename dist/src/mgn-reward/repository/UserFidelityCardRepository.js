@@ -43,7 +43,7 @@ class UserFidelityCardRepository extends Repository_1.Repository {
             // tslint:disable-next-line:max-line-length
             return c.query(query || `
             select uf.*, b.name as business_name, bf.expenses_amount as business_expenses_amount, bf.type as business_card_type, uf.expenses_amount as user_expenses_amount, b.phone_number as business_phone_number, b.second_phone_number as business_second_phone_number, 
-            b.accept_reservations as accept_reservations, b.disable_reservation_today as disable_reservation_today, b.address as business_address, b.website as business_website, b.menu_link as business_menu_link, b.instagram_page as business_instagram_page, b.type as business_type 
+            b.accept_reservations as accept_reservations, b.disable_reservation_today as disable_reservation_today, b.address as business_address, b.cap as business_cap, b.website as business_website, b.menu_link as business_menu_link, b.instagram_page as business_instagram_page, b.type as business_type 
             from ${this.table} uf 
             join businesses b on b.id = uf.business_id and b.deleted_at is null 
             join businesses_fidelities_cards bf on bf.id = uf.fidelity_card_id and bf.deleted_at is null and bf.status = 'ACTIVE' 
@@ -59,7 +59,7 @@ class UserFidelityCardRepository extends Repository_1.Repository {
             // tslint:disable-next-line:max-line-length
             return c.query(query || `
             select uf.*, b.name as business_name, bf.expenses_amount as business_expenses_amount, bf.type as business_card_type, uf.expenses_amount as user_expenses_amount, b.phone_number as business_phone_number, b.second_phone_number as business_second_phone_number, 
-            b.accept_reservations as accept_reservations, b.disable_reservation_today as disable_reservation_today, b.address as business_address, b.website as business_website, b.menu_link as business_menu_link, b.instagram_page as business_instagram_page, b.type as business_type 
+            b.accept_reservations as accept_reservations, b.disable_reservation_today as disable_reservation_today, b.address as business_address, b.cap as business_cap, b.website as business_website, b.menu_link as business_menu_link, b.instagram_page as business_instagram_page, b.type as business_type 
             from ${this.table} uf 
             join businesses b on b.id = uf.business_id and b.deleted_at is null 
             join businesses_fidelities_cards bf on bf.id = uf.fidelity_card_id and bf.deleted_at is null and bf.status = 'ACTIVE' 

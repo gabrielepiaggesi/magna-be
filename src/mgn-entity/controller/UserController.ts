@@ -51,6 +51,19 @@ export class UserController implements UserApi {
     }
 
     @Post()
+    @Path("/updateUserCap/:cap")
+    public async updateUserCap(res: Response, req) {
+        try {
+            const loggedUserId = auth.getLoggedUserId(req);
+            const response = await userService.updateUserCap(req.params.cap, loggedUserId);
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'User.updateUserCap.Error'});
+        }
+    }
+
+    @Post()
     @Path("/deleteUser")
     public async deleteUser(res: Response, req) {
         try {

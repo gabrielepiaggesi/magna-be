@@ -48,12 +48,44 @@ class BusinessRepository extends Repository_1.Repository {
         select * from ${this.table} where user_id = ${mysql2_1.default.escape(userId)} and deleted_at is null order by id desc`).then((results) => results);
         });
     }
-    findByCap(cap, conn = null, query = null) {
+    findByCap(caps, businessesIds, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;
             // tslint:disable-next-line:max-line-length
             return c.query(query || `
-        select * from ${this.table} where cap = ${mysql2_1.default.escape(cap)} and deleted_at is null order by id desc`).then((results) => results);
+            select b.*,  
+            b.id as business_id, 
+            b.name as business_name, 
+            b.phone_number as business_phone_number, 
+            b.discount_on_first_reservation as business_discount_on_first_reservation, 
+            b.second_phone_number as business_second_phone_number, 
+            b.accept_reservations as accept_reservations, 
+            b.disable_reservation_today as disable_reservation_today, 
+            b.address as business_address, 
+            b.description as business_description, 
+            b.website as business_website, 
+            b.menu_link as business_menu_link, 
+            b.instagram_page as business_instagram_page, 
+            bf.expenses_amount as business_expenses_amount, 
+            bf.type as business_card_type, 
+            bd.amount as discount_amount, 
+            bd.monthly_limit as discount_monthly_limit, 
+            bd.minimum_expense as discount_minimum_expense, 
+            bd.type as discount_type, 
+            bd.slogan as slogan,
+            ba.amount as fa_discount_amount, 
+            ba.monthly_limit as fa_discount_monthly_limit, 
+            ba.minimum_expense as fa_discount_minimum_expense, 
+            ba.type as fa_discount_type, 
+            ba.slogan as fa_slogan  
+            from ${this.table} b 
+            left join businesses_fidelities_cards bf on bf.business_id = b.id and bf.deleted_at is null and bf.status = 'ACTIVE' 
+            left join businesses_discounts bd on bd.business_id = b.id and bd.origin = 'FIDELITY_CARD' and bd.deleted_at is null and bd.status = 'ACTIVE' 
+            left join businesses_discounts ba on ba.business_id = b.id and ba.origin = 'FIRST_ACTION' and ba.deleted_at is null and ba.status = 'ACTIVE' 
+            where b.cap in (?) 
+            and b.id not in (?) 
+            and b.deleted_at is null 
+            order by b.id desc`, [caps, businessesIds]).then((results) => results);
         });
     }
     findInfoByBusinessId(businessId, conn = null, query = null) {
@@ -79,8 +111,8 @@ class BusinessRepository extends Repository_1.Repository {
             bd.type as discount_type, 
             bd.slogan as slogan  
             from ${this.table} b 
-            join businesses_fidelities_cards bf on bf.business_id = b.id and bf.deleted_at is null and bf.status = 'ACTIVE' 
-            join businesses_discounts bd on bd.business_id = b.id and bd.origin = 'FIDELITY_CARD' and bd.deleted_at is null and bd.status = 'ACTIVE' 
+            left join businesses_fidelities_cards bf on bf.business_id = b.id and bf.deleted_at is null and bf.status = 'ACTIVE' 
+            left join businesses_discounts bd on bd.business_id = b.id and bd.origin = 'FIDELITY_CARD' and bd.deleted_at is null and bd.status = 'ACTIVE' 
             where b.id = ${mysql2_1.default.escape(businessId)} 
             and b.deleted_at is null 
             limit 1`).then((results) => results[0] || null);

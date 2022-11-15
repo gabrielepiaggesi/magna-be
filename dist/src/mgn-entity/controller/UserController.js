@@ -62,6 +62,19 @@ class UserController {
             }
         });
     }
+    updateUserCap(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const loggedUserId = __1.auth.getLoggedUserId(req);
+                const response = yield userService.updateUserCap(req.params.cap, loggedUserId);
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'User.updateUserCap.Error' }));
+            }
+        });
+    }
     deleteUser(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -88,6 +101,10 @@ __decorate([
     Decorator_1.Post(),
     Decorator_1.Path("/updateUser")
 ], UserController.prototype, "updateUser", null);
+__decorate([
+    Decorator_1.Post(),
+    Decorator_1.Path("/updateUserCap/:cap")
+], UserController.prototype, "updateUserCap", null);
 __decorate([
     Decorator_1.Post(),
     Decorator_1.Path("/deleteUser")
