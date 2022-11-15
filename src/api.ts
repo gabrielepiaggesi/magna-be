@@ -22,7 +22,7 @@ routes.use("/user", auth.isUser, routeFromController(new UserController()));
 routes.use("/business", auth.isUser, routeFromController(new BusinessController()));
 
 routes.use("/reservation", auth.isUser, routeFromController(new ReservationController()));
-routes.use("/menuInfo", auth.isUser, routeFromController(new MenuController()));
+routes.use("/menuInfo", routeFromController(new MenuController()));
 routes.use("/userReview", auth.isUser, routeFromController(new UserReviewController()));
 routes.use("/userSocialPost", auth.isUser, routeFromController(new UserSocialPostController()));
 

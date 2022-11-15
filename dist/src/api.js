@@ -25,7 +25,7 @@ routes.use("/public", Helpers_1.routeFromController(new PublicController_1.Publi
 routes.use("/user", _1.auth.isUser, Helpers_1.routeFromController(new UserController_1.UserController()));
 routes.use("/business", _1.auth.isUser, Helpers_1.routeFromController(new BusinessController_1.BusinessController()));
 routes.use("/reservation", _1.auth.isUser, Helpers_1.routeFromController(new ReservationController_1.ReservationController()));
-routes.use("/menuInfo", _1.auth.isUser, Helpers_1.routeFromController(new MenuController_1.MenuController()));
+routes.use("/menuInfo", Helpers_1.routeFromController(new MenuController_1.MenuController()));
 routes.use("/userReview", _1.auth.isUser, Helpers_1.routeFromController(new UserReviewController_1.UserReviewController()));
 routes.use("/userSocialPost", _1.auth.isUser, Helpers_1.routeFromController(new UserSocialPostController_1.UserSocialPostController()));
 routes.use("/businessDiscount", _1.auth.isUser, Helpers_1.routeFromController(new BusinessDiscountController_1.BusinessDiscountController()));
