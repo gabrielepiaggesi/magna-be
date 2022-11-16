@@ -18,8 +18,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Logger_1 = require("../../mgn-framework/services/Logger");
 const Decorator_1 = require("../../utils/Decorator");
 const BusinessService_1 = require("../service/BusinessService");
+const InsightService_1 = require("../service/InsightService");
 // services
 const businessService = new BusinessService_1.BusinessService();
+const insightService = new InsightService_1.InsightService();
 const LOG = new Logger_1.Logger("PublicController.class");
 class PublicController {
     getBusinessInfo(res, req) {
@@ -34,10 +36,122 @@ class PublicController {
             }
         });
     }
+    getTotalUsers(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield insightService.getTotalUsers();
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Business.getTotalUsers.Error' }));
+            }
+        });
+    }
+    getTotalFidelitiesCards(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield insightService.getTotalFidelitiesCards();
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Business.getTotalFidelitiesCards.Error' }));
+            }
+        });
+    }
+    getTotalBusinesses(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield insightService.getTotalBusinesses();
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Business.getTotalBusinesses.Error' }));
+            }
+        });
+    }
+    getTotalReservations(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield insightService.getTotalReservations();
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Business.getTotalReservations.Error' }));
+            }
+        });
+    }
+    getTotalReservationsToday(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield insightService.getTotalReservationsToday();
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Business.getTotalReservationsToday.Error' }));
+            }
+        });
+    }
+    getTotalReviews(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield insightService.getTotalReviews();
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Business.getTotalReviews.Error' }));
+            }
+        });
+    }
+    getTotalReviewsToday(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield insightService.getTotalReviewsToday();
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Business.getTotalReviewsToday.Error' }));
+            }
+        });
+    }
 }
 __decorate([
     Decorator_1.Get(),
     Decorator_1.Path("/getBusinessInfo/:businessId")
 ], PublicController.prototype, "getBusinessInfo", null);
+__decorate([
+    Decorator_1.Get(),
+    Decorator_1.Path("/getTotalUsers")
+], PublicController.prototype, "getTotalUsers", null);
+__decorate([
+    Decorator_1.Get(),
+    Decorator_1.Path("/getTotalFidelitiesCards")
+], PublicController.prototype, "getTotalFidelitiesCards", null);
+__decorate([
+    Decorator_1.Get(),
+    Decorator_1.Path("/getTotalBusinesses")
+], PublicController.prototype, "getTotalBusinesses", null);
+__decorate([
+    Decorator_1.Get(),
+    Decorator_1.Path("/getTotalReservations")
+], PublicController.prototype, "getTotalReservations", null);
+__decorate([
+    Decorator_1.Get(),
+    Decorator_1.Path("/getTotalReservationsToday")
+], PublicController.prototype, "getTotalReservationsToday", null);
+__decorate([
+    Decorator_1.Get(),
+    Decorator_1.Path("/getTotalReviews")
+], PublicController.prototype, "getTotalReviews", null);
+__decorate([
+    Decorator_1.Get(),
+    Decorator_1.Path("/getTotalReviewsToday")
+], PublicController.prototype, "getTotalReviewsToday", null);
 exports.PublicController = PublicController;
 //# sourceMappingURL=PublicController.js.map
