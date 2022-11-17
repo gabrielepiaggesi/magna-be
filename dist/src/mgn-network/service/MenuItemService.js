@@ -56,6 +56,10 @@ class MenuItemService {
                 menu.bio = dto.bio;
                 menu.item_position = dto.item_position;
                 menu.price = dto.price;
+                if (dto.is_freezed === false || dto.is_freezed === true || dto.is_freezed === 1 || dto.is_freezed === 0)
+                    menu.is_freezed = dto.is_freezed ? 1 : 0;
+                if (dto.allergic_note)
+                    menu.allergic_note = dto.allergic_note;
                 if (!dto.delete) {
                     const res = menuItemId ? yield menuItemRepository.update(menu, connection) : yield menuItemRepository.save(menu, connection);
                     menu.id = menuItemId ? menuItemId : res.insertId;

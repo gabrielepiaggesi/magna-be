@@ -25,7 +25,7 @@ class MenuItemRepository extends Repository_1.Repository {
             // tslint:disable-next-line:max-line-length
             const c = conn || (yield db.connection());
             return c.query(query ||
-                `select id, name, bio, price, category_id, status, item_position  
+                `select id, name, bio, price, category_id, status, item_position, is_freezed, allergic_note    
             from ${this.table} 
             where category_id = ${categoryId} 
             and deleted_at is null`).then((results) => results);

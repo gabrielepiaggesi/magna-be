@@ -51,6 +51,8 @@ class MenuCategoryService {
                 menu.name = dto.name;
                 if (dto.cat_position)
                     menu.cat_position = dto.cat_position;
+                if (dto.message)
+                    menu.message = dto.message;
                 if (!dto.delete) {
                     const res = menuCategoryId ? yield menuCategoryRepository.update(menu, connection) : yield menuCategoryRepository.save(menu, connection);
                     menu.id = menuCategoryId ? menuCategoryId : res.insertId;

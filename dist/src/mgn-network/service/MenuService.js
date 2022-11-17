@@ -47,7 +47,7 @@ class MenuService {
             cats = cats.map((i) => { i.cat_position = (i.cat_position) ? i.cat_position : i.id; return i; });
             // order sort array based on position
             cats = cats.sort((a, b) => a.cat_position - b.cat_position);
-            LOG.debug('array cat', cats);
+            // LOG.debug('array cat', cats);
             for (let cat of cats) {
                 let items = yield itemRepo.findByCategoryId(cat.id, connection);
                 // foreach item
@@ -59,6 +59,7 @@ class MenuService {
                     name: cat.name,
                     id: cat.id,
                     cat_position: cat.cat_position,
+                    message: cat.message,
                     items
                 };
                 arra.push(categ);

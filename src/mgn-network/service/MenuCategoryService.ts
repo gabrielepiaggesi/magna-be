@@ -40,6 +40,7 @@ export class MenuCategoryService {
             menu.menu_id = dto.menu_id;
             menu.name = dto.name;
             if (dto.cat_position) menu.cat_position = dto.cat_position;
+            if (dto.message) menu.message = dto.message;
 
             if (!dto.delete) {
                 const res = menuCategoryId ? await menuCategoryRepository.update(menu, connection) : await menuCategoryRepository.save(menu, connection);
