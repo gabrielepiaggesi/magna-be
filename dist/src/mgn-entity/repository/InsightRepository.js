@@ -30,7 +30,7 @@ class InsightRepository extends Repository_1.Repository {
     findTotalFidelitiesCards(conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;
-            const q = `select count(*) from users_fidelities_cards where deleted_at is null`;
+            const q = `select count(*) from users_fidelities_cards where deleted_at is null and user_id != 1`;
             return yield c.query(query || q).then((results) => results && results.length ? (results[0]['count(*)'] || 0) : 0);
         });
     }
@@ -44,7 +44,7 @@ class InsightRepository extends Repository_1.Repository {
     findTotalReservations(conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;
-            const q = `select count(*) from reservations where deleted_at is null`;
+            const q = `select count(*) from reservations where deleted_at is null and user_id != 1`;
             return yield c.query(query || q).then((results) => results && results.length ? (results[0]['count(*)'] || 0) : 0);
         });
     }
@@ -52,14 +52,14 @@ class InsightRepository extends Repository_1.Repository {
         return __awaiter(this, void 0, void 0, function* () {
             today = today + '%';
             const c = conn;
-            const q = `select count(*) from reservations where created_at like ${mysql2_1.default.escape(today)} and deleted_at is null`;
+            const q = `select count(*) from reservations where created_at like ${mysql2_1.default.escape(today)} and deleted_at is null and user_id != 1`;
             return yield c.query(query || q).then((results) => results && results.length ? (results[0]['count(*)'] || 0) : 0);
         });
     }
     findTotalReviews(conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;
-            const q = `select count(*) from users_reviews where deleted_at is null`;
+            const q = `select count(*) from users_reviews where deleted_at is null and user_id != 1`;
             return yield c.query(query || q).then((results) => results && results.length ? (results[0]['count(*)'] || 0) : 0);
         });
     }
@@ -67,7 +67,7 @@ class InsightRepository extends Repository_1.Repository {
         return __awaiter(this, void 0, void 0, function* () {
             today = today + '%';
             const c = conn;
-            const q = `select count(*) from users_reviews where created_at like ${mysql2_1.default.escape(today)} and deleted_at is null`;
+            const q = `select count(*) from users_reviews where created_at like ${mysql2_1.default.escape(today)} and deleted_at is null and user_id != 1`;
             return yield c.query(query || q).then((results) => results && results.length ? (results[0]['count(*)'] || 0) : 0);
         });
     }
