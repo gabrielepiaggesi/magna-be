@@ -1,1 +1,1 @@
-{"version":3,"file":"Business.js","sourceRoot":"","sources":["../../../../src/mgn-entity/model/Business.ts"],"names":[],"mappings":";;AAAA,4DAAyD;AAEzD,MAAa,QAAS,SAAQ,aAAK;IAmB/B,oCAAoC;IACpC,gBAAgB,KAAK,EAAE,CAAC,CAAC,CAAC;CAC7B;AArBD,4BAqBC"}
+{"version":3,"file":"Business.js","sourceRoot":"","sources":["../../../../src/mgn-entity/model/Business.ts"],"names":[],"mappings":";;AAAA,4DAAyD;AAEzD,MAAa,QAAS,SAAQ,aAAK;IAoB/B,oCAAoC;IACpC,gBAAgB,KAAK,EAAE,CAAC,CAAC,CAAC;CAC7B;AAtBD,4BAsBC"}

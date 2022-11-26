@@ -18,6 +18,7 @@ export class Business extends Table {
     public discount_on_first_review: number;
     public cap: string;
     public description: string;
+    public card_description: string;
 
     // tslint:disable-next-line:no-empty
     constructor() { super(); }
