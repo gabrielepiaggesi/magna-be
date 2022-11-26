@@ -19,6 +19,7 @@ export class Business extends Table {
     public cap: string;
     public description: string;
     public card_description: string;
+    public image_url: string;
 
     // tslint:disable-next-line:no-empty
     constructor() { super(); }
