@@ -15,7 +15,7 @@ export class InsightRepository extends Repository<number> {
     public async findTodayUsers(today: string, conn = null, query = null): Promise<number> {
         today = today + '%';
         const c = conn;
-        const q = `select count(*) from users where created_at like ${mysql2.escape(today)} and deleted_at is null and user_id != 1`;
+        const q = `select count(*) from users where created_at like ${mysql2.escape(today)} and deleted_at is null and id != 1`;
         return await c.query(query || q).then((results) => results && results.length ? (results[0]['count(*)'] || 0) : 0);
     }
 
