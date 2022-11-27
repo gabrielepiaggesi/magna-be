@@ -38,6 +38,18 @@ export class PublicController {
     }
 
     @Get()
+    @Path("/getTodayUsers")
+    public async getTodayUsers(res: Response, req) {
+        try {
+            const response = await insightService.getTodayUsers();
+            return res.status(200).json(response);
+        } catch(e) {
+            LOG.debug(e);
+            return res.status(e.status || 500).json({ ...e, message: e.message, code: e.code || 'Business.getTodayUsers.Error'});
+        }
+    }
+
+    @Get()
     @Path("/getTotalFidelitiesCards")
     public async getTotalFidelitiesCards(res: Response, req) {
         try {

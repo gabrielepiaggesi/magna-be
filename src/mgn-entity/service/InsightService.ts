@@ -15,6 +15,15 @@ export class InsightService {
         return count;
     }
 
+    public async getTodayUsers() {
+        const connection = await db.connection();
+        const today = new Date(Date.now()).toISOString().substring(0, 10);
+        const count = await insightRepository.findTodayUsers(today, connection);
+        LOG.info('getTodayUsers', count);
+        await connection.release();
+        return count;
+    }
+
     public async getTotalFidelitiesCards() {
         const connection = await db.connection();
         const count = await insightRepository.findTotalFidelitiesCards(connection);

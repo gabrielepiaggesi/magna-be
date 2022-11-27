@@ -24,6 +24,16 @@ class InsightService {
             return count;
         });
     }
+    getTodayUsers() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connection = yield db.connection();
+            const today = new Date(Date.now()).toISOString().substring(0, 10);
+            const count = yield insightRepository.findTodayUsers(today, connection);
+            LOG.info('getTodayUsers', count);
+            yield connection.release();
+            return count;
+        });
+    }
     getTotalFidelitiesCards() {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();

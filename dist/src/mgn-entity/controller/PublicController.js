@@ -48,6 +48,18 @@ class PublicController {
             }
         });
     }
+    getTodayUsers(res, req) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield insightService.getTodayUsers();
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                LOG.debug(e);
+                return res.status(e.status || 500).json(Object.assign(Object.assign({}, e), { message: e.message, code: e.code || 'Business.getTodayUsers.Error' }));
+            }
+        });
+    }
     getTotalFidelitiesCards(res, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -129,6 +141,10 @@ __decorate([
     Decorator_1.Get(),
     Decorator_1.Path("/getTotalUsers")
 ], PublicController.prototype, "getTotalUsers", null);
+__decorate([
+    Decorator_1.Get(),
+    Decorator_1.Path("/getTodayUsers")
+], PublicController.prototype, "getTodayUsers", null);
 __decorate([
     Decorator_1.Get(),
     Decorator_1.Path("/getTotalFidelitiesCards")
