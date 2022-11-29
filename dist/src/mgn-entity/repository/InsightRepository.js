@@ -53,7 +53,10 @@ class InsightRepository extends Repository_1.Repository {
     findTotalFidelitiesCards(conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;
-            const q = `select business_id from users_fidelities_cards where deleted_at is null and user_id >= 23`;
+            const q = `select uf.id, uf.business_id, uf.created_at, uf.last_scan  
+        from users_fidelities_cards uf 
+        left join users_businesses ub on ub.user_id = uf.user_id and ub.deleted_at is null 
+        where uf.deleted_at is null and ub.id is null and uf.user_id >= 23`;
             return yield c.query(query || q).then((results) => results);
         });
     }

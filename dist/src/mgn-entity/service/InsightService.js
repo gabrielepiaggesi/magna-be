@@ -45,10 +45,12 @@ class InsightService {
                 const businessFound = cardsByBusiness.find(elem => elem.business_id == cardObj.business_id);
                 if (businessFound) {
                     businessFound.total = (businessFound.total || 0) + 1;
+                    businessFound.cards = (businessFound.cards || []).concat(cardObj);
                 }
                 else {
                     cardsByBusiness.push({
                         business_id: cardObj.business_id,
+                        cards: [cardObj],
                         total: 1
                     });
                 }
