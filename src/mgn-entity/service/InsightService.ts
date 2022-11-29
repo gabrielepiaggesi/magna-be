@@ -26,10 +26,28 @@ export class InsightService {
 
     public async getTotalFidelitiesCards() {
         const connection = await db.connection();
-        const count = await insightRepository.findTotalFidelitiesCards(connection);
-        LOG.info('getTotalFidelitiesCards', count);
+        const cardsBusinessIds = await insightRepository.findTotalFidelitiesCards(connection); // [6,6,6,7,8]
+        LOG.info('getTotalFidelitiesCards', cardsBusinessIds);
         await connection.release();
-        return count;
+        let cardsByBusiness = [];
+
+        cardsBusinessIds.forEach(cardObj => {
+            const businessFound = cardsByBusiness.find(elem => elem.business_id == cardObj.business_id);
+            if (businessFound) {
+                businessFound.total = (businessFound.total || 0) + 1;
+            } else {
+                cardsByBusiness.push({
+                    business_id: cardObj.business_id,
+                    total: 1
+                });
+            }
+        });
+
+        let result = {
+            cardsByBusiness,
+            totalCards: cardsBusinessIds.length
+        };
+        return result;
     }
 
     public async getTotalBusinesses() {

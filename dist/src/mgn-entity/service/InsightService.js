@@ -37,10 +37,27 @@ class InsightService {
     getTotalFidelitiesCards() {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = yield db.connection();
-            const count = yield insightRepository.findTotalFidelitiesCards(connection);
-            LOG.info('getTotalFidelitiesCards', count);
+            const cardsBusinessIds = yield insightRepository.findTotalFidelitiesCards(connection); // [6,6,6,7,8]
+            LOG.info('getTotalFidelitiesCards', cardsBusinessIds);
             yield connection.release();
-            return count;
+            let cardsByBusiness = [];
+            cardsBusinessIds.forEach(cardObj => {
+                const businessFound = cardsByBusiness.find(elem => elem.business_id == cardObj.business_id);
+                if (businessFound) {
+                    businessFound.total = (businessFound.total || 0) + 1;
+                }
+                else {
+                    cardsByBusiness.push({
+                        business_id: cardObj.business_id,
+                        total: 1
+                    });
+                }
+            });
+            let result = {
+                cardsByBusiness,
+                totalCards: cardsBusinessIds.length
+            };
+            return result;
         });
     }
     getTotalBusinesses() {

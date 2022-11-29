@@ -23,23 +23,38 @@ class InsightRepository extends Repository_1.Repository {
     findTotalUsers(conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;
-            const q = `select count(*) from users where deleted_at is null`;
-            return yield c.query(query || q).then((results) => results && results.length ? (results[0]['count(*)'] || 0) : 0);
+            const q = `
+            select count(u.id) 
+            from users u 
+            left join users_businesses ub on ub.user_id = u.id and ub.deleted_at is null 
+            where u.deleted_at is null 
+            and ub.id is null 
+            and u.id >= 23
+        `;
+            return yield c.query(query || q).then((results) => results && results.length ? (results[0]['count(u.id)'] || 0) : 0);
         });
     }
     findTodayUsers(today, conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             today = today + '%';
             const c = conn;
-            const q = `select count(*) from users where created_at like ${mysql2_1.default.escape(today)} and deleted_at is null and id != 1`;
-            return yield c.query(query || q).then((results) => results && results.length ? (results[0]['count(*)'] || 0) : 0);
+            const q = `
+            select count(u.id) 
+            from users u 
+            left join users_businesses ub on ub.user_id = u.id and ub.deleted_at is null 
+            where u.created_at like ${mysql2_1.default.escape(today)} 
+            and u.deleted_at is null 
+            and ub.id is null 
+            and u.id >= 23
+        `;
+            return yield c.query(query || q).then((results) => results && results.length ? (results[0]['count(u.id)'] || 0) : 0);
         });
     }
     findTotalFidelitiesCards(conn = null, query = null) {
         return __awaiter(this, void 0, void 0, function* () {
             const c = conn;
-            const q = `select count(*) from users_fidelities_cards where deleted_at is null and user_id != 1`;
-            return yield c.query(query || q).then((results) => results && results.length ? (results[0]['count(*)'] || 0) : 0);
+            const q = `select business_id from users_fidelities_cards where deleted_at is null and user_id >= 23`;
+            return yield c.query(query || q).then((results) => results);
         });
     }
     findTotalBusinesses(conn = null, query = null) {
