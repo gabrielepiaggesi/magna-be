@@ -214,6 +214,8 @@ class BusinessService {
                     newBusiness.cap = newBusinessDTO.cap;
                 if (newBusinessDTO.description && newBusinessDTO.description != newBusiness.description)
                     newBusiness.description = newBusinessDTO.description;
+                if (newBusinessDTO.cardDescription && newBusinessDTO.cardDescription != newBusiness.card_description)
+                    newBusiness.card_description = newBusinessDTO.cardDescription;
                 newBusiness.name = newBusinessDTO.name || newBusiness.name;
                 newBusiness.address = newBusinessDTO.address || newBusiness.address;
                 newBusiness.status = businessId ? newBusiness.status : 'ACTIVE';
