@@ -1,6 +1,7 @@
 import { BusinessRepository } from "../../mgn-entity/repository/BusinessRepository";
 import { UserBusinessRepository } from "../../mgn-entity/repository/UserBusinessRepository";
 import { Logger } from "../../mgn-framework/services/Logger";
+import { PushNotificationSender } from "../../mgn-framework/services/PushNotificationSender";
 import { IndroError } from "../../utils/IndroError";
 import { Precondition } from "../../utils/Preconditions";
 import { UserFidelityCardApi } from "../integration/UserFidelityCardApi";
@@ -32,6 +33,7 @@ export class UserFidelityCardService implements UserFidelityCardApi {
         await connection.commit();
         await connection.release();
         
+        PushNotificationSender.sendToUser(userId, 'Carta Fedeltà', 'Dopo timbrala in cassa! Mostra il QR della carta.', 'user-card');
         return newUserFidelityCard;
     }
 

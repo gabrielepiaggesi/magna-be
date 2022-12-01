@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const UserBusinessRepository_1 = require("../../mgn-entity/repository/UserBusinessRepository");
 const Logger_1 = require("../../mgn-framework/services/Logger");
+const PushNotificationSender_1 = require("../../mgn-framework/services/PushNotificationSender");
 const IndroError_1 = require("../../utils/IndroError");
 const UserFidelityCard_1 = require("../model/UserFidelityCard");
 const BusinessFidelityCardRepository_1 = require("../repository/BusinessFidelityCardRepository");
@@ -33,6 +34,7 @@ class UserFidelityCardService {
             const newUserFidelityCard = yield this.createUserFidelityCard(businessId, userId, connection);
             yield connection.commit();
             yield connection.release();
+            PushNotificationSender_1.PushNotificationSender.sendToUser(userId, 'Carta Fedeltà', 'Dopo timbrala in cassa! Mostra il QR della carta.', 'user-card');
             return newUserFidelityCard;
         });
     }
