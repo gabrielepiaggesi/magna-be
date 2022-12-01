@@ -34,7 +34,7 @@ class UserFidelityCardService {
             const newUserFidelityCard = yield this.createUserFidelityCard(businessId, userId, connection);
             yield connection.commit();
             yield connection.release();
-            PushNotificationSender_1.PushNotificationSender.sendToUser(userId, 'Carta Fedeltà', 'Dopo timbrala in cassa! Mostra il QR della carta.', 'user-card');
+            PushNotificationSender_1.PushNotificationSender.sendToUser(userId, 'Carta Fedeltà', 'Dopo usa il QR della carta in cassa!', 'user-card');
             return newUserFidelityCard;
         });
     }

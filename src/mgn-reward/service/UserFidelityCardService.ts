@@ -33,7 +33,7 @@ export class UserFidelityCardService implements UserFidelityCardApi {
         await connection.commit();
         await connection.release();
         
-        PushNotificationSender.sendToUser(userId, 'Carta Fedeltà', 'Dopo timbrala in cassa! Mostra il QR della carta.', 'user-card');
+        PushNotificationSender.sendToUser(userId, 'Carta Fedeltà', 'Dopo usa il QR della carta in cassa!', 'user-card');
         return newUserFidelityCard;
     }
 
