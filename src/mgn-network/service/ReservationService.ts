@@ -89,6 +89,7 @@ export class ReservationService implements ReservationApi {
 
         const employees = userBusinesses.map(uB => uB.user_id);
         PushNotificationSender.sendToUsers([business.user_id, ...employees], business.name.substring(0,20), "Nuova Prenotazione", 'business-reservation');
+        PushNotificationSender.sendToUser(userId, 'Potrebbero volerci alcuni minuti', 'Ti invieremo una notifica appena la tua prenotazione sarà accettata o rifiutata. Puoi controllare lo stato dalla pagina delle prenotazioni.', 'user-card');
         return newUser;
     }
 

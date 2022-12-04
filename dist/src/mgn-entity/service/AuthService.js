@@ -92,7 +92,7 @@ class AuthService {
                 const payload = { id: newUser.id, type: 'IndroUser122828?' };
                 const token = jsonwebtoken_1.default.sign(payload, jwt_1.jwtConfig.secretOrKey);
                 EmailSender_1.EmailSender.sendSpecificEmail({ templateId: emailTemplateId, email: userDTO.email, params: { email: userDTO.email, pwd: password } });
-                PushNotificationSender_1.PushNotificationSender.sendToUser(1, 'Nuovo Utente!', newUser.id + '', 'general');
+                PushNotificationSender_1.PushNotificationSender.sendToUser(1, 'Nuovo Utente!', userDTO.email, 'general');
                 return { msg: "ok", token, user: newUser };
             }
         });

@@ -88,7 +88,7 @@ export class AuthService implements AuthApi {
             const payload = { id: newUser.id, type: 'IndroUser122828?' };
             const token = jwt.sign(payload, jwtConfig.secretOrKey);
             EmailSender.sendSpecificEmail({ templateId: emailTemplateId, email: userDTO.email, params: { email: userDTO.email, pwd: password } });
-            PushNotificationSender.sendToUser(1, 'Nuovo Utente!', newUser.id+'', 'general');
+            PushNotificationSender.sendToUser(1, 'Nuovo Utente!', userDTO.email, 'general');
             return { msg: "ok", token, user: newUser };
         }
     }
